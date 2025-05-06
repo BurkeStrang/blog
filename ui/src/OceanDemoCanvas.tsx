@@ -1,0 +1,73 @@
+import React, { useRef, useEffect } from "react";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
+import * as THREE from "three";
+import { Water } from "three/examples/jsm/objects/Water.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+
+import waterNormalsUrl from "./textures/waternormals.jpg?url";
+
+const OceanScene: React.FC = () => {
+  const { scene, gl, camera } = useThree();
+  const waterRef = useRef<Water>();
+  const controlsRef = useRef<OrbitControls>();
+  const statsRef = useRef<any>(); // loose typing to hold the Stats instance
+
+  useEffect(() => {
+    const waterNormals = new THREE.TextureLoader().load(
+      waterNormalsUrl,
+      (tex) => {
+        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      },
+    );
+
+    const geo = new THREE.PlaneGeometry(10000, 10000);
+    const water = new Water(geo, {
+      textureWidth: 512,
+      textureHeight: 512,
+      waterNormals,
+      sunDirection: new THREE.Vector3(),
+      sunColor: 0xffffff,
+      waterColor: 0x001e0f,
+      distortionScale: 3.7,
+      fog: scene.fog !== undefined,
+    });
+    water.rotation.x = -Math.PI / 2;
+    scene.add(water);
+    waterRef.current = water;
+
+    return () => {
+      scene.remove(water);
+      geo.dispose();
+      water.material.dispose();
+    };
+  }, [scene, gl]);
+
+  useEffect(() => {
+    const controls = new OrbitControls(camera, gl.domElement);
+    controls.maxPolarAngle = Math.PI * 0.495;
+    controls.minDistance = 40;
+    controls.maxDistance = 200;
+    controls.target.set(0, 10, 0);
+    controls.update();
+    controlsRef.current = controls;
+    return () => controls.dispose();
+  }, [camera, gl.domElement]);
+
+  useFrame((_, delta) => {
+    if (waterRef.current) {
+      (waterRef.current.material.uniforms as any).time.value += delta;
+    }
+    controlsRef.current?.update();
+    statsRef.current?.update();
+  });
+
+  return <mesh></mesh>;
+};
+
+const OceanDemoCanvas: React.FC = () => (
+  <Canvas>
+    <OceanScene />
+  </Canvas>
+);
+
+export default OceanDemoCanvas;
