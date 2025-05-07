@@ -4,8 +4,6 @@ import styled from "styled-components";
 import { neon, darkgrey} from "./components/Styled";
 
 const Nav = styled.nav`
-  background: #000;
-  padding: 1rem 0;
   position: sticky;
   top: 0;
   z-index: 2;

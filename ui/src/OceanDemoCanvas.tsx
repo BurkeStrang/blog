@@ -5,12 +5,13 @@ import { Water } from "three/examples/jsm/objects/Water.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import waterNormalsUrl from "./textures/waternormals.jpg?url";
+import PostBox from "./PostBox";
+import { Vector3 } from "three";
 
 const OceanScene: React.FC = () => {
   const { scene, gl, camera } = useThree();
   const waterRef = useRef<Water>();
   const controlsRef = useRef<OrbitControls>();
-  const statsRef = useRef<any>(); // loose typing to hold the Stats instance
 
   useEffect(() => {
     const waterNormals = new THREE.TextureLoader().load(
@@ -26,8 +27,8 @@ const OceanScene: React.FC = () => {
       textureHeight: 512,
       waterNormals,
       sunDirection: new THREE.Vector3(),
-      sunColor: 0xffffff,
-      waterColor: 0x001e0f,
+      sunColor: 0x999,
+      waterColor: 0x431,
       distortionScale: 3.7,
       fog: scene.fog !== undefined,
     });
@@ -58,15 +59,40 @@ const OceanScene: React.FC = () => {
       (waterRef.current.material.uniforms as any).time.value += delta;
     }
     controlsRef.current?.update();
-    statsRef.current?.update();
   });
 
   return <mesh></mesh>;
 };
 
-const OceanDemoCanvas: React.FC = () => (
-  <Canvas>
+interface Post {
+  id: string;
+  title: string;
+  body: string;
+}
+
+interface OceanDemoCanvasProps {
+  camera?: Vector3;
+  posts?: Post[];
+  onPostClick?: (postId: string) => void;
+}
+
+const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
+  posts,
+  onPostClick,
+  camera = new Vector3(0, 50, 200),
+}) => (
+  <Canvas camera={{ position: camera, fov: 60 }}>
+    <ambientLight intensity={0.9} />
+    <directionalLight position={[100, 100, 100]} intensity={1} />
     <OceanScene />
+    {posts?.map((post, index) => (
+      <PostBox
+        key={post.id}
+        title={post.title}
+        position={[index * 100 - (posts.length - 1) * 10, 50, 0]}
+        onClick={() => onPostClick?.(post.id)}
+      />
+    ))}
   </Canvas>
 );
 

@@ -1,18 +1,12 @@
 import React from "react";
-import {
-  Page,
-  Header,
-  Content,
-  GlobalStyle,
-  CanvasBackground,
-} from "./components/Styled";
+import { Page, Header, Content, CanvasBackground } from "./components/Styled";
 import OceanDemoCanvas from "./OceanDemoCanvas";
+import { Vector3 } from "three";
 
 const Home: React.FC = () => (
   <>
-    <GlobalStyle />
     <CanvasBackground>
-      <OceanDemoCanvas />
+      <OceanDemoCanvas camera={new Vector3(0, 0, 0)} />,
     </CanvasBackground>
     <Page>
       <Header>
