@@ -10,8 +10,9 @@ export const neon = "#15aa14";
 export const darkgrey = "#686D8C";
 export const lightgrey = "#B0B3C6";
 export const backgroundColor = "#000";
-export const primary = "#112030"
-export const secondary = "#367588";
+export const primary = "rgba(54, 117, 136, 0.8)"; // Darker teal with 80% opacity
+export const secondary = "rgba(54, 117, 136, 0.5)"; // Darker teal with 50% opacity
+
 // ——— global styles ———
 export const GlobalStyle = createGlobalStyle`
   @font-face {

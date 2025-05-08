@@ -93,14 +93,22 @@ interface OceanDemoCanvasProps {
   camera?: Vector3;
   posts?: Post[];
   onPostClick?: (postId: string) => void;
+  onLoaded?: () => void;
 }
 
 const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   posts,
   onPostClick,
   camera = new Vector3(0, 50, 200),
+  onLoaded,
 }) => (
-  <Canvas camera={{ position: camera, fov: 60 }}>
+  <Canvas
+    camera={{ position: camera, fov: 60 }}
+    onCreated={() => {
+      // once three.js context is ready, notify parent
+      onLoaded?.();
+    }}
+  >
     <CloudBackground />
     <ambientLight intensity={0.9} />
     <directionalLight position={[100, 100, 100]} intensity={1} />
