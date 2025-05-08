@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
-import { neon, darkgrey} from "./components/Styled";
+import { neon, primary, secondary } from "./components/Styled";
 
 const Nav = styled.nav`
   position: sticky;
@@ -21,7 +21,7 @@ const NavList = styled.ul`
 const NavItem = styled.li``;
 
 const StyledLink = styled(NavLink)`
-  color: ${darkgrey};
+  color: ${primary};
   text-decoration: none;
   font-size: 1.2rem;
   position: relative;
@@ -34,12 +34,12 @@ const StyledLink = styled(NavLink)`
     bottom: -4px;
     width: 0%;
     height: 2px;
-    background: ${neon};
+    background: ${secondary};
     transition: width 0.3s ease;
   }
 
   &:hover {
-    color: ${neon};
+    color: ${secondary};
   }
 
   &:hover::after {

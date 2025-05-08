@@ -1,7 +1,7 @@
 import React, { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { backgroundColor, darkgrey } from "./components/Styled";
+import { lightgrey, primary } from "./components/Styled";
 
 interface PostBoxProps {
   title: string;
@@ -41,13 +41,13 @@ const createTextTexture = (text: string): THREE.Texture => {
   const ctx = canvas.getContext("2d")!;
 
   // background
-  ctx.fillStyle = backgroundColor;
+  ctx.fillStyle = lightgrey;
   ctx.fillRect(0, 0, size, size);
 
   // text style
   const fontSize = 45;
   ctx.font = `bold ${fontSize}px tourner, monospace`;
-  ctx.fillStyle = darkgrey;
+  ctx.fillStyle = primary;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
@@ -74,21 +74,24 @@ const PostBox: React.FC<PostBoxProps> = ({ title, position, onClick }) => {
   // animate up/down and slight rotation
   useFrame((state) => {
     ref.current.position.y =
-      position[1] + Math.sin(state.clock.getElapsedTime() * 2) * 0.5;
-    ref.current.rotation.y = Math.sin(state.clock.getElapsedTime()) * 0.1;
+      position[1] + Math.sin(state.clock.getElapsedTime() * 2) * 0.1;
+    ref.current.rotation.y = Math.sin(state.clock.getElapsedTime()) * 0.04;
+    ref.current.rotation.z = Math.sin(state.clock.getElapsedTime()) * 0.02;
+    ref.current.rotation.y -= 0.7;
+    ref.current.rotation.x = Math.cos(state.clock.getElapsedTime()) * 0.03;
   });
 
   // build six materials: only the front face gets the text texture
   const materials = useMemo(() => {
     const texturedMat = new THREE.MeshStandardMaterial({
       map: texture,
-      roughness: 0.5,
-      metalness: 0.5,
+      roughness: 1,
+      metalness: 0,
     });
     const flatMat = new THREE.MeshStandardMaterial({
-      color: backgroundColor,
-      roughness: 0.5,
-      metalness: 0.5,
+      color: lightgrey,
+      roughness: 1,
+      metalness: 0,
     });
     // BoxGeometry face order is [+X, -X, +Y, -Y, +Z, -Z]
     // let’s put our text on the front (+Z = index 4)
@@ -111,7 +114,7 @@ const PostBox: React.FC<PostBoxProps> = ({ title, position, onClick }) => {
       castShadow
       receiveShadow
     >
-      <boxGeometry args={[60, 60, 80]} />
+      <boxGeometry args={[50, 50, 50]} />
     </mesh>
   );
 };

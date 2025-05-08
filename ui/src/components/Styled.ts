@@ -10,7 +10,8 @@ export const neon = "#15aa14";
 export const darkgrey = "#686D8C";
 export const lightgrey = "#B0B3C6";
 export const backgroundColor = "#000";
-
+export const primary = "#112030"
+export const secondary = "#367588";
 // ——— global styles ———
 export const GlobalStyle = createGlobalStyle`
   @font-face {
@@ -77,7 +78,7 @@ export const Header = styled.header`
   padding: 2rem 0;
 
   h1 {
-    color: ${darkgrey};
+    color: ${primary};
     font-size: 3rem;
     letter-spacing: 0.1em;
     margin: 0;
@@ -87,7 +88,7 @@ export const Header = styled.header`
 export const Content = styled.main`
   margin: 2rem 2rem 0 2rem;
   padding: 2rem 2rem 0 2rem;
-  color: ${darkgrey};
+  color: ${primary};
 `;
 
 // ——— post card ———

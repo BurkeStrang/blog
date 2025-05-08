@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import {
   CanvasBackground,
   Page,
-  Header,
   Content,
   PostCard,
   MinimalButton,
 } from "./components/Styled";
 import OceanDemoCanvas from "./OceanDemoCanvas";
+import { Vector3 } from "three";
 
 interface Post {
   id: string;
@@ -83,7 +83,7 @@ vi"    "select inner quotes"</code></pre>
     id: "3",
     title: "Third Post long title",
     body: "<p>Dark theme with neon green highlights and raw WebGL patterns.</p>",
-  }
+  },
 ];
 
 const Posts: React.FC = () => {
@@ -99,14 +99,14 @@ const Posts: React.FC = () => {
   return (
     <>
       <CanvasBackground>
-        <OceanDemoCanvas posts={posts} onPostClick={handlePostClick} />
+        <OceanDemoCanvas
+          posts={posts}
+          onPostClick={handlePostClick}
+//Camera position: x=-163.04928470083573, y=10.91679531642352, z=97.03917590205039
+          camera={new Vector3(-163.0493, 10.9168, 97.0392)}
+        />
       </CanvasBackground>
-
       <Page>
-        <Header>
-          <h1>Brutalist Blog</h1>
-        </Header>
-
         {selectedPost && (
           <Content>
             <PostCard>

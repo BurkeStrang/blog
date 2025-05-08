@@ -1,10 +1,11 @@
 import React, { useRef, useEffect } from "react";
-import { Canvas, useThree, useFrame } from "@react-three/fiber";
+import { Canvas, useThree, useFrame, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import waterNormalsUrl from "./textures/waternormals.jpg?url";
+import cloudTextureUrl from "./textures/whiteclouds.jpg?url";
 import PostBox from "./PostBox";
 import { Vector3 } from "three";
 
@@ -46,12 +47,24 @@ const OceanScene: React.FC = () => {
   useEffect(() => {
     const controls = new OrbitControls(camera, gl.domElement);
     controls.maxPolarAngle = Math.PI * 0.495;
-    controls.minDistance = 40;
-    controls.maxDistance = 200;
+    controls.minDistance = -1000000;
+    controls.maxDistance = 1000000;
     controls.target.set(0, 10, 0);
     controls.update();
     controlsRef.current = controls;
-    return () => controls.dispose();
+
+    // Log camera position on change
+    const handleChange = () => {
+      console.log(
+        `Camera position: x=${camera.position.x}, y=${camera.position.y}, z=${camera.position.z}`,
+      );
+    };
+    controls.addEventListener("change", handleChange);
+
+    return () => {
+      controls.removeEventListener("change", handleChange);
+      controls.dispose();
+    };
   }, [camera, gl.domElement]);
 
   useFrame((_, delta) => {
@@ -61,7 +74,13 @@ const OceanScene: React.FC = () => {
     controlsRef.current?.update();
   });
 
-  return <mesh></mesh>;
+  return null;
+};
+
+const CloudBackground: React.FC = () => {
+  // load the texture
+  const tex = useLoader(THREE.TextureLoader, cloudTextureUrl);
+  return <primitive attach="background" object={tex} />;
 };
 
 interface Post {
@@ -82,17 +101,27 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   camera = new Vector3(0, 50, 200),
 }) => (
   <Canvas camera={{ position: camera, fov: 60 }}>
+    <CloudBackground />
     <ambientLight intensity={0.9} />
     <directionalLight position={[100, 100, 100]} intensity={1} />
+
     <OceanScene />
-    {posts?.map((post, index) => (
-      <PostBox
-        key={post.id}
-        title={post.title}
-        position={[index * 100 - (posts.length - 1) * 10, 50, 0]}
-        onClick={() => onPostClick?.(post.id)}
-      />
-    ))}
+
+    {posts?.map((post, index) => {
+      const x = index * 50 - (posts.length - 1) * 50;
+      const y = 15;
+      // for index 1 and 2, push forward along Z
+      const z = index * 40;
+
+      return (
+        <PostBox
+          key={post.id}
+          title={post.title}
+          position={[x, y, z]}
+          onClick={() => onPostClick?.(post.id)}
+        />
+      );
+    })}
   </Canvas>
 );
 
