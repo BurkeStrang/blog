@@ -4,14 +4,19 @@ import styled, { createGlobalStyle } from "styled-components";
 import tourner from "../fonts/Tourner.ttf";
 // import miste from "../fonts/miste.ttf";
 import donne from "../fonts/Donne.otf";
+import SortIcon from "@mui/icons-material/Sort";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 
 // ——— constants ———
 export const neon = "#15aa14";
 export const darkgrey = "#686D8C";
 export const lightgrey = "#B0B3C6";
 export const backgroundColor = "#000";
-export const primary = "rgba(54, 117, 136, 0.8)"; // Darker teal with 80% opacity
-export const secondary = "rgba(54, 117, 136, 0.5)"; // Darker teal with 50% opacity
+export const primary = "#1e2021";
+export const secondary = "#00c0fb";
+
+export const bluish = "rgba(0, 128, 255, 1)";
 
 // ——— global styles ———
 export const GlobalStyle = createGlobalStyle`
@@ -31,7 +36,6 @@ export const GlobalStyle = createGlobalStyle`
     padding: 0;
     background: ${backgroundColor};
     font-family: 'Tourner', monospace;
-    color: #fff;
     overflow: hidden;
   }
 
@@ -70,19 +74,116 @@ export const CanvasBackground = styled.div`
 export const Page = styled.div`
   position: relative;
   z-index: 1;
-  max-height: 80vh;
-  overflow-y: auto;
+  max-height: 90vh;
+  yoverflow: auto;
 `;
 
 export const Header = styled.header`
+  position: relative;
+  overflow: hidden;
   text-align: center;
-  padding: 2rem 0;
+  padding: 1rem 0;
 
   h1 {
+    position: relative;
     color: ${primary};
     font-size: 3rem;
     letter-spacing: 0.1em;
     margin: 0;
+    height: 4rem;
+  }
+`;
+
+export const SortButton = styled(SortIcon)`
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  top: 8rem;
+  cursor: pointer;
+
+  &:hover {
+    color: ${secondary};
+  }
+`;
+
+export const SortDirectionButton = styled.div<{ isUp: boolean }>`
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  top: 8.8rem;
+  cursor: pointer;
+  scale: 0.8;
+
+  &:hover {
+    color: ${secondary};
+  }
+`;
+
+export const SearchBar = styled.div`
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0;
+`;
+
+export const SearchContainer = styled.div`
+  position: absolute;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  width: 200px;
+  height: 32px;
+  border-radius: 15px;
+  outline: solid 2px #202020;
+  overflow: hidden;
+  transition: width 0.3s ease;
+
+  &:hover,
+  &:focus-within {
+    width: 300px;
+  }
+`;
+
+export const SearchInput = styled.input`
+  flex: 1;
+  height: 100%;
+  padding: 0 0.75rem;
+  padding-right: 2rem; /* room for clear button */
+  border: none;
+  font-size: 1rem;
+  background: transparent;
+  color: #202020;
+  font-family: "donne", monospace;
+
+  &:focus {
+    outline: none;
+  }
+`;
+
+export const ClearButton = styled.button`
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: #202020;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 1;
   }
 `;
 

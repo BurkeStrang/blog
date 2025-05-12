@@ -5,9 +5,10 @@ import { Water } from "three/examples/jsm/objects/Water.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import waterNormalsUrl from "./textures/waternormals.jpg?url";
-import cloudTextureUrl from "./textures/whiteclouds.jpg?url";
+import cloudTextureUrl from "./textures/sunsethorizon.jpg?url";
 import PostBox from "./PostBox";
 import { Vector3 } from "three";
+import { ScrollCamera } from "./ScrollCamera";
 
 const OceanScene: React.FC = () => {
   const { scene, gl, camera } = useThree();
@@ -46,9 +47,9 @@ const OceanScene: React.FC = () => {
 
   useEffect(() => {
     const controls = new OrbitControls(camera, gl.domElement);
-    controls.maxPolarAngle = Math.PI * 0.495;
-    controls.minDistance = -1000000;
-    controls.maxDistance = 1000000;
+    // controls.maxPolarAngle = Math.PI * 0.495;
+    // controls.minDistance = -1000000;
+    // controls.maxDistance = 1000000;
     controls.target.set(0, 10, 0);
     controls.update();
     controlsRef.current = controls;
@@ -99,38 +100,46 @@ interface OceanDemoCanvasProps {
 const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   posts,
   onPostClick,
-  camera = new Vector3(0, 50, 200),
+  camera,
   onLoaded,
 }) => (
-  <Canvas
-    camera={{ position: camera, fov: 60 }}
-    onCreated={() => {
-      // once three.js context is ready, notify parent
-      onLoaded?.();
-    }}
-  >
-    <CloudBackground />
-    <ambientLight intensity={0.9} />
-    <directionalLight position={[100, 100, 100]} intensity={1} />
+  <>
+    <Canvas
+      camera={{ position: camera, fov: 60 }}
+      onCreated={() => {
+        // once three.js context is ready, notify parent
+        onLoaded?.();
+      }}
+    >
+      <CloudBackground />
+      <ambientLight intensity={0.9} />
+      <directionalLight position={[500, 300, 0]} intensity={1} />
 
-    <OceanScene />
+      <OceanScene />
+      <ScrollCamera
+        // this is the destination the start is in App.tsx
+        start={new Vector3(-460, 20, 119)}
+        end={new Vector3(-600, 10, 100)} // this dosen't do anything
+        lerpFactor={0.08}
+      />
 
-    {posts?.map((post, index) => {
-      const x = index * 50 - (posts.length - 1) * 50;
-      const y = 15;
-      // for index 1 and 2, push forward along Z
-      const z = index * 40;
+      {posts?.map((post, index) => {
+        const x = index * 50 - (posts.length - 1) * 50;
+        const y = 30;
+        const z = index * 40;
 
-      return (
-        <PostBox
-          key={post.id}
-          title={post.title}
-          position={[x, y, z]}
-          onClick={() => onPostClick?.(post.id)}
-        />
-      );
-    })}
-  </Canvas>
+        return (
+          <PostBox
+            key={post.id}
+            index={index}
+            title={post.title}
+            position={[x, y, z]}
+            onClick={() => onPostClick?.(post.id)}
+          />
+        );
+      })}
+    </Canvas>
+  </>
 );
 
 export default OceanDemoCanvas;
