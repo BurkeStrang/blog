@@ -7,22 +7,20 @@ import {
   backgroundColor,
   CanvasBackground,
   GlobalStyle,
-  primary,
-  secondary,
 } from "./components/Styled";
 import OceanDemoCanvas from "./OceanDemoCanvas";
 import { Vector3 } from "three";
 import styled from "styled-components";
-import ClipLoader from "react-spinners/ClipLoader";
-// import { MoonLoader } from "react-spinners";
 import { SquareLoader } from "react-spinners";
 import Profile from "./Profile";
+import * as THREE from "three";
 
 export interface Post {
   // this will be unique and will be the title of the post with dashes instead of spaces
   id: string;
   title: string;
   body: string;
+  position?: THREE.Vector3;
   topics?: string[];
   date?: Date;
   comments?: string[];
@@ -851,66 +849,15 @@ const App: React.FC = () => {
 
   const handlePostClick = (postId: string) => {
     const post = posts.find((p) => p.id === postId);
-    if (post) {
-      setSelectedPost(post);
-    }
+    if (post) setSelectedPost(post);
   };
 
-  const handleClose = () => {
-    setSelectedPost(null);
-  };
+  const handleClose = () => setSelectedPost(null);
 
   return (
     <>
       <GlobalStyle />
-      {!canvasLoaded && (
-        <LoaderOverlay>
-          <SquareLoader
-            loading={true}
-            size={55}
-            color="#36D7B7"
-            speedMultiplier={1}
-            cssOverride={{
-              border: "2px solid #202020",
-              borderRadius: "4px",
-              padding: "4px", // optional, gives some breathing room
-            }}
-          />
-          <SquareLoader
-            loading={true}
-            size={55}
-            color="#36D7B7"
-            speedMultiplier={1}
-            cssOverride={{
-              border: "2px solid #202020",
-              borderRadius: "4px",
-              padding: "4px", // optional, gives some breathing room
-            }}
-          />
-          <SquareLoader
-            loading={true}
-            size={55}
-            color="#36D7B7"
-            speedMultiplier={1}
-            cssOverride={{
-              border: "2px solid #202020",
-              borderRadius: "4px",
-              padding: "4px", // optional, gives some breathing room
-            }}
-          />
-          <SquareLoader
-            loading={true}
-            size={55}
-            color="#36D7B7"
-            speedMultiplier={1}
-            cssOverride={{
-              border: "2px solid #202020",
-              borderRadius: "4px",
-              padding: "4px", // optional, gives some breathing room
-            }}
-          />
-        </LoaderOverlay>
-      )}
+      {/* 1️⃣ Always mount the 3D canvas so onLoaded can fire */}
       <CanvasBackground>
         <OceanDemoCanvas
           posts={posts}
@@ -919,38 +866,96 @@ const App: React.FC = () => {
           onLoaded={() => setCanvasLoaded(true)}
         />
       </CanvasBackground>
-      <Router>
-        <Header />
-        <Routes>
-          <Route path="/about" element={<Home />} />
-          <Route
-            path="/posts"
-            element={
-              <Posts selectedPost={selectedPost} handleClose={handleClose} />
-            }
+
+      {/* 2️⃣ While loading, show only the overlay & spinners */}
+      {!canvasLoaded && (
+        <LoaderOverlay>
+          <SquareLoader
+            loading
+            size={55}
+            color="#36D7B7"
+            speedMultiplier={1}
+            cssOverride={{
+              border: "2px solid #202020",
+              borderRadius: "4px",
+              padding: "4px",
+            }}
           />
-          <Route
-            path="/profile"
-            element={
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  padding: "1.5rem 2.5rem 1.5rem 1.5rem",
-                }}
-              >
-                {/* https://ar.inspiredpencil.com/pictures-2023/funny-avatars-for-steam */}
-                <Profile
-                  avatarUrl="https://i.pinimg.com/236x/14/67/d2/1467d25dddb40deda97737c62b375d9a.jpg"
-                  name="Jane Doe"
-                  title="Full-Stack Developer"
-                  bio="Passionate about building performant web apps and scalable APIs."
-                />
-              </div>
-            }
+          <SquareLoader
+            loading
+            size={55}
+            color="#36D7B7"
+            speedMultiplier={1}
+            cssOverride={{
+              border: "2px solid #202020",
+              borderRadius: "4px",
+              padding: "4px",
+            }}
           />
-        </Routes>
-      </Router>
+          <SquareLoader
+            loading
+            size={55}
+            color="#36D7B7"
+            speedMultiplier={1}
+            cssOverride={{
+              border: "2px solid #202020",
+              borderRadius: "4px",
+              padding: "4px",
+            }}
+          />
+          <SquareLoader
+            loading
+            size={55}
+            color="#36D7B7"
+            speedMultiplier={1}
+            cssOverride={{
+              border: "2px solid #202020",
+              borderRadius: "4px",
+              padding: "4px",
+            }}
+          />
+        </LoaderOverlay>
+      )}
+
+      {/* 3️⃣ Once loaded, render the rest of the app */}
+      {canvasLoaded && (
+        <>
+          <Router>
+            <Header />
+            <Routes>
+              <Route path="/about" element={<Home />} />
+              <Route
+                path="/posts"
+                element={
+                  <Posts
+                    selectedPost={selectedPost}
+                    handleClose={handleClose}
+                  />
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      padding: "1.5rem 2.5rem 1.5rem 1.5rem",
+                    }}
+                  >
+                    <Profile
+                      avatarUrl="https://i.pinimg.com/236x/14/67/d2/1467d25dddb40deda97737c62b375d9a.jpg"
+                      name="Jane Doe"
+                      title="Full-Stack Developer"
+                      bio="Passionate about building performant web apps and scalable APIs."
+                    />
+                  </div>
+                }
+              />
+            </Routes>
+          </Router>
+        </>
+      )}
     </>
   );
 };

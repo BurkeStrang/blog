@@ -3,37 +3,47 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 interface ScrollCameraProps {
-  start: THREE.Vector3;
-  end: THREE.Vector3;
-  lerpFactor?: number;
+  positions: THREE.Vector3[];
+  lerpFactor: number;
 }
 
-export function ScrollCamera({
-  start,
-  end,
-  lerpFactor = 0.01,
-}: ScrollCameraProps) {
-  const { camera } = useThree();
-  const [target] = useState(() => start.clone());
+export function ScrollCamera({ positions, lerpFactor }: ScrollCameraProps) {
+  const { camera, gl } = useThree();
+  // accumulated “virtual scroll” value
+  const [scrollY, setScrollY] = useState(0);
+
+  // clamp helper
+  const clamp = (v: number, min: number, max: number) =>
+    v < min ? min : v > max ? max : v;
 
   useEffect(() => {
-    function onScroll() {
-      const scrollY = window.scrollY;
-      const maxScroll = document.body.scrollHeight - window.innerHeight;
-      const t = Math.min(Math.max(scrollY / maxScroll, 0), 1);
-      // compute the instantaneous target:
-      target.copy(start).lerp(end, t);
-    }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll(); // init
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [start, end, target]);
+    const canvas = gl.domElement;
+    const onWheel = (e: WheelEvent) => {
+      // prevent page from actually scrolling
+      e.preventDefault();
+      // accumulate, then clamp to some max range
+      setScrollY((current) =>
+        clamp(current + e.deltaY, 0, (positions.length - 1) * 100),
+      );
+    };
+    canvas.addEventListener("wheel", onWheel, { passive: false });
+    return () => void canvas.removeEventListener("wheel", onWheel);
+  }, [gl.domElement, positions.length]);
 
   useFrame(() => {
-    // smoothly move camera toward our computed target
-    camera.position.lerp(target, lerpFactor);
-    // adjust lookAt as needed; here we look at the origin
-    // camera.lookAt(-115, 18, 196);
+    // map scrollY to a t ∈ [0,1]
+    const max = (positions.length - 1) * 100;
+    const t = clamp(scrollY / max, 0, 1);
+    const idx = Math.round(t * (positions.length - 1));
+    const target = positions[idx];
+
+    console.log(idx, "idx");
+    console.log("target", target);
+
+    // offset your camera however you like
+    const dest = target.clone();
+    camera.position.lerp(dest, lerpFactor);
+    // camera.lookAt(target);
   });
 
   return null;
