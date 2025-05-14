@@ -199,19 +199,25 @@ const PostBox: React.FC<PostBoxProps> = ({
     // target Y-pos: bobbing when not hovered, lifted when hovered
     const bob = position[1] + Math.sin(t * 2) * 0.1;
     const targetY = hovered ? position[1] + hoverLift : bob;
+    const targetZ = hovered
+      ? position[2] + 10 + Math.pow(index / 10, 4) * 0.9
+      : position[2] + 8 + Math.pow(index / 10, 4) * 0.9;
+    const targetX = hovered
+      ? position[0] - 10 - Math.pow(index / 10, 4) * 0.9
+      : position[0] - 8 - Math.pow(index / 10, 4) * 0.9;
 
     // target rotations: zero X/Y when hovered, wiggle when not
     const wiggleDelta = 0.02 + (Math.sin(index) + 0.8) * 0.15;
-    const targetRotX = hovered ? 0 : Math.cos(t) * 0.01 + wiggleDelta;
+    const targetRotX = hovered ? 0 : -0.01 + Math.cos(t) * 0.01 + wiggleDelta;
     const targetRotY = hovered
-      ? Math.max(-2, -0.8 - (index + 1) * 0.08)
-      : Math.sin(t) * 0.03 - 0.7 - wiggleDelta;
+      ? -0.8 - Math.pow(index / 10, 2) * 0.1
+      : Math.sin(t) * 0.03 - 0.5 - wiggleDelta;
     const targetRotZ = hovered ? 0 : Math.sin(t) * 0.04 + wiggleDelta;
 
     // --- ease into position ---
-    g.position.x = position[0];
-    g.position.z = position[2];
-    g.position.y = MathUtils.lerp(g.position.y, targetY, liftEase);
+    g.position.x = MathUtils.lerp(g.position.x, targetX, liftEase);
+    g.position.z = MathUtils.lerp(g.position.z, targetZ, liftEase);
+    g.position.y = MathUtils.lerp(g.position.y + 4, targetY, liftEase);
 
     // --- ease into rotation ---
     g.rotation.x = MathUtils.lerp(g.rotation.x, targetRotX, liftEase);

@@ -11,9 +11,12 @@ import {
   SortButton,
   SearchBar,
   SortDirectionButton,
+  Cloud,
+  WispyCloud,
 } from "./components/Styled";
 import { Post } from "./App";
-
+import cloudImg from "./textures/darkcloud.png";
+import wispyCloudUrl from "./textures/cloud.png";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
@@ -39,26 +42,38 @@ const Posts: React.FC<PostsProps> = ({ selectedPost, handleClose }) => {
   const [isSortUp, setIsSortUp] = useState(true);
   return (
     <Page>
-      <Header>
-        <h1>Brutalist Blog</h1>
-      </Header>
-      <SearchBar>
-        <SearchContainer>
-          <SearchInput
-            type="text"
-            placeholder="Search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+      {!selectedPost && (
+        <>
+          <Header>
+            <Cloud src={cloudImg} alt="" />
+            <WispyCloud src={wispyCloudUrl} alt="wispy cloud layer" />
+            <h1>Brutalist Blog</h1>
+          </Header>
+          <SearchBar>
+            <SearchContainer>
+              <SearchInput
+                type="text"
+                placeholder="Search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              {query && (
+                <ClearButton
+                  onClick={() => setQuery("")}
+                  aria-label="Clear search"
+                >
+                  ×
+                </ClearButton>
+              )}
+            </SearchContainer>
+          </SearchBar>
+          <SortButton />
+          <SortIcon
+            isUp={isSortUp}
+            onClick={() => setIsSortUp((prev) => !prev)}
           />
-          {query && (
-            <ClearButton onClick={() => setQuery("")} aria-label="Clear search">
-              ×
-            </ClearButton>
-          )}
-        </SearchContainer>
-      </SearchBar>
-      <SortButton />
-      <SortIcon isUp={isSortUp} onClick={() => setIsSortUp((prev) => !prev)} />
+        </>
+      )}
       {selectedPost && (
         <Content>
           <PostCard>

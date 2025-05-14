@@ -2,16 +2,16 @@ import React, { useRef, useEffect } from "react";
 import { Canvas, useThree, useFrame, useLoader } from "@react-three/fiber";
 import * as THREE from "three";
 import { Water } from "three/examples/jsm/objects/Water.js";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+// import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { ScrollCamera } from "./ScrollCamera";
 import PostBox from "./PostBox";
 import waterNormalsUrl from "./textures/waternormals.jpg?url";
-import cloudTextureUrl from "./textures/sunsethorizon.jpg?url";
+import cloudTextureUrl from "./textures/darktheme.JPG?url";
 import { Vector3 } from "three";
 import { Post } from "./App";
 
 const OceanScene: React.FC = () => {
-  const { scene, gl, camera } = useThree();
+  const { scene } = useThree();
   const waterRef = useRef<Water>();
 
   // create water once
@@ -65,7 +65,13 @@ const OceanScene: React.FC = () => {
     }
   });
 
-  return null;
+  // add a metallic sphere hovering above the water at the origin
+  return (
+    <mesh position={[-230, 6, 130]}>
+      <sphereGeometry args={[3, 28, 28]} />
+      <meshStandardMaterial color={0x101937} metalness={0.8} roughness={0.6} />
+    </mesh>
+  );
 };
 
 const CloudBackground: React.FC = () => {
@@ -88,19 +94,23 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   const positions = React.useMemo(() => {
     return posts.map((_, i) => {
       const x = i * 50 - (posts.length - 1) * 25;
-      const y = 30;
+      const y = -8.5;
       const z = i * 40;
       return new Vector3(x, y, z);
     });
   }, [posts]);
 
-  const offsetPositions = positions.map((pos) =>
-    pos.clone().add(new THREE.Vector3(-80, 0, 70)),
+  const offsetPositions = positions.map((pos, index) =>
+    pos.clone().add(new THREE.Vector3(-100, 30, 100)),
   );
+
+  const startPosition = offsetPositions[0]
+    .clone()
+    .add(new THREE.Vector3(-300, 0, 300));
 
   return (
     <Canvas
-      camera={{ position: offsetPositions[0].toArray(), fov: 60 }}
+      camera={{ position: startPosition.toArray(), fov: 73 }}
       onCreated={() => onLoaded?.()}
     >
       <CloudBackground />
@@ -122,7 +132,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         );
       })}
 
-      <ScrollCamera positions={offsetPositions} lerpFactor={0.08} />
+      <ScrollCamera positions={offsetPositions} lerpFactor={0.08} stepSize={1} />
     </Canvas>
   );
 };

@@ -316,79 +316,79 @@ readStream.on('data', chunk => {
       </p>
     `,
   },
-  //   {
-  //     id: "9",
-  //     title: "Setting Up ESLint & Prettier",
-  //     body: `
-  //       <p><em>Posted on April 29, 2025 by Burke</em></p>
-  //
-  //       <h2>Configuration</h2>
-  //       <pre><code>{
-  //   "env": {
-  //     "browser": true,
-  //     "es2021": true
-  //   },
-  //   "extends": [
-  //     "eslint:recommended",
-  //     "plugin:@typescript-eslint/recommended",
-  //     "prettier"
-  //   ],
-  //   "parser": "@typescript-eslint/parser",
-  //   "plugins": ["@typescript-eslint"]
-  // }
-  // </code></pre>
-  //
-  //       <h2>Scripts</h2>
-  //       <p>Add to <code>package.json</code>:</p>
-  //       <pre><code>"scripts": {
-  //   "lint": "eslint 'src/**/*.{js,ts,tsx}'",
-  //   "format": "prettier --write 'src/**/*.{js,ts,tsx,css,md}'"
-  // }
-  // </code></pre>
-  //
-  //       <p>
-  //         See the <a href="https://eslint.org/docs">ESLint docs</a> and
-  //         <a href="https://prettier.io/docs">Prettier docs</a>.
-  //       </p>
-  //     `,
-  //   },
-  //   {
-  //     id: "10",
-  //     title: "Webpack Configuration Basics",
-  //     body: `
-  //       <p><em>Posted on April 28, 2025 by Burke</em></p>
-  //
-  //       <h2>Core Concepts</h2>
-  //       <ul>
-  //         <li><code>entry</code> – starting point</li>
-  //         <li><code>output</code> – bundled file location</li>
-  //         <li><code>loaders</code> – transform files</li>
-  //         <li><code>plugins</code> – extend functionality</li>
-  //       </ul>
-  //
-  //       <h2>Minimal Config</h2>
-  //       <pre><code>const path = require('path');
-  //
-  // module.exports = {
-  //   entry: './src/index.js',
-  //   output: {
-  //     filename: 'bundle.js',
-  //     path: path.resolve(__dirname, 'dist'),
-  //   },
-  //   module: {
-  //     rules: [
-  //       { test: /\.css$/, use: ['style-loader', 'css-loader'] }
-  //     ],
-  //   },
-  // };
-  // </code></pre>
-  //
-  //       <p>
-  //         For detailed options, see
-  //         <a href="https://webpack.js.org/concepts/configuration/">Webpack Docs</a>.
-  //       </p>
-  //     `,
-  //   },
+  {
+    id: "9",
+    title: "Setting Up ESLint & Prettier",
+    body: `
+      <p><em>Posted on April 29, 2025 by Burke</em></p>
+
+      <h2>Configuration</h2>
+      <pre><code>{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"]
+   }
+   </code></pre>
+
+      <h2>Scripts</h2>
+      <p>Add to <code>package.json</code>:</p>
+      <pre><code>"scripts": {
+  "lint": "eslint 'src/**/*.{js,ts,tsx}'",
+  "format": "prettier --write 'src/**/*.{js,ts,tsx,css,md}'"
+   }
+   </code></pre>
+
+      <p>
+        See the <a href="https://eslint.org/docs">ESLint docs</a> and
+        <a href="https://prettier.io/docs">Prettier docs</a>.
+      </p>
+    `,
+  },
+  {
+    id: "10",
+    title: "Webpack Configuration Basics",
+    body: `
+      <p><em>Posted on April 28, 2025 by Burke</em></p>
+
+      <h2>Core Concepts</h2>
+      <ul>
+        <li><code>entry</code> – starting point</li>
+        <li><code>output</code> – bundled file location</li>
+        <li><code>loaders</code> – transform files</li>
+        <li><code>plugins</code> – extend functionality</li>
+      </ul>
+
+      <h2>Minimal Config</h2>
+      <pre><code>const path = require('path');
+
+   module.exports = {
+  entry: './src/index.js',
+  output: {
+    filename: 'bundle.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
+  module: {
+    rules: [
+      { test: /\.css$/, use: ['style-loader', 'css-loader'] }
+    ],
+  },
+   };
+   </code></pre>
+
+      <p>
+        For detailed options, see
+        <a href="https://webpack.js.org/concepts/configuration/">Webpack Docs</a>.
+      </p>
+    `,
+  },
   //   {
   //     id: "11",
   //     title: "Tree Shaking & Code Splitting",
@@ -862,7 +862,6 @@ const App: React.FC = () => {
         <OceanDemoCanvas
           posts={posts}
           onPostClick={handlePostClick}
-          camera={new Vector3(-800, 50, 1000)}
           onLoaded={() => setCanvasLoaded(true)}
         />
       </CanvasBackground>
@@ -927,10 +926,12 @@ const App: React.FC = () => {
               <Route
                 path="/posts"
                 element={
-                  <Posts
-                    selectedPost={selectedPost}
-                    handleClose={handleClose}
-                  />
+                  <div style={{background: backgroundColor}}>
+                    <Posts
+                      selectedPost={selectedPost}
+                      handleClose={handleClose}
+                    />
+                  </div>
                 }
               />
               <Route
