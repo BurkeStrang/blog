@@ -926,12 +926,10 @@ const App: React.FC = () => {
               <Route
                 path="/posts"
                 element={
-                  <div style={{background: backgroundColor}}>
-                    <Posts
-                      selectedPost={selectedPost}
-                      handleClose={handleClose}
-                    />
-                  </div>
+                  <Posts
+                    selectedPost={selectedPost}
+                    handleClose={handleClose}
+                  />
                 }
               />
               <Route
