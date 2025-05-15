@@ -81,7 +81,7 @@ const CloudBackground: React.FC = () => {
 
 interface OceanDemoCanvasProps {
   posts: Post[];
-  onPostClick?: (postId: string) => void;
+  onPostClick?: (postSlug: string) => void;
   onLoaded?: () => void;
 }
 
@@ -123,11 +123,11 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         const pos = positions[i];
         return (
           <PostBox
-            key={post.id}
+            key={post.slug}
             index={i}
             title={post.title}
             position={[pos.x, pos.y, pos.z]}
-            onClick={() => onPostClick?.(post.id)}
+            onClick={() => onPostClick?.(post.slug)}
           />
         );
       })}

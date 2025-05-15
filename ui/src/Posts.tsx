@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import {
   Page,
-  Content,
-  PostCard,
-  MinimalButton,
   Header,
   SearchContainer,
   SearchInput,
@@ -19,6 +16,7 @@ import cloudImg from "./textures/darkcloud.png";
 import wispyCloudUrl from "./textures/cloud.png";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import { Navigate } from "react-router-dom";
 
 interface PostsProps {
   selectedPost: Post | null;
@@ -74,15 +72,7 @@ const Posts: React.FC<PostsProps> = ({ selectedPost, handleClose }) => {
           />
         </>
       )}
-      {selectedPost && (
-        <Content>
-          <PostCard>
-            <h2>{selectedPost.title}</h2>
-            <div dangerouslySetInnerHTML={{ __html: selectedPost.body }} />
-            <MinimalButton onClick={handleClose}>Close</MinimalButton>
-          </PostCard>
-        </Content>
-      )}
+      {selectedPost && <Navigate to={`/posts/${selectedPost.slug}`} replace />}
     </Page>
   );
 };

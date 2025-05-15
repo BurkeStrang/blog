@@ -230,7 +230,13 @@ export const SearchInput = styled.input`
   border: none;
   font-size: 1rem;
   background: transparent;
-  color: ${backgroundColor};
+  color: ${lightgrey};
+  font-family: "mega", sans-serif;
+
+  &::placeholder {
+    color: ${lightgrey};
+    opacity: 0.8;
+  }
 
   &:focus {
     outline: none;

@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate, NavLink, useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { primary, secondary } from "./components/Styled";
+import { lightgrey, primary } from "./components/Styled";
 
 const Nav = styled.nav`
   position: sticky;
@@ -14,7 +14,13 @@ const StyledLink = styled(NavLink)`
   display: inline-block;
   padding: 0.5rem 1rem;
   margin: 0 0.5rem;
-  color: ${primary};
+  color: ${lightgrey};
+  text-shadow:
+    0 0 0px #fff,
+    0 0 1px #0ff,
+    0 0 2px #0ff,
+    0 0 0px #0ff,
+    0 0 0px #0ff;
   text-decoration: none;
 
   box-shadow: 0 0 1.5px 0 rgba(0, 0, 0.3, 0.3);
@@ -28,16 +34,29 @@ const StyledLink = styled(NavLink)`
     transform 0.2s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: ${secondary};
+    background: rgba(150, 150, 255, 0.2);
+    color: ${primary};
+    text-shadow:
+      0 0 1px #fff,
+      0 0 2px #0ff,
+      0 0 4px #0ff,
+      0 0 8px #0ff,
+      0 0 16px #0ff;
     box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.2); /* Even shadow on all sides */
     border-radius: 8px;
     transform: translateY(-2px) scale(1.1);
   }
 
   &.active {
-    color: ${secondary};
-    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2); /* Even shadow on all sides */
+    background: rgba(150, 150, 255, 0.08);
+    color: ${primary};
+    text-shadow:
+      0 0 1px #fff,
+      0 0 1px #0ff,
+      0 0 2px #0ff,
+      0 0 4px #0ff,
+      0 0 8px #0ff;
+    box-shadow: 2px 2px 8px rgba(150, 150, 255, 0.1); /* Even shadow on all sides */
     border-radius: 8px; /* Rounded edges */
     transform: translateY(-2px) scale(1.02);
   }

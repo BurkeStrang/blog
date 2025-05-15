@@ -37,30 +37,14 @@ const Name = styled.h2`
   color: #333;
 `;
 
-const Title = styled.p`
-  margin: 0.25rem 0 1rem;
-  font-size: 0.9rem;
-  color: #666;
-`;
-
-const Bio = styled.p`
-  font-size: 0.875rem;
-  color: #444;
-  margin-bottom: 1rem;
-  line-height: 1.4;
-`;
 
 export const Profile: React.FC<ProfileProps> = ({
   avatarUrl,
   name,
-  title,
-  bio,
 }) => (
   <Card>
     <Avatar src={avatarUrl} alt={`${name}’s avatar`} />
     <Name>{name}</Name>
-    {title && <Title>{title}</Title>}
-    {bio && <Bio>{bio}</Bio>}
   </Card>
 );
 
