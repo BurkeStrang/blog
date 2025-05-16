@@ -8,7 +8,8 @@ import PostBox from "./PostBox";
 import waterNormalsUrl from "./textures/waternormals.jpg?url";
 import cloudTextureUrl from "./textures/darktheme.JPG?url";
 import { Vector3 } from "three";
-import { Post } from "./App";
+import { Post } from "./AppContent";
+import FollowerSphere from "./FollowerSphere";
 
 const OceanScene: React.FC = () => {
   const { scene } = useThree();
@@ -65,13 +66,7 @@ const OceanScene: React.FC = () => {
     }
   });
 
-  // add a metallic sphere hovering above the water at the origin
-  return (
-    <mesh position={[-230, 6, 130]}>
-      <sphereGeometry args={[3, 28, 28]} />
-      <meshStandardMaterial color={0x101937} metalness={0.8} roughness={0.6} />
-    </mesh>
-  );
+  return null;
 };
 
 const CloudBackground: React.FC = () => {
@@ -100,13 +95,13 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     });
   }, [posts]);
 
-  const offsetPositions = positions.map((pos, index) =>
+  const offsetPositions = positions.map((pos) =>
     pos.clone().add(new THREE.Vector3(-100, 30, 100)),
   );
 
   const startPosition = offsetPositions[0]
     .clone()
-    .add(new THREE.Vector3(-300, 0, 300));
+    .add(new THREE.Vector3(-100, 0, 300));
 
   return (
     <Canvas
@@ -118,7 +113,11 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
       <directionalLight position={[500, 300, 0]} intensity={1} />
 
       <OceanScene />
-
+      <FollowerSphere
+        offset={[27, -8, 0]}
+        onLeftClick={() => console.log("Left arrow clicked!")}
+        onRightClick={() => console.log("Right arrow clicked!")}
+      />
       {posts.map((post, i) => {
         const pos = positions[i];
         return (
@@ -132,7 +131,11 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         );
       })}
 
-      <ScrollCamera positions={offsetPositions} lerpFactor={0.08} stepSize={1} />
+      <ScrollCamera
+        positions={offsetPositions}
+        lerpFactor={0.08}
+        stepSize={1}
+      />
     </Canvas>
   );
 };

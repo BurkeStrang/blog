@@ -57,17 +57,17 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   ::-webkit-scrollbar-track {
-    background: ${backgroundColor};
+    background: transparent;
     padding: 0.5rem;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: ${darkgrey};
+    background: transparent;
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: ${neon};
+    background: transparent;
   }
 `;
 

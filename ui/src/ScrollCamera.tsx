@@ -77,7 +77,6 @@ export function ScrollCamera({
     const t = clamp(scrollY / max, 0, 1);
     const idx = Math.round(t * (positions.length - 1));
     const target = positions[idx].clone();
-
     camera.position.lerp(target, lerpFactor);
   });
 

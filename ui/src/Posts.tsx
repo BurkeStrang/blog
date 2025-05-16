@@ -11,7 +11,7 @@ import {
   Cloud,
   WispyCloud,
 } from "./components/Styled";
-import { Post } from "./App";
+import { Post } from "./AppContent";
 import cloudImg from "./textures/darkcloud.png";
 import wispyCloudUrl from "./textures/cloud.png";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";

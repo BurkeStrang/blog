@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
   useLocation,
@@ -13,7 +12,6 @@ import {
   CanvasBackground,
   GlobalStyle,
   primary,
-  secondary,
 } from "./components/Styled";
 import OceanDemoCanvas from "./OceanDemoCanvas";
 import styled from "styled-components";
@@ -440,7 +438,7 @@ const AppContent: React.FC = () => {
           <SquareLoader
             loading
             size={55}
-            color={secondary}
+            color={primary}
             speedMultiplier={1}
             cssOverride={{
               border: "2px solid #202020",
@@ -462,7 +460,7 @@ const AppContent: React.FC = () => {
           <SquareLoader
             loading
             size={55}
-            color={secondary}
+            color={primary}
             speedMultiplier={1}
             cssOverride={{
               border: "2px solid #202020",
