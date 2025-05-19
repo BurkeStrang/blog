@@ -16,7 +16,7 @@ const StyledLink = styled(NavLink)`
   margin: 0 0.5rem;
   color: ${lightgrey};
   text-shadow:
-    0 0 0px #fff,
+    0 0 0px #0ff,
     0 0 1px #0ff,
     0 0 2px #0ff,
     0 0 0px #0ff,
@@ -49,13 +49,15 @@ const StyledLink = styled(NavLink)`
 
   &.active {
     background: rgba(150, 150, 255, 0.08);
-    color: ${primary};
+    color: #0ff;
     text-shadow:
-      0 0 1px #fff,
       0 0 1px #0ff,
       0 0 2px #0ff,
       0 0 4px #0ff,
-      0 0 8px #0ff;
+      /* purple outer glow */
+      0 0 20px  rgba(40,0,255,0.8),
+      0 0 30px  rgba(40,0,255,0.3),
+      0 0 40px  rgba(40,0,255,0.2);
     box-shadow: 2px 2px 8px rgba(150, 150, 255, 0.1); /* Even shadow on all sides */
     border-radius: 8px; /* Rounded edges */
     transform: translateY(-2px) scale(1.02);
@@ -88,13 +90,13 @@ const Header: React.FC = () => {
     <Nav>
       <NavList>
         <NavItem>
-          <StyledLink to="/about">About</StyledLink>
+          <StyledLink to="/about">ABOUT</StyledLink>
         </NavItem>
         <NavItem>
-          <StyledLink to="/posts">Posts</StyledLink>
+          <StyledLink to="/posts">POSTS</StyledLink>
         </NavItem>
         <NavItem>
-          <StyledLink to="/profile">Sign In</StyledLink>
+          <StyledLink to="/profile">SIGN IN</StyledLink>
         </NavItem>
       </NavList>
     </Nav>

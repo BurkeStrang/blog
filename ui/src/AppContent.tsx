@@ -26,15 +26,13 @@ export interface Post {
   title: string;
   body: string;
   position?: THREE.Vector3;
-  topics?: string[];
   date?: Date;
-  comments?: string[];
 }
 
 const posts: Post[] = [
   {
     slug: "mastering-vim-motions-and-text-objects",
-    title: "Mastering Vim Motions and Text Objects",
+    title: "MASTERING VIM MOTIONS AND TEXT OBJECTS",
     body: `
       <p><em>Posted on May 7, 2025 by Burke</em></p>
 
@@ -438,45 +436,45 @@ const AppContent: React.FC = () => {
           <SquareLoader
             loading
             size={55}
-            color={primary}
+            color="#0ff"
             speedMultiplier={1}
             cssOverride={{
-              border: "2px solid #202020",
-              borderRadius: "4px",
-              padding: "4px",
+              border: "5px solid #202020",
+              borderRadius: "10px",
+              padding: "10px",
             }}
           />
           <SquareLoader
             loading
             size={55}
-            color={primary}
+            color="#0ff"
             speedMultiplier={1}
             cssOverride={{
-              border: "2px solid #202020",
-              borderRadius: "4px",
-              padding: "4px",
+              border: "5px solid #202020",
+              borderRadius: "10px",
+              padding: "10px",
             }}
           />
           <SquareLoader
             loading
             size={55}
-            color={primary}
+            color="#0ff"
             speedMultiplier={1}
             cssOverride={{
-              border: "2px solid #202020",
-              borderRadius: "4px",
-              padding: "4px",
+              border: "5px solid #202020",
+              borderRadius: "10px",
+              padding: "10px",
             }}
           />
           <SquareLoader
             loading
             size={55}
-            color={primary}
+            color="#0ff"
             speedMultiplier={1}
             cssOverride={{
-              border: "2px solid #202020",
-              borderRadius: "4px",
-              padding: "4px",
+              border: "5px solid #202020",
+              borderRadius: "10px",
+              padding: "10px",
             }}
           />
         </LoaderOverlay>

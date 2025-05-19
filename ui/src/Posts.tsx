@@ -45,7 +45,7 @@ const Posts: React.FC<PostsProps> = ({ selectedPost, handleClose }) => {
           <Header>
             <Cloud src={cloudImg} alt="" />
             <WispyCloud src={wispyCloudUrl} alt="wispy cloud layer" />
-            <h1>Brutalist Blog</h1>
+            <h1>BRXSTNG BLG</h1>
           </Header>
           <SearchBar>
             <SearchContainer>

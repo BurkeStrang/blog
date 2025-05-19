@@ -10,7 +10,7 @@ const About: React.FC = () => (
       <Header>
         <Cloud src={cloudImg} alt="" />
         <WispyCloud src={wispyCloudUrl} alt="wispy cloud layer" />
-        <h1>About Me</h1>
+        <h1>ABOUT ME</h1>
       </Header>
       <Content></Content>
     </Page>

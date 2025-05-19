@@ -124,13 +124,13 @@ const FollowerSphere: React.FC<FollowerSphereProps> = ({
 
     // Add labels & arrows
     addNeon("1-10", 0.25, 0.08, [-1, 0.2, -0.4], [-1.1, -1, -1], "label");
-    const leftParams = addNeon("<", 0.7, 2, [-1.8, 0, -1.55], [-1.4, -1.3, -1.2], "leftArrow");
+    const leftParams = addNeon("<", 0.78, 2, [-1.8, 0, -1.55], [-1.4, -1.32, -1.2], "leftArrow");
     const rightParams = addNeon(
       ">",
-      0.83,
+      0.84,
       2,
       [1.6, 0.1, 1.2],
-      [1.34, 1.34, 1.43],
+      [1.34, 1.35, 1.5],
       "rightArrow"
     );
 

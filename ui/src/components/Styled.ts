@@ -5,7 +5,7 @@ import tourner from "../fonts/Tourner.ttf";
 // import miste from "../fonts/miste.ttf";
 import donne from "../fonts/Donne.otf";
 import ragestu from "../fonts/Ragestu.otf";
-import mega from "../fonts/MegatransRounded-Regular.otf"
+import mega from "../fonts/MegatransRounded-Regular.otf";
 import SortIcon from "@mui/icons-material/Sort";
 
 // ——— constants ———
@@ -13,7 +13,7 @@ export const neon = "#15aa14";
 export const darkgrey = "#686D8C";
 export const lightgrey = "#B0B3C6";
 export const backgroundColor = "#000";
-export const primary = "#0077cc";
+export const primary = "#0ff";
 export const secondary = "#404040";
 
 export const bluish = "rgba(0, 128, 255, 1)";
@@ -95,25 +95,26 @@ export const Header = styled.header`
 
   h1 {
     position: relative;
-    color: ${primary}; /* this should be a bright hue, like #0ff */
+    color: ${primary}; /* e.g. #0ff */
     font-size: 3rem;
     letter-spacing: 0.1em;
     margin: 0;
     height: 3rem;
 
-    /* outline stroke (optional, for sharper edges) */
+    /* sharp cyan stroke */
     -webkit-text-stroke: 1px rgba(0,255,255,0.8);
 
-    /* multiple glowy shadows to simulate a neon tube */
+    /* neon glow layers: cyan close in, then purple further out */
     text-shadow:
-      /* small tight glow */
-      0 0 3px rgba(0,255,255,0.8),
-      /* medium glow */
-      0 0 5px rgba(0,255,255,0.6),
-      /* wide glow */
-      0 0 10px rgba(0,255,255,0.4),
-      /* extra-wide glow */
-      0 0 20px rgba(0,255,255,0.2);
+      /* cyan glows */
+      0 0 3px   rgba(0,255,255,0.8),
+      0 0 5px   rgba(0,255,255,0.6),
+      0 0 10px  rgba(0,255,255,0.4),
+      0 0 20px  rgba(0,255,255,0.2),
+      /* purple outer glow */
+      0 0 20px  rgba(0,0,255,0.8),
+      0 0 30px  rgba(0,0,255,0.3),
+      0 0 40px  rgba(0,0,255,0.2);
   }
 `;
 
@@ -134,10 +135,10 @@ const drift = keyframes`
 
 export const Cloud = styled.img`
   position: absolute;
-  top: -900px; /* tweak as needed */
+  top: -110vh; /* tweak as needed */
   left: 60%;
   transform: translateX(-50%);
-  width: 150%; /* oversized so it extends past edges */
+  width: 140%; /* oversized so it extends past edges */
   height: auto;
   pointer-events: none; /* so it never blocks clicks */
   z-index: -1; /* sit behind the <h1> */
