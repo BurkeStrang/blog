@@ -37,7 +37,8 @@ const FollowerSphere: React.FC<FollowerSphereProps> = ({
     const sphereClone = gltf.scenes[0].clone(true);
     sphereClone.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
-        const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial;
+        const mat = (child as THREE.Mesh)
+          .material as THREE.MeshStandardMaterial;
         mat.metalness = 0.8;
         mat.roughness = 0.4;
         mat.color.setHex(0x222222);
@@ -85,13 +86,13 @@ const FollowerSphere: React.FC<FollowerSphereProps> = ({
     const addNeon = (
       str: string,
       size: number,
-      height: number,
+      depth: number,
       pos: [number, number, number],
       rot: [number, number, number],
-      name: string
+      name: string,
     ) => {
       // text geometry (depth replaces height)
-      const geo = new TextGeometry(str, { font, size, height });
+      const geo = new TextGeometry(str, { font, size, depth });
 
       // glow pass
       const glowMat = new THREE.MeshBasicMaterial({
@@ -124,14 +125,21 @@ const FollowerSphere: React.FC<FollowerSphereProps> = ({
 
     // Add labels & arrows
     addNeon("1-10", 0.25, 0.08, [-1, 0.2, -0.4], [-1.1, -1, -1], "label");
-    const leftParams = addNeon("<", 0.78, 2, [-1.8, 0, -1.55], [-1.4, -1.32, -1.2], "leftArrow");
+    const leftParams = addNeon(
+      "<",
+      0.78,
+      2,
+      [-1.8, 0, -1.55],
+      [-1.4, -1.32, -1.2],
+      "leftArrow",
+    );
     const rightParams = addNeon(
       ">",
       0.84,
       2,
       [1.6, 0.1, 1.2],
       [1.34, 1.35, 1.5],
-      "rightArrow"
+      "rightArrow",
     );
 
     // --- Helper for grey outline behind an arrow ---
