@@ -1,10 +1,4 @@
 import styled, { createGlobalStyle, keyframes } from "styled-components";
-// import raceSportFont from "../fonts/RaceSport.ttf";
-// import alphacorasa from "../fonts/Alphacorsa Personal Use.ttf";
-import tourner from "../fonts/Tourner.ttf";
-// import miste from "../fonts/miste.ttf";
-import donne from "../fonts/Donne.otf";
-import ragestu from "../fonts/Ragestu.otf";
 import mega from "../fonts/MegatransRounded-Regular.otf";
 import SortIcon from "@mui/icons-material/Sort";
 
@@ -20,22 +14,6 @@ export const bluish = "rgba(0, 128, 255, 1)";
 
 // ——— global styles ———
 export const GlobalStyle = createGlobalStyle`
-  @font-face {
-    font-family: 'Tourner';
-    src: url(${tourner}) format('truetype');
-  }
-
-  @font-face {
-    font-family: 'donne';
-    src: url(${donne}) format('opentype');
-  }
-
-  @font-face {
-    font-family: 'ragestu';
-    src: url(${ragestu}) format('opentype');
-  }
-
-  
   @font-face {
     font-family: 'mega';
     src: url(${mega}) format('opentype');
