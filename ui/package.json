@@ -1,12 +1,14 @@
 {
-  "name": "brutalist-blog",
+  "name": "[BRXSTRNG]",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -25,13 +27,18 @@
     "troika-three-text": "^0.52.4"
   },
   "devDependencies": {
+    "@eslint/js": "^9.27.0",
     "@types/node": "^22.15.19",
     "@types/react": "^18.3.21",
     "@types/react-dom": "^18.3.7",
     "@types/styled-components": "^5.1.34",
     "@types/three": "^0.176.0",
     "@vitejs/plugin-react": "^4.4.1",
+    "eslint": "^9.27.0",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.1.0",
     "typescript": "^5.8.3",
+    "typescript-eslint": "^8.32.1",
     "vite": "^5.4.19"
   }
 }
