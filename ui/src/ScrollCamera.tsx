@@ -33,10 +33,10 @@ export function ScrollCamera({
 
     // KEYS
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+      if (e.key === "ArrowDown" || e.key === "ArrowRight" || e.key === "l") {
         e.preventDefault();
         setScrollY((cur) => clamp(cur + stepSize, 0, maxScroll));
-      } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+      } else if (e.key === "ArrowUp" || e.key === "ArrowLeft" || e.key === "h") {
         e.preventDefault();
         setScrollY((cur) => clamp(cur - stepSize, 0, maxScroll));
       }
