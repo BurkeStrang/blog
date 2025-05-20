@@ -1,9 +1,5 @@
 import React, { useState } from "react";
-import {
-  Routes,
-  Route,
-  useLocation,
-} from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Header from "./Header";
 import Posts from "./Posts";
 import About from "./About";
@@ -11,7 +7,6 @@ import {
   backgroundColor,
   CanvasBackground,
   GlobalStyle,
-  primary,
 } from "./components/Styled";
 import OceanDemoCanvas from "./OceanDemoCanvas";
 import styled from "styled-components";

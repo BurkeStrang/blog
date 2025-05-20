@@ -62,7 +62,9 @@ const OceanScene: React.FC = () => {
   // advance water time on each frame
   useFrame((_, delta) => {
     if (waterRef.current) {
-      (waterRef.current.material.uniforms as any).time.value += delta;
+      (
+        waterRef.current.material.uniforms as { time: { value: number } }
+      ).time.value += delta;
     }
   });
 
@@ -71,7 +73,11 @@ const OceanScene: React.FC = () => {
 
 const CloudBackground: React.FC = () => {
   const texture = useLoader(THREE.TextureLoader, cloudTextureUrl);
-  return <primitive attach="background" object={texture} />;
+  const { scene } = useThree();
+  useEffect(() => {
+    scene.background = texture;
+  }, [scene, texture]);
+  return null;
 };
 
 interface OceanDemoCanvasProps {

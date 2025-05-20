@@ -35,7 +35,7 @@ const SortIcon = ({
   </SortDirectionButton>
 );
 
-const Posts: React.FC<PostsProps> = ({ selectedPost, handleClose }) => {
+const Posts: React.FC<PostsProps> = ({ selectedPost }) => {
   const [query, setQuery] = useState("");
   const [isSortUp, setIsSortUp] = useState(true);
   return (

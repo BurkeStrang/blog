@@ -294,8 +294,6 @@ const PostBox: React.FC<PostBoxProps> = ({
         position={[100, 100, 100]}
         intensity={1.2}
         castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
       />
       <pointLight position={[500, 300, 0]} intensity={0.6} />
     </group>
