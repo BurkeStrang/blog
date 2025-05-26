@@ -96,7 +96,7 @@ const Header: React.FC = () => {
           <StyledLink to="/posts">POSTS</StyledLink>
         </NavItem>
         <NavItem>
-          <StyledLink to="/profile">SIGN IN</StyledLink>
+          <StyledLink to="/profile">LOGIN</StyledLink>
         </NavItem>
       </NavList>
     </Nav>
