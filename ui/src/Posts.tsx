@@ -9,11 +9,9 @@ import {
   SearchBar,
   SortDirectionButton,
   Cloud,
-  WispyCloud,
 } from "./components/Styled";
 import { Post } from "./AppContent";
 import cloudImg from "./textures/darkcloud.png";
-import wispyCloudUrl from "./textures/cloud.png";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { Navigate } from "react-router-dom";
@@ -30,7 +28,7 @@ const SortIcon = ({
   isUp: boolean;
   onClick: () => void;
 }) => (
-  <SortDirectionButton isUp={isUp} onClick={onClick}>
+  <SortDirectionButton isUp$={isUp} onClick={onClick}>
     {isUp ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />}
   </SortDirectionButton>
 );
@@ -44,7 +42,6 @@ const Posts: React.FC<PostsProps> = ({ selectedPost }) => {
         <>
           <Header>
             <Cloud src={cloudImg} alt="" />
-            <WispyCloud src={wispyCloudUrl} alt="wispy cloud layer" />
             <h1>BRXSTNG BLG</h1>
           </Header>
           <SearchBar>

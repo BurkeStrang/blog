@@ -1,12 +1,13 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { fileURLToPath, URL } from 'url';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { fileURLToPath, URL } from "url";
 
 export default defineConfig({
   plugins: [react()],
+  assetsInclude: ["**/*.ktx2"],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
   server: {
@@ -14,6 +15,6 @@ export default defineConfig({
     open: true,
   },
   optimizeDeps: {
-    include: ['three', '@react-three/fiber'],
+    include: ["three", "@react-three/fiber"],
   },
 });

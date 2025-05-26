@@ -120,26 +120,7 @@ export const Cloud = styled.img`
   height: auto;
   pointer-events: none; /* so it never blocks clicks */
   z-index: -1; /* sit behind the <h1> */
-  animation: ${drift} 50s ease-in-out infinite;
-`;
-
-// new twirl animation for wispy clouds
-const twirl = keyframes`
-  0%   { transform: translate(-50%, 0) rotate(0deg)   ; opacity: 0.6; filter: blur(1px); }
-  50%  { transform: translate(-50%, 2px) rotate(180deg); opacity: 0.4; filter: blur(1.5px); }
-  100% { transform: translate(-50%, 0) rotate(360deg) ; opacity: 0.6; filter: blur(1px); }
-`;
-
-export const WispyCloud = styled.img`
-  position: absolute;
-  top: -830px; /* slightly offset so layers don’t perfectly overlap */
-  left: 45%;
-  width: 170%; /* a bit larger or smaller for variation */
-  pointer-events: none;
-  z-index: -2; /* behind the base cloud */
-  transform: translateX(-50%);
-  opacity: 0.6; /* make them more ethereal */
-  animation: ${twirl} 60s linear infinite;
+  animation: ${drift} 40s ease-in-out infinite;
 `;
 
 export const SortButton = styled(SortIcon)`
@@ -157,7 +138,7 @@ export const SortButton = styled(SortIcon)`
   }
 `;
 
-export const SortDirectionButton = styled.div<{ isUp: boolean }>`
+export const SortDirectionButton = styled.div<{ isUp$: boolean }>`
   position: absolute;
   left: 50%;
   transform: translateX(-50%);

@@ -9,7 +9,7 @@ interface ScrollCameraProps {
   stepSize: number;
 }
 
-export function ScrollCamera({
+function ScrollCamera({
   positions,
   lerpFactor,
   stepSize,
@@ -82,3 +82,5 @@ export function ScrollCamera({
 
   return null;
 }
+
+export default ScrollCamera;

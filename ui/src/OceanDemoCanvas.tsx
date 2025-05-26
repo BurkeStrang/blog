@@ -1,41 +1,89 @@
-import React, { useRef, useEffect } from "react";
+import React, { useEffect, useRef, useMemo } from "react";
 import { Canvas, useThree, useFrame, useLoader } from "@react-three/fiber";
-import * as THREE from "three";
-import { Water } from "three/examples/jsm/objects/Water.js";
-// import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { ScrollCamera } from "./ScrollCamera";
+import {
+  TextureLoader,
+  RepeatWrapping,
+  PlaneGeometry,
+  Vector3,
+  ShaderMaterial,
+  WebGLRenderer,
+  FogExp2,
+} from "three";
+import { Water } from "three/examples/jsm/objects/Water";
+import ScrollCamera from "./ScrollCamera";
 import PostBox from "./PostBox";
-import waterNormalsUrl from "./textures/waternormals.jpg?url";
-import cloudTextureUrl from "./textures/darktheme.JPG?url";
-import { Vector3 } from "three";
-import { Post } from "./AppContent";
 import FollowerSphere from "./FollowerSphere";
+import waterNormalsUrl from "./textures/waternormals.jpg?url";
+import cloudTextureUrl from "./textures/waterbackground.png?url";
+import type { Post } from "./AppContent";
+import { EffectComposer, Bloom } from "@react-three/postprocessing";
 
+// TypeScript augmentation for outputEncoding
+declare module "three" {
+  interface WebGLRenderer {
+    outputEncoding: number;
+  }
+}
+
+// Rendering constants
+const NO_TONE_MAPPING = 0;
+const LINEAR_ENCODING = 3000;
+
+// Night-time lighting setup
+const NightLights: React.FC = () => (
+  <>
+    <ambientLight color={0x08081a} intensity={0.1} />
+    <directionalLight
+      color={0x000000}
+      intensity={0.3}
+      position={[-500, 800, -830]}
+      castShadow={true}
+    />
+    {/* <pointLight args={[0x112233, 0.1, 200]} position={[1000, -30, 100]} /> */}
+    {/* <pointLight args={[0x223344, 0.05, 150]} position={[1000, 2000, 60]} /> */}
+  </>
+);
+
+// Ocean scene with bioluminescent water
 const OceanScene: React.FC = () => {
   const { scene } = useThree();
-  const waterRef = useRef<Water>();
-
-  // create water once
+  const waterRef = useRef<Water>(null!);
+  scene.fog = new FogExp2(0x2a2a38, 0.0009); // more grey, dark grey-purple color
   useEffect(() => {
-    const waterNormals = new THREE.TextureLoader().load(
-      waterNormalsUrl,
-      (tex) => {
-        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      },
-    );
+    // Load normals texture
+    const normals = new TextureLoader().load(waterNormalsUrl, (t) => {
+      t.wrapS = t.wrapT = RepeatWrapping;
+    });
 
-    const geo = new THREE.PlaneGeometry(10000, 10000);
+    // Base geometry + water
+    const geo = new PlaneGeometry(10000, 10000);
     const water = new Water(geo, {
       textureWidth: 512,
       textureHeight: 512,
-      waterNormals,
-      sunDirection: new THREE.Vector3(),
-      sunColor: 0x999999,
-      waterColor: 0x001e0f,
+      waterNormals: normals,
+      sunColor: 0x00000f,
+      waterColor: 0x111111,
       distortionScale: 3.7,
-      fog: scene.fog !== undefined,
+      fog: Boolean(scene.fog),
     });
+    water.material.transparent = true; // enable transparency
+    water.material.uniforms.alpha.value = 0.99; // 1.0 = fully opaque, 0.0 = fully invisible
+    water.material.opacity = 0.99;
 
+    // Bioluminescent tweaks
+    water.material.uniforms.waterColor.value.set(0x00000f);
+    water.material.uniforms.distortionScale.value = 0.5;
+    water.material.onBeforeCompile = (shader) => {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        `#include <color_fragment>`,
+        `#include <color_fragment>;
+         // add glow
+         gl_FragColor.rgb += vec3(0.4, 0.4, 0.4) * pow(dot(gl_FragColor.rgb, vec3(1.0)), 2.0);
+        `,
+      );
+    };
+
+    // Orient & add to scene
     water.rotation.x = -Math.PI / 2;
     scene.add(water);
     waterRef.current = water;
@@ -47,32 +95,18 @@ const OceanScene: React.FC = () => {
     };
   }, [scene]);
 
-  // attach orbit controls once
-  // useEffect(() => {
-  //   const controls = new OrbitControls(camera, gl.domElement);
-  //   controls.minDistance = 10;
-  //   controls.maxDistance = 500;
-  //   controls.target.set(0, 0, 0);
-  //   controls.update();
-  //   return () => {
-  //     controls.dispose();
-  //   };
-  // }, [camera, gl.domElement]);
-
-  // advance water time on each frame
   useFrame((_, delta) => {
-    if (waterRef.current) {
-      (
-        waterRef.current.material.uniforms as { time: { value: number } }
-      ).time.value += delta;
-    }
+    const mat = waterRef.current.material as ShaderMaterial & {
+      uniforms: { time: { value: number } };
+    };
+    mat.uniforms.time.value += delta;
   });
 
   return null;
 };
 
 const CloudBackground: React.FC = () => {
-  const texture = useLoader(THREE.TextureLoader, cloudTextureUrl);
+  const texture = useLoader(TextureLoader, cloudTextureUrl);
   const { scene } = useThree();
   useEffect(() => {
     scene.background = texture;
@@ -82,7 +116,7 @@ const CloudBackground: React.FC = () => {
 
 interface OceanDemoCanvasProps {
   posts: Post[];
-  onPostClick?: (postSlug: string) => void;
+  onPostClick?: (slug: string) => void;
   onLoaded?: () => void;
 }
 
@@ -91,57 +125,77 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   onPostClick,
   onLoaded,
 }) => {
-  // build two parallel arrays of Vector3 targets
-  const positions = React.useMemo(() => {
-    return posts.map((_, i) => {
-      const x = i * 50 - (posts.length - 1) * 25;
-      const y = -8.5;
-      const z = i * 40;
-      return new Vector3(x, y, z);
-    });
-  }, [posts]);
-
-  const offsetPositions = positions.map((pos) =>
-    pos.clone().add(new THREE.Vector3(-100, 30, 100)),
+  // Compute positions once
+  const positions = useMemo(
+    () =>
+      posts.map(
+        (_, i) => new Vector3(i * 50 - (posts.length - 1) * 25, -8.5, i * 40),
+      ),
+    [posts],
   );
+  const offsetPositions = positions.map((p) =>
+    p.clone().add(new Vector3(-100, 30, 100)),
+  );
+  const startPos = offsetPositions[0].clone().add(new Vector3(-100, 0, 300));
 
-  const startPosition = offsetPositions[0]
-    .clone()
-    .add(new THREE.Vector3(-100, 0, 300));
+  // Renderer config: linear, transparent
+  const handleCreated = ({ gl }: { gl: WebGLRenderer }) => {
+    gl.toneMapping = NO_TONE_MAPPING;
+    gl.outputEncoding = LINEAR_ENCODING;
+    gl.setClearColor(0x000000, 0);
+  };
 
   return (
     <Canvas
-      camera={{ position: startPosition.toArray(), fov: 73 }}
-      onCreated={() => onLoaded?.()}
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+      }}
+      linear
+      onCreated={(state) => {
+        handleCreated(state);
+        onLoaded?.();
+      }}
+      camera={{ position: startPos.toArray(), fov: 73 }}
     >
+      {/* Scene content */}
       <CloudBackground />
-      <ambientLight intensity={0.9} />
-      <directionalLight position={[500, 300, 0]} intensity={1} />
-
+      <NightLights />
       <OceanScene />
       <FollowerSphere
         offset={[27, -8, 0]}
-        onLeftClick={() => console.log("Left arrow clicked!")}
-        onRightClick={() => console.log("Right arrow clicked!")}
+        onLeftClick={() => console.log("Left click")}
+        onRightClick={() => console.log("Right click")}
       />
       {posts.map((post, i) => {
-        const pos = positions[i];
+        const p = positions[i];
         return (
           <PostBox
             key={post.slug}
             index={i}
             title={post.title}
-            position={[pos.x, pos.y, pos.z]}
+            position={[p.x, p.y, p.z]}
             onClick={() => onPostClick?.(post.slug)}
           />
         );
       })}
-
       <ScrollCamera
         positions={offsetPositions}
         lerpFactor={0.08}
         stepSize={1}
       />
+
+      {/* Bioluminescent bloom effect */}
+      <EffectComposer enableNormalPass={false}>
+        <Bloom
+          luminanceThreshold={0}
+          luminanceSmoothing={0.3}
+          intensity={1.0}
+        />
+      </EffectComposer>
     </Canvas>
   );
 };
