@@ -9,7 +9,7 @@ import {
   SearchBar,
   SortDirectionButton,
   Cloud,
-} from "./components/Styled";
+} from "./theme/GlobalStyles";
 import { Post } from "./AppContent";
 import cloudImg from "./textures/darkcloud.png";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";

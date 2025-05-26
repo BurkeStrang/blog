@@ -154,48 +154,26 @@ export default function FollowerSphere({
     addMesh(labelGeo, neonSolidMat, [-1.8, 0.2, -0.3], [-1.1, -1, -1], 1);
 
     // left arrow + outline
-    addMesh(
-      leftGeo,
-      neonGlowMat,
-      [-1.8, 0, -1.59],
-      [-1.4, -1.32, -1.2],
-      1.1,
-      "leftArrow-glow",
-    );
-    // addMesh(
-    //   leftGeo,
-    //   neonSolidMat,
-    //   [-1.8, 0, -1.55],
-    //   [-1.4, -1.32, -1.2],
-    //   1,
-    //   "leftArrow",
-    // );
+    addMesh(leftGeo, neonGlowMat, [-1.8, 0, -1.59], [-1.4, -1.32, -1.2], 1.1);
     addMesh(
       leftGeo,
       greyOutlineMat,
       [-1.8, 0, -1.59],
       [-1.4, -1.32, -1.2],
       1.2,
+      "leftArrow",
     );
 
     // right arrow + outline
+    addMesh(rightGeo, neonGlowMat, [1.6, 0.1, 1.2], [1.34, 1.35, 1.5], 1.1);
     addMesh(
       rightGeo,
-      neonGlowMat,
-      [1.6, 0.1, 1.2],
+      greyOutlineMat,
+      [1.9, 0.1, 1.2],
       [1.34, 1.35, 1.5],
-      1.1,
-      "rightArrow-glow",
+      1.2,
+      "rightArrow",
     );
-    // addMesh(
-    //   rightGeo,
-    //   neonSolidMat,
-    //   [1.6, 0.13, 1.24],
-    //   [1.34, 1.35, 1.5],
-    //   1,
-    //   "rightArrow",
-    // );
-    addMesh(rightGeo, greyOutlineMat, [1.9, 0.1, 1.2], [1.34, 1.35, 1.5], 1.2);
 
     return group;
   }, [
@@ -222,14 +200,16 @@ export default function FollowerSphere({
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     const name = e.object.name;
-    if (name === "leftArrow-glow") onLeftClick?.();
-    if (name === "rightArrow-glow") onRightClick?.();
+    if (name === "leftArrow") onLeftClick?.();
+    if (name === "rightArrow") onRightClick?.();
   };
   const handlePointerOver = (e: ThreeEvent<PointerEvent>) => {
-    if (e.object.name.endsWith("Arrow")) gl.domElement.style.cursor = "pointer";
+    if (e.object.name.endsWith("Arrow"))
+      gl.domElement.style.cursor = "pointer";
   };
   const handlePointerOut = (e: ThreeEvent<PointerEvent>) => {
-    if (e.object.name.endsWith("Arrow")) gl.domElement.style.cursor = "auto";
+    if (e.object.name.endsWith("Arrow"))
+      gl.domElement.style.cursor = "auto";
   };
 
   // cleanup on unmount

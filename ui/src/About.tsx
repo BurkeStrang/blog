@@ -1,6 +1,6 @@
 import React from "react";
 import cloudImg from "./textures/darkcloud.png";
-import { Page, Header, Content, Cloud } from "./components/Styled";
+import { Page, Header, Content, Cloud } from "./theme/GlobalStyles";
 
 const About: React.FC = () => (
   <>

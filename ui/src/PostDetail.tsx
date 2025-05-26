@@ -1,7 +1,7 @@
 import { useParams, Navigate } from "react-router-dom";
 import { Post } from "./AppContent";
 import styled from "styled-components";
-import { backgroundColor, lightgrey, primary } from "./components/Styled";
+import { backgroundColor, lightgrey, primary } from "./theme/GlobalStyles";
 
 const Article = styled.article`
   max-width: 90vh;

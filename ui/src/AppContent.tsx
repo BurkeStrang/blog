@@ -7,7 +7,7 @@ import {
   backgroundColor,
   CanvasBackground,
   GlobalStyle,
-} from "./components/Styled";
+} from "./theme/GlobalStyles";
 import OceanDemoCanvas from "./OceanDemoCanvas";
 import styled from "styled-components";
 import { SquareLoader } from "react-spinners";
