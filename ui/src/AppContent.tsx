@@ -422,7 +422,7 @@ const AppContent: React.FC = () => {
           <OceanDemoCanvas
             posts={posts}
             onPostClick={handlePostClick}
-            onLoaded={() => setCanvasLoaded(true)}
+            onLoaded={()  => setCanvasLoaded(true)}
           />
         </CanvasBackground>
       )}

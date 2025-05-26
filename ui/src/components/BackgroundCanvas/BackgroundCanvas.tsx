@@ -29,6 +29,21 @@ declare module "three" {
 const NO_TONE_MAPPING = 0;
 const LINEAR_ENCODING = 3000;
 
+// Night-time lighting setup
+const NightLights: React.FC = () => (
+  <>
+    <ambientLight color={0x08081a} intensity={0.1} />
+    <directionalLight
+      color={0x000000}
+      intensity={0.3}
+      position={[-500, 800, -830]}
+      castShadow={true}
+    />
+    {/* <pointLight args={[0x112233, 0.1, 200]} position={[1000, -30, 100]} /> */}
+    {/* <pointLight args={[0x223344, 0.05, 150]} position={[1000, 2000, 60]} /> */}
+  </>
+);
+
 // Ocean scene with bioluminescent water
 const OceanScene: React.FC = () => {
   const { scene } = useThree();
@@ -99,13 +114,13 @@ const CloudBackground: React.FC = () => {
   return null;
 };
 
-interface OceanDemoCanvasProps {
+interface BackgroundCanvasProps {
   posts: Post[];
   onPostClick?: (slug: string) => void;
   onLoaded?: () => void;
 }
 
-const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
+const BackgroundCanvas: React.FC<BackgroundCanvasProps> = ({
   posts,
   onPostClick,
   onLoaded,
@@ -148,6 +163,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     >
       {/* Scene content */}
       <CloudBackground />
+      <NightLights />
       <OceanScene />
       <FollowerSphere
         offset={[27, -8, 0]}
@@ -184,4 +200,4 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   );
 };
 
-export default OceanDemoCanvas;
+export default BackgroundCanvas;

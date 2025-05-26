@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate, NavLink, useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { lightgrey, primary } from "./theme/GlobalStyles";
+import { primary } from "./theme/GlobalStyles";
 
 const Nav = styled.nav`
   position: sticky;
@@ -14,16 +14,11 @@ const StyledLink = styled(NavLink)`
   display: inline-block;
   padding: 0.5rem 1rem;
   margin: 0 0.5rem;
-  color: ${lightgrey};
-  text-shadow:
-    0 0 0px #0ff,
-    0 0 1px #0ff,
-    0 0 2px #0ff,
-    0 0 0px #0ff,
-    0 0 0px #0ff;
+  color: ${primary};
   text-decoration: none;
+  background: rgba(85, 85, 128, 0.1);
 
-  box-shadow: 0 0 1.5px 0 rgba(0, 0, 0.3, 0.3);
+  box-shadow: 0 0 1.5px 0 rgba(0, 0, 0.2, 0.001);
   border-radius: 8px;
   transform: translateY(-2px) scale(1.02);
 
@@ -41,7 +36,6 @@ const StyledLink = styled(NavLink)`
       0 0 2px #0ff,
       0 0 4px #0ff,
       0 0 8px #0ff,
-      0 0 16px #0ff;
     box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.2); /* Even shadow on all sides */
     border-radius: 8px;
     transform: translateY(-2px) scale(1.1);
@@ -54,10 +48,10 @@ const StyledLink = styled(NavLink)`
       0 0 1px #0ff,
       0 0 2px #0ff,
       0 0 4px #0ff,
-      /* purple outer glow */
-      0 0 20px  rgba(40,0,255,0.8),
-      0 0 30px  rgba(40,0,255,0.3),
-      0 0 40px  rgba(40,0,255,0.2);
+      /* purple outer glow */ 0 0 20px rgba(40, 0, 255, 0.8),
+      0 0 30px rgba(40, 0, 255, 0.3),
+      0 0 40px rgba(40, 0, 255, 0.2);
+      0 0 50px rgba(40, 0, 255, 0.1);
     box-shadow: 2px 2px 8px rgba(150, 150, 255, 0.1); /* Even shadow on all sides */
     border-radius: 8px; /* Rounded edges */
     transform: translateY(-2px) scale(1.02);
