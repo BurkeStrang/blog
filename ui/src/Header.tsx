@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate, NavLink, useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { primary } from "./theme/GlobalStyles";
+import { primary } from "./theme/colors";
 
 const Nav = styled.nav`
   position: sticky;

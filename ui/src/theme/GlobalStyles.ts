@@ -1,16 +1,14 @@
 import styled, { createGlobalStyle, keyframes } from "styled-components";
 import mega from "../fonts/MegatransRounded-Regular.otf";
 import SortIcon from "@mui/icons-material/Sort";
-
-// ——— constants ———
-export const neon = "#15aa14";
-export const darkgrey = "#686D8C";
-export const lightgrey = "#B0B3C6";
-export const backgroundColor = "#000";
-export const primary = "#0ff";
-export const secondary = "#404040";
-
-export const bluish = "rgba(0, 128, 255, 1)";
+import {
+  backgroundColor,
+  darkgrey,
+  lightgrey,
+  neon,
+  primary,
+  secondary,
+} from "./colors";
 
 // ——— global styles ———
 export const GlobalStyle = createGlobalStyle`
@@ -74,25 +72,26 @@ export const Header = styled.header`
   h1 {
     position: relative;
     color: ${primary}; /* e.g. #0ff */
-    font-size: 3rem;
+    font-size: clamp(2rem, 6vw, 3rem);
     letter-spacing: 0.1em;
+    margin: 0;
+    height: clamp(2rem, 6vw, 3rem);
     margin: 0;
     height: 3rem;
 
     /* sharp cyan stroke */
-    -webkit-text-stroke: 1px rgba(0,255,255,0.8);
+    -webkit-text-stroke: 1px rgba(0, 255, 255, 0.8);
 
     /* neon glow layers: cyan close in, then purple further out */
     text-shadow:
       /* cyan glows */
-      0 0 3px   rgba(0,255,255,0.8),
-      0 0 5px   rgba(0,255,255,0.6),
-      0 0 10px  rgba(0,255,255,0.4),
-      0 0 20px  rgba(0,255,255,0.2),
-      /* purple outer glow */
-      0 0 20px  rgba(0,0,255,0.8),
-      0 0 30px  rgba(0,0,255,0.3),
-      0 0 40px  rgba(0,0,255,0.2);
+      0 0 3px rgba(0, 255, 255, 0.8),
+      0 0 5px rgba(0, 255, 255, 0.6),
+      0 0 10px rgba(0, 255, 255, 0.4),
+      0 0 20px rgba(0, 255, 255, 0.2),
+      /* purple outer glow */ 0 0 20px rgba(0, 0, 255, 0.8),
+      0 0 30px rgba(0, 0, 255, 0.3),
+      0 0 40px rgba(0, 0, 255, 0.2);
   }
 `;
 
@@ -113,14 +112,31 @@ const drift = keyframes`
 
 export const Cloud = styled.img`
   position: absolute;
-  top: -110vh; /* tweak as needed */
+  top: -110vh;
   left: 60%;
   transform: translateX(-50%);
-  width: 140%; /* oversized so it extends past edges */
+  width: 140%;
   height: auto;
-  pointer-events: none; /* so it never blocks clicks */
-  z-index: -1; /* sit behind the <h1> */
+  pointer-events: none;
+  z-index: -1;
   animation: ${drift} 40s ease-in-out infinite;
+
+  @media (max-height: 1600px) {
+    width: 110%;
+    top: -90vh;
+    left: 60%;
+  }
+  @media (max-height: 1024px) {
+    width: 110%;
+    top: -70vh;
+    left: 60%;
+  }
+
+  @media (max-height: 600px) {
+    width: 110%;
+    top: -100vh;
+    left: 60%;
+  }
 `;
 
 export const SortButton = styled(SortIcon)`

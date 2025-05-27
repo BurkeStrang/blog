@@ -4,7 +4,6 @@ import Header from "./Header";
 import Posts from "./Posts";
 import About from "./About";
 import {
-  backgroundColor,
   CanvasBackground,
   GlobalStyle,
 } from "./theme/GlobalStyles";
@@ -14,6 +13,7 @@ import { SquareLoader } from "react-spinners";
 import Profile from "./Profile";
 import * as THREE from "three";
 import PostDetail from "./PostDetail";
+import { backgroundColor } from "./theme/colors";
 
 export interface Post {
   // this will be unique and will be the title of the post with dashes instead of spaces
