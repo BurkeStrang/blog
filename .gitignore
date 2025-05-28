@@ -401,3 +401,50 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 .aider*
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Output directories
+/bin/
+/build/
+/out/
+
+# Vendor directory (if using Go modules and not vendoring dependencies)
+vendor/
+
+# Go workspace file (Go 1.18+)
+go.work
+go.work.sum
+
+# Dependency directories (for older projects)
+Godeps/
+
+# Test binary
+*_test.go
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# MacOS files
+.DS_Store
+
+# Log files
+*.log
+
+# Environment variable files (if any)
+.env
+.env.*
+
+# Coverage files
+coverage.*
+*.coverprofile
