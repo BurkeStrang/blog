@@ -11,6 +11,7 @@ import Profile from "./Profile";
 import * as THREE from "three";
 import PostDetail from "./PostDetail";
 import { backgroundColor } from "./theme/colors";
+import { useResourcePreloader } from "./hooks/useResourcePreloader";
 
 export interface Post {
   slug: string;
@@ -41,9 +42,18 @@ const PersistentCanvasWrapper = styled.div<{ hidden: boolean }>`
 
 const AppContent: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [canvasLoaded, setCanvasLoaded] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const navigate = useNavigate();
+  
+  // Preload all assets once
+  const { isLoading, progress, error, resources } = useResourcePreloader();
+  const [postsLoaded, setPostsLoaded] = useState(false);
+  const [canvasLoaded, setCanvasLoaded] = useState(false);
+  
+  // Resources are ready when both assets and posts are loaded
+  const resourcesReady = !isLoading && postsLoaded && posts.length > 0;
+  // Canvas is fully ready when 3D scene has finished rendering
+  const canvasReady = resourcesReady && canvasLoaded;
 
   const handlePostClick = useCallback(
     (slug: string) => {
@@ -60,16 +70,23 @@ const AppContent: React.FC = () => {
   }, [navigate]);
 
   useEffect(() => {
-    fetch("/posts.json") // fixed: no need for "../public"
-      .then((res) => {
-        if (!res.ok) throw new Error("Network error");
-        return res.json();
-      })
-      .then((data) => setPosts(data))
-      .catch((err) => {
-        console.error("Failed to load posts:", err);
-      });
-  }, []);
+    // Only load posts once
+    if (posts.length === 0 && !postsLoaded) {
+      fetch("/posts.json")
+        .then((res) => {
+          if (!res.ok) throw new Error("Network error");
+          return res.json();
+        })
+        .then((data) => {
+          setPosts(data);
+          setPostsLoaded(true);
+        })
+        .catch((err) => {
+          console.error("Failed to load posts:", err);
+          setPostsLoaded(true); // Still mark as loaded to prevent infinite retries
+        });
+    }
+  }, [posts.length, postsLoaded]);
 
   const location = useLocation();
   const isDetail =
@@ -78,68 +95,55 @@ const AppContent: React.FC = () => {
   return (
     <>
       <GlobalStyle />
-      {posts.length > 0 && (
+      {resourcesReady && (
         <PersistentCanvasWrapper hidden={isDetail}>
           <CanvasBackground>
             <OceanDemoCanvas
               posts={posts}
               onPostClick={handlePostClick}
+              resources={resources}
               onLoaded={() => setCanvasLoaded(true)}
             />
           </CanvasBackground>
         </PersistentCanvasWrapper>
       )}
 
-      {!canvasLoaded && (
+      {!canvasReady && (
         <LoaderOverlay>
-          <SquareLoader
-            loading
-            size={55}
-            color="#0ff"
-            speedMultiplier={1}
-            cssOverride={{
-              border: "5px solid #202020",
-              borderRadius: "10px",
-              padding: "10px",
-            }}
-          />
-          <SquareLoader
-            loading
-            size={55}
-            color="#0ff"
-            speedMultiplier={1}
-            cssOverride={{
-              border: "5px solid #202020",
-              borderRadius: "10px",
-              padding: "10px",
-            }}
-          />
-          <SquareLoader
-            loading
-            size={55}
-            color="#0ff"
-            speedMultiplier={1}
-            cssOverride={{
-              border: "5px solid #202020",
-              borderRadius: "10px",
-              padding: "10px",
-            }}
-          />
-          <SquareLoader
-            loading
-            size={55}
-            color="#0ff"
-            speedMultiplier={1}
-            cssOverride={{
-              border: "5px solid #202020",
-              borderRadius: "10px",
-              padding: "10px",
-            }}
-          />
+          {error ? (
+            <div style={{ color: '#ff4444', textAlign: 'center' }}>
+              <div>Loading failed: {error}</div>
+              <div style={{ marginTop: '10px', fontSize: '0.8em' }}>Refresh to try again</div>
+            </div>
+          ) : (
+            <>
+              <div style={{ color: '#0ff', marginBottom: '20px', textAlign: 'center' }}>
+                <div>Loading {Math.round(progress)}%</div>
+                {progress > 0 && progress < 100 && (
+                  <div style={{ fontSize: '0.7em', marginTop: '5px', opacity: 0.7 }}>
+                    {progress < 20 && 'Loading fonts...'}
+                    {progress >= 20 && progress < 80 && 'Optimizing textures...'}
+                    {progress >= 80 && 'Compressing large images...'}
+                  </div>
+                )}
+              </div>
+              <SquareLoader
+                loading
+                size={55}
+                color="#0ff"
+                speedMultiplier={1}
+                cssOverride={{
+                  border: "5px solid #202020",
+                  borderRadius: "10px",
+                  padding: "10px",
+                }}
+              />
+            </>
+          )}
         </LoaderOverlay>
       )}
 
-      {canvasLoaded && (
+      {canvasReady && (
         <>
           <SideBar />
           <Routes>

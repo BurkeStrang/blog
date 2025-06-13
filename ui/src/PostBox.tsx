@@ -1,20 +1,12 @@
-import React, { useRef, useMemo, useEffect, Suspense, useState } from "react";
-import { useLoader, useFrame } from "@react-three/fiber";
+import React, { useRef, useMemo, useEffect, useState } from "react";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { FontLoader, Font } from "three/examples/jsm/loaders/FontLoader";
+import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
+import type { Font } from "three/examples/jsm/loaders/FontLoader";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
-import blockModelUrl from "./models/rubikscube/scene.gltf?url";
-import fontJson from "./fonts/gentilis_regular.typeface.json"; // still sync, but we'll wrap this in a custom hook
 import { MathUtils } from "three";
-import type { FontData } from "three/examples/jsm/loaders/FontLoader";
 
-// --- 1. Custom hooks for loading font/model efficiently ---
-
-function useFont(fontJson: FontData): Font {
-  // Only parse once per font file
-  return useMemo(() => new FontLoader().parse(fontJson), [fontJson]);
-}
+// --- 1. Optimized text measurement ---
 
 // --- 2. Text line wrapping optimized: avoid geometry creation in loop ---
 function measureTextWidth(line: string, font: Font, size: number): number {
@@ -60,22 +52,22 @@ interface PostBoxProps {
   index: number;
   position: [number, number, number];
   onClick: () => void;
+  rubiksCubeModel: GLTF;
+  font: Font;
+  onReady?: () => void;
 }
 
 const fontSize = 0.2;
 const wordScale = 12;
 const textMargin = 0.8;
 
-function PostBoxCore(props: PostBoxProps & { font: Font }) {
-  const { title, index, position, onClick, font } = props;
+function PostBoxCore(props: PostBoxProps) {
+  const { title, index, position, onClick, rubiksCubeModel, font, onReady } = props;
   const groupRef = useRef<THREE.Group>(null!);
   const [hovered, setHovered] = useState(false);
 
-  // --- GLTF Model, only loads once (scene cloning below) ---
-  const gltf = useLoader(GLTFLoader, blockModelUrl);
-
   // --- Block geometry/bounds ---
-  const blockScene = useMemo(() => gltf.scenes[0].clone(true), [gltf]);
+  const blockScene = useMemo(() => rubiksCubeModel.scenes[0].clone(true), [rubiksCubeModel]);
   const bbox = useMemo(
     () => new THREE.Box3().setFromObject(blockScene),
     [blockScene]
@@ -108,10 +100,18 @@ function PostBoxCore(props: PostBoxProps & { font: Font }) {
     });
   }, [lines, font]);
 
-  // --- Dispose geometries on unmount ---
+  // --- Dispose geometries on unmount and signal ready ---
   useEffect(() => {
+    // Signal that this PostBox is ready after geometries are created
+    if (textGeometries.length > 0) {
+      const timer = setTimeout(() => onReady?.(), 50);
+      return () => {
+        clearTimeout(timer);
+        textGeometries.forEach((g) => g.dispose());
+      };
+    }
     return () => textGeometries.forEach((g) => g.dispose());
-  }, [textGeometries]);
+  }, [textGeometries, onReady]);
 
   // --- Layout text lines ---
   const lineHeights = useMemo(
@@ -289,16 +289,9 @@ function PostBoxCore(props: PostBoxProps & { font: Font }) {
   );
 }
 
-// --- 4. Lazy/Suspense wrapper for font loading (to avoid blocking the app startup) ---
+// --- 4. Direct PostBox export (no longer needs Suspense) ---
 const PostBox: React.FC<PostBoxProps> = (props) => {
-  // Only parse font once globally (fast), can be async with real font files
-  const font = useFont(fontJson);
-
-  return (
-    <Suspense fallback={null}>
-      <PostBoxCore {...props} font={font} />
-    </Suspense>
-  );
+  return <PostBoxCore {...props} />;
 };
 
 export default PostBox;

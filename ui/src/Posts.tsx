@@ -22,7 +22,7 @@ interface PostsProps {
 
 const SortIcon = React.memo(
   ({ isUp, onClick }: { isUp: boolean; onClick: () => void }) => (
-    <SortDirectionButton isUp$={isUp} onClick={onClick}>
+    <SortDirectionButton $isUp={isUp} onClick={onClick}>
       {isUp ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />}
     </SortDirectionButton>
   ),

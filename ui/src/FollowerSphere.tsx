@@ -1,14 +1,11 @@
 import { useMemo, useRef, useEffect } from "react";
 import { useFrame, useThree, ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
-import { useGLTF } from "@react-three/drei";
-import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
-import sphereUrl from "./models/sphere/scene.gltf?url";
-import fontJson from "./fonts/gentilis_regular.typeface.json";
+import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
+import type { Font } from "three/examples/jsm/loaders/FontLoader";
 
-// Parse font & set neon color once
-const loadedFont = new FontLoader().parse(fontJson);
+// Neon color constant
 const neonHex = 0x8c8e88;
 const neonColor = new THREE.Color(neonHex);
 
@@ -16,46 +13,47 @@ interface FollowerSphereProps {
   offset: [number, number, number];
   onLeftClick?: () => void;
   onRightClick?: () => void;
+  sphereModel: GLTF;
+  font: Font;
 }
 
 export default function FollowerSphere({
   offset,
   onLeftClick,
   onRightClick,
+  sphereModel,
+  font,
 }: FollowerSphereProps) {
   const groupRef = useRef<THREE.Group>(null);
   const { camera, gl } = useThree();
-
-  // Typed GLTF (uses drei caching)
-  const gltf = useGLTF(sphereUrl);
 
   // 1) Pre-build TextGeometries
   const labelGeo = useMemo(
     () =>
       new TextGeometry("1-10", {
-        font: loadedFont,
+        font,
         size: 0.25,
         depth: 0.08, // use `depth` not `height`
       }),
-    [],
+    [font],
   );
   const leftGeo = useMemo(
     () =>
       new TextGeometry("<", {
-        font: loadedFont,
+        font,
         size: 0.78,
         depth: 2,
       }),
-    [],
+    [font],
   );
   const rightGeo = useMemo(
     () =>
       new TextGeometry(">", {
-        font: loadedFont,
+        font,
         size: 0.84,
         depth: 2,
       }),
-    [],
+    [font],
   );
 
   // 2) Pre-build Materials
@@ -89,7 +87,7 @@ export default function FollowerSphere({
   // 3) Compute glow-shell geometry & material
   const [glowShellGeo, glowShellMat] = useMemo(() => {
     let maxRadius = 0;
-    gltf.scene.traverse((child) => {
+    sphereModel.scene.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         const geom = child.geometry as THREE.BufferGeometry;
         if (!geom.boundingSphere) geom.computeBoundingSphere();
@@ -106,7 +104,7 @@ export default function FollowerSphere({
       toneMapped: false,
     });
     return [geo, mat] as const;
-  }, [gltf]);
+  }, [sphereModel]);
 
   // 4) Build scene group
   const sphereGroup = useMemo(() => {
@@ -118,7 +116,7 @@ export default function FollowerSphere({
     group.add(shell);
 
     // sphere clone (reuse buffers)
-    const sphereClone = gltf.scene.clone(true);
+    const sphereClone = sphereModel.scene.clone(true);
     sphereClone.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         const mat = (child.material as THREE.MeshStandardMaterial).clone();
@@ -177,7 +175,7 @@ export default function FollowerSphere({
 
     return group;
   }, [
-    gltf,
+    sphereModel,
     labelGeo,
     leftGeo,
     rightGeo,

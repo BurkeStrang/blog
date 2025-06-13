@@ -150,7 +150,7 @@ export const SortButton = styled(SortIcon)`
   }
 `;
 
-export const SortDirectionButton = styled.div<{ isUp$: boolean }>`
+export const SortDirectionButton = styled.div<{ $isUp: boolean }>`
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
