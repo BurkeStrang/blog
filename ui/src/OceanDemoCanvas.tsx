@@ -141,12 +141,14 @@ interface OceanDemoCanvasProps {
   onPostClick?: (slug: string) => void;
   resources: ResourceCache;
   onLoaded?: () => void;
+  isPaused?: boolean;
 }
 
 const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   posts,
   onPostClick,
   resources,
+  isPaused = false,
   onLoaded,
 }) => {
   // Positions memoized for efficiency
@@ -208,10 +210,15 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     memoryMonitor.setRenderer(gl);
     
     // Mark scene as loaded after a frame
-    requestAnimationFrame(() => {
+    const frameId = requestAnimationFrame(() => {
       setSceneLoaded(true);
       memoryMonitor.logMemoryUsage();
     });
+    
+    // Store frameId for cleanup (though this is unlikely to be needed)
+    return () => {
+      cancelAnimationFrame(frameId);
+    };
   };
   
   // Early return if resources aren't ready
@@ -228,6 +235,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   return (
     <Canvas
       linear
+      frameloop={isPaused ? "never" : "always"}
       onCreated={handleCreated}
       style={{
         position: "absolute",
@@ -236,7 +244,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         width: "100%",
         height: "100%",
         opacity: sceneLoaded && postBoxesLoaded >= posts.length ? 1 : 0,
-        transition: "opacity 0.3s ease-in-out",
+        /* No transition for instant response */
       }}
       camera={{ position: startPos.toArray(), fov: 73 }}
       shadows={false}

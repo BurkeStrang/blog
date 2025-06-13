@@ -6,10 +6,17 @@ import type { Font } from "three/examples/jsm/loaders/FontLoader";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { MathUtils } from "three";
 
-// --- 1. Optimized text measurement ---
+// --- 1. Optimized text measurement with caching ---
+const textWidthCache = new Map<string, number>();
+const MAX_CACHE_SIZE = 100; // Limit cache size to prevent memory growth
 
 // --- 2. Text line wrapping optimized: avoid geometry creation in loop ---
 function measureTextWidth(line: string, font: Font, size: number): number {
+  const cacheKey = `${line}-${size}`;
+  if (textWidthCache.has(cacheKey)) {
+    return textWidthCache.get(cacheKey)!;
+  }
+  
   // Uses the font data's "generateShapes" for cheap width estimate
   const shapes = font.generateShapes(line, size);
   const geometry = new THREE.ShapeGeometry(shapes);
@@ -18,6 +25,16 @@ function measureTextWidth(line: string, font: Font, size: number): number {
     ? geometry.boundingBox.max.x - geometry.boundingBox.min.x
     : 0;
   geometry.dispose();
+  
+  // Limit cache size to prevent memory growth
+  if (textWidthCache.size >= MAX_CACHE_SIZE) {
+    const firstKey = textWidthCache.keys().next().value;
+    if (firstKey) {
+      textWidthCache.delete(firstKey);
+    }
+  }
+  
+  textWidthCache.set(cacheKey, width);
   return width;
 }
 
@@ -100,17 +117,15 @@ function PostBoxCore(props: PostBoxProps) {
     });
   }, [lines, font]);
 
-  // --- Dispose geometries on unmount and signal ready ---
+  // --- Dispose all resources on unmount and signal ready ---
   useEffect(() => {
     // Signal that this PostBox is ready after geometries are created
     if (textGeometries.length > 0) {
       const timer = setTimeout(() => onReady?.(), 50);
       return () => {
         clearTimeout(timer);
-        textGeometries.forEach((g) => g.dispose());
       };
     }
-    return () => textGeometries.forEach((g) => g.dispose());
   }, [textGeometries, onReady]);
 
   // --- Layout text lines ---
@@ -147,7 +162,6 @@ function PostBoxCore(props: PostBoxProps) {
       ),
     [frontWidth, frontHeight]
   );
-  useEffect(() => () => backdropGeo.dispose(), [backdropGeo]);
 
   // --- Materials (memoize, share across renders) ---
   const backdropMaterial = useMemo(
@@ -184,6 +198,20 @@ function PostBoxCore(props: PostBoxProps) {
       }),
     []
   );
+
+  // --- Master cleanup effect for all disposable resources ---
+  useEffect(() => {
+    return () => {
+      // Dispose all text geometries
+      textGeometries.forEach((g) => g.dispose());
+      // Dispose backdrop geometry
+      backdropGeo.dispose();
+      // Dispose all materials
+      backdropMaterial.dispose();
+      neonMat.dispose();
+      glowMat.dispose();
+    };
+  }, [textGeometries, backdropGeo, backdropMaterial, neonMat, glowMat]);
 
   // --- Animation (frame loop) ---
   const hoverLift = 11;

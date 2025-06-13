@@ -1,17 +1,18 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import SideBar from "./SideBar";
 import Posts from "./Posts";
 import About from "./About";
 import { CanvasBackground, GlobalStyle } from "./theme/GlobalStyles";
 import OceanDemoCanvas from "./OceanDemoCanvas";
 import styled from "styled-components";
-import { SquareLoader } from "react-spinners";
+import ModernLoader from "./components/ModernLoader";
 import Profile from "./Profile";
 import * as THREE from "three";
 import PostDetail from "./PostDetail";
 import { backgroundColor } from "./theme/colors";
 import { useResourcePreloader } from "./hooks/useResourcePreloader";
+import { memoryTracker } from "./utils/memoryTracker";
 
 export interface Post {
   slug: string;
@@ -37,7 +38,7 @@ const PersistentCanvasWrapper = styled.div<{ hidden: boolean }>`
   inset: 0;
   pointer-events: ${({ hidden }) => (hidden ? "none" : "auto")};
   opacity: ${({ hidden }) => (hidden ? 0 : 1)};
-  transition: opacity 0.2s;
+  /* Removed transition for instant hiding */
 `;
 
 const AppContent: React.FC = () => {
@@ -46,7 +47,7 @@ const AppContent: React.FC = () => {
   const navigate = useNavigate();
   
   // Preload all assets once
-  const { isLoading, progress, error, resources } = useResourcePreloader();
+  const { isLoading, error, resources } = useResourcePreloader();
   const [postsLoaded, setPostsLoaded] = useState(false);
   const [canvasLoaded, setCanvasLoaded] = useState(false);
   
@@ -55,17 +56,30 @@ const AppContent: React.FC = () => {
   // Canvas is fully ready when 3D scene has finished rendering
   const canvasReady = resourcesReady && canvasLoaded;
 
+  // Memory tracking (async to avoid blocking)
+  useEffect(() => {
+    if (canvasReady) {
+      // Use setTimeout to make memory tracking non-blocking
+      setTimeout(() => {
+        memoryTracker.takeSnapshot('AppContent-Ready');
+      }, 0);
+    }
+  }, [canvasReady]);
+
   const handlePostClick = useCallback(
     (slug: string) => {
       const post = posts.find((p) => p.slug === slug);
-      if (post) setSelectedPost(post);
+      if (post) {
+        setSelectedPost(post);
+        navigate(`/posts/${slug}`);
+      }
     },
-    [posts],
+    [posts, navigate],
   );
 
   const handleClose = useCallback(() => {
+    // Immediate state updates for instant response
     setSelectedPost(null);
-    console.log("Closing post detail");
     navigate("/posts");
   }, [navigate]);
 
@@ -88,9 +102,8 @@ const AppContent: React.FC = () => {
     }
   }, [posts.length, postsLoaded]);
 
-  const location = useLocation();
-  const isDetail =
-    /^\/posts\/[^/]+$/.test(location.pathname) && selectedPost !== null;
+  // Simplest possible detail detection for maximum speed
+  const isDetail = selectedPost !== null;
 
   return (
     <>
@@ -103,6 +116,7 @@ const AppContent: React.FC = () => {
               onPostClick={handlePostClick}
               resources={resources}
               onLoaded={() => setCanvasLoaded(true)}
+              isPaused={isDetail}
             />
           </CanvasBackground>
         </PersistentCanvasWrapper>
@@ -116,29 +130,10 @@ const AppContent: React.FC = () => {
               <div style={{ marginTop: '10px', fontSize: '0.8em' }}>Refresh to try again</div>
             </div>
           ) : (
-            <>
-              <div style={{ color: '#0ff', marginBottom: '20px', textAlign: 'center' }}>
-                <div>Loading {Math.round(progress)}%</div>
-                {progress > 0 && progress < 100 && (
-                  <div style={{ fontSize: '0.7em', marginTop: '5px', opacity: 0.7 }}>
-                    {progress < 20 && 'Loading fonts...'}
-                    {progress >= 20 && progress < 80 && 'Optimizing textures...'}
-                    {progress >= 80 && 'Compressing large images...'}
-                  </div>
-                )}
-              </div>
-              <SquareLoader
-                loading
-                size={55}
-                color="#0ff"
-                speedMultiplier={1}
-                cssOverride={{
-                  border: "5px solid #202020",
-                  borderRadius: "10px",
-                  padding: "10px",
-                }}
-              />
-            </>
+            <ModernLoader
+              size={120}
+              color="#0ff"
+            />
           )}
         </LoaderOverlay>
       )}

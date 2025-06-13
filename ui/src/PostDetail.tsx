@@ -1,3 +1,4 @@
+import React from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { Post } from "./AppContent";
 import styled from "styled-components";
@@ -62,10 +63,9 @@ const BackButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2.5px 16px rgba(0,0,0,0.07);
-  transition: background 0.17s, transform 0.17s;
+  /* Removed transitions for instant response */
   &:hover {
     background: ${primary};
-    transform: scale(1.06);
   }
 `;
 
@@ -74,7 +74,7 @@ interface PostDetailProps {
   handleClose: () => void;
 }
 
-export default function PostDetail({ allPosts, handleClose }: PostDetailProps) {
+const PostDetail = React.memo(function PostDetail({ allPosts, handleClose }: PostDetailProps) {
   const { slug } = useParams<{ slug: string }>();
   const post = allPosts.find((p) => p.slug === slug);
 
@@ -82,13 +82,21 @@ export default function PostDetail({ allPosts, handleClose }: PostDetailProps) {
     return <Navigate to="/posts" replace />;
   }
 
+  // Optimize handleClose to prevent re-renders
+  const handleClick = React.useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    handleClose();
+  }, [handleClose]);
+
   return (
     <Article>
       <Title>{post.title}</Title>
       <Content dangerouslySetInnerHTML={{ __html: post.body }} />
       <BackButtonContainer>
-        <BackButton onClick={handleClose}>← Back to posts</BackButton>
+        <BackButton onClick={handleClick}>← Back to posts</BackButton>
       </BackButtonContainer>
     </Article>
   );
-}
+});
+
+export default PostDetail;

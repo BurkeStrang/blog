@@ -3,9 +3,10 @@ import { Texture, TextureLoader, WebGLRenderer } from 'three';
 interface TextureConfig {
   maxSize?: number;
   quality?: number;
-  format?: 'webp' | 'jpg' | 'png';
+  format?: 'webp' | 'avif' | 'jpg' | 'png';
   generateMipmaps?: boolean;
   flipY?: boolean;
+  progressive?: boolean; // For progressive JPEG
 }
 
 export class TextureOptimizer {
@@ -20,6 +21,12 @@ export class TextureOptimizer {
   }
 
   async optimizeTexture(url: string, config: TextureConfig = {}): Promise<Texture> {
+    // Check if optimizer has been disposed
+    if (!this.canvas || !this.ctx) {
+      console.warn('TextureOptimizer has been disposed, loading texture directly');
+      return this.loader.loadAsync(url);
+    }
+
     const {
       maxSize = 1024,
       quality = 0.8,
@@ -32,11 +39,19 @@ export class TextureOptimizer {
       // Load original image
       const img = await this.loadImage(url);
       
+      // Get the best supported format for maximum compression
+      const bestFormat = await this.getBestFormat(format);
+      
       // Calculate optimal size
       const { width, height } = this.calculateOptimalSize(img, maxSize);
       
+      // Log compression info
+      const originalSize = (img.width * img.height * 4) / (1024 * 1024); // MB
+      const newSize = (width * height * 4) / (1024 * 1024); // MB
+      console.log(`🗜️ Compressing ${url}: ${img.width}x${img.height} (${originalSize.toFixed(1)}MB) → ${width}x${height} (${newSize.toFixed(1)}MB, ${bestFormat})`);
+      
       // Resize and compress with flip option
-      const compressedBlob = await this.compressImage(img, width, height, format, quality, flipY);
+      const compressedBlob = await this.compressImage(img, width, height, bestFormat, quality, flipY);
       const compressedUrl = URL.createObjectURL(compressedBlob);
       
       // Create Three.js texture
@@ -96,6 +111,11 @@ export class TextureOptimizer {
     quality: number,
     flipY: boolean = false
   ): Promise<Blob> {
+    // Check if canvas has been disposed
+    if (!this.canvas || !this.ctx) {
+      throw new Error('TextureOptimizer has been disposed');
+    }
+    
     this.canvas.width = width;
     this.canvas.height = height;
     
@@ -130,14 +150,42 @@ export class TextureOptimizer {
   private getMimeType(format: string): string {
     switch (format) {
       case 'webp': return 'image/webp';
+      case 'avif': return 'image/avif';
       case 'jpg': return 'image/jpeg';
       case 'png': return 'image/png';
       default: return 'image/webp';
     }
   }
 
+  // Check if browser supports AVIF for even better compression
+  private async getBestFormat(preferredFormat: string): Promise<string> {
+    if (preferredFormat === 'avif') {
+      // Test AVIF support
+      return new Promise((resolve) => {
+        const avifTest = new Image();
+        avifTest.onload = () => resolve('avif');
+        avifTest.onerror = () => resolve('webp'); // Fallback to WebP
+        avifTest.src = 'data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAAB0AAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACVtZGF0EgAKCBgABogQEAwgMg8f8D///8WfhwB8+ErK42A=';
+      });
+    }
+    return preferredFormat;
+  }
+
   dispose() {
-    this.canvas.remove();
+    // Clear canvas and release memory safely
+    if (this.ctx && this.canvas) {
+      try {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.canvas.width = 0;
+        this.canvas.height = 0;
+        this.canvas.remove();
+      } catch (error) {
+        console.warn('Error during TextureOptimizer disposal:', error);
+      }
+    }
+    // Clear references to help GC
+    this.ctx = null as unknown as CanvasRenderingContext2D;
+    this.canvas = null as unknown as HTMLCanvasElement;
   }
 }
 

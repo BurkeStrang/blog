@@ -14,7 +14,6 @@ import { Post } from "./AppContent";
 import cloudImg from "./textures/darkcloud.png";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import { Navigate } from "react-router-dom";
 
 interface PostsProps {
   selectedPost: Post | null;
@@ -74,11 +73,7 @@ const Posts: React.FC<PostsProps> = ({ selectedPost }) => {
           <SortIcon isUp={isSortUp} onClick={toggleSort} />
         </>
       )}
-      {selectedPost && (
-        <>
-          <Navigate to={`/posts/${selectedPost.slug}`} replace />
-        </>
-      )}
+      {/* Navigation is handled by AppContent, no need for additional Navigate */}
     </Page>
   );
 };

@@ -1,8 +1,8 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { Texture } from 'three';
 import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader';
-import { textureOptimizer } from '../utils/textureOptimizer';
+import { TextureOptimizer } from '../utils/textureOptimizer';
 
 import waterNormalsUrl from '../textures/waternormals.jpg?url';
 import cloudTextureUrl from '../textures/waterbackground.png?url';
@@ -26,21 +26,14 @@ interface ResourceCache {
 
 interface LoadingState {
   isLoading: boolean;
-  progress: number;
   error: string | null;
-  memoryUsage?: {
-    estimated: number;
-    optimized: number;
-  };
 }
 
 
 export function useResourcePreloader() {
   const [loadingState, setLoadingState] = useState<LoadingState>({
     isLoading: true,
-    progress: 0,
-    error: null,
-    memoryUsage: { estimated: 0, optimized: 0 }
+    error: null
   });
   
   const resourcesRef = useRef<ResourceCache>({
@@ -49,130 +42,150 @@ export function useResourcePreloader() {
     fonts: {},
   });
   
+  // Detect device capabilities for adaptive compression
+  const compressionSettings = useMemo(() => {
+    const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory || 4;
+    const hardwareConcurrency = navigator.hardwareConcurrency || 4;
+    const isLowEnd = deviceMemory < 4 || hardwareConcurrency < 4;
+    
+    return {
+      // More aggressive compression for low-end devices
+      waterNormalsSize: isLowEnd ? 128 : 256,
+      waterNormalsQuality: isLowEnd ? 0.6 : 0.7,
+      backgroundSize: isLowEnd ? 512 : 1024,
+      backgroundQuality: isLowEnd ? 0.5 : 0.6,
+      format: 'avif' as const // Use AVIF for maximum compression, fallback to WebP
+    };
+  }, []);
+  
   // Track loading phases for better UX
 
   useEffect(() => {
     let cancelled = false;
+    const textureOptimizer = new TextureOptimizer();
     
     async function preloadResources() {
       try {
         const gltfLoader = new GLTFLoader();
         const fontLoader = new FontLoader();
         
-        // Progressive loading phases
-        
-        let totalCompleted = 0;
-        const totalItems = 5; // font + 2 textures + 2 models
-        
-        const updateProgress = () => {
-          totalCompleted++;
-          if (!cancelled) {
-            setLoadingState(prev => ({
-              ...prev,
-              progress: (totalCompleted / totalItems) * 100,
-            }));
-          }
-        };
-        
-        // Phase 1: Essential (Font)
+        // Load font
         if (!cancelled) {
           resourcesRef.current.fonts.gentilis = fontLoader.parse(fontJson);
-          updateProgress();
         }
         
-        // Phase 2: Normal priority (Core 3D assets)
-        const normalPromises = [
-          // Optimized water normals (small, keep original quality)
+        // Load all resources in parallel with adaptive compression
+        const loadPromises = [
+          // Optimized water normals - adaptive compression based on device
           textureOptimizer.optimizeTexture(waterNormalsUrl, {
-            maxSize: 512,
-            quality: 0.9,
-            format: 'jpg'
+            maxSize: compressionSettings.waterNormalsSize,
+            quality: compressionSettings.waterNormalsQuality,
+            format: compressionSettings.format
           }).then(texture => {
             if (!cancelled) {
               texture.wrapS = texture.wrapT = 1000; // RepeatWrapping
               resourcesRef.current.textures.waterNormals = texture;
-              updateProgress();
+              console.log(`✅ Water normals compressed to ${compressionSettings.waterNormalsSize}px`);
             }
           }),
           
-          // Load models in parallel
+          // Load models
           gltfLoader.loadAsync(sphereUrl).then(gltf => {
             if (!cancelled) {
-              // Optimize model textures
               optimizeGLTFTextures(gltf);
               resourcesRef.current.models.sphere = gltf;
-              updateProgress();
+              console.log('✅ Sphere model loaded and optimized');
             }
           }),
+          
           gltfLoader.loadAsync(blockModelUrl).then(gltf => {
             if (!cancelled) {
               optimizeGLTFTextures(gltf);
               resourcesRef.current.models.rubiksCube = gltf;
-              updateProgress();
+              console.log('✅ Rubiks cube model loaded and optimized');
+            }
+          }),
+          
+          // Background texture - massive compression (7.8MB → ~100-300KB)
+          textureOptimizer.optimizeTexture(cloudTextureUrl, {
+            maxSize: compressionSettings.backgroundSize,
+            quality: compressionSettings.backgroundQuality,
+            format: compressionSettings.format,
+            flipY: true
+          }).then(texture => {
+            if (!cancelled) {
+              resourcesRef.current.textures.cloudBackground = texture;
+              console.log(`✅ Background compressed to ${compressionSettings.backgroundSize}px`);
             }
           }),
         ];
         
-        await Promise.all(normalPromises);
-        
-        // Phase 3: Background (Large textures)
-        const backgroundTexture = await textureOptimizer.optimizeTexture(cloudTextureUrl, {
-          maxSize: 2048, // Reduce from 8MB to manageable size
-          quality: 0.75,
-          format: 'webp',
-          flipY: true   // Flip during compression to correct orientation
-        });
+        await Promise.all(loadPromises);
         
         if (!cancelled) {
-          resourcesRef.current.textures.cloudBackground = backgroundTexture;
-          updateProgress();
-          
           setLoadingState({
             isLoading: false,
-            progress: 100,
-            error: null,
-            memoryUsage: {
-              estimated: 25, // Original ~25MB
-              optimized: 8   // Optimized to ~8MB
-            }
+            error: null
           });
         }
-        
       } catch (error) {
         if (!cancelled) {
-          setLoadingState(prev => ({
-            ...prev,
+          setLoadingState({
             error: error instanceof Error ? error.message : 'Unknown error',
             isLoading: false,
-          }));
+          });
         }
+      } finally {
+        // Always dispose the optimizer after operations complete
+        textureOptimizer.dispose();
       }
     }
     
-    // Optimize GLTF model textures
+    // Optimize GLTF model textures with aggressive compression
     function optimizeGLTFTextures(gltf: GLTF) {
       gltf.scene.traverse((child) => {
         if ((child as { material?: unknown }).material) {
-          const material = (child as unknown as { material: { map?: unknown; normalMap?: unknown; roughnessMap?: unknown } }).material;
-          // Optimize texture settings for memory
-          const materialWithTextures = material as {
-            map?: { generateMipmaps: boolean; minFilter: number };
-            normalMap?: { generateMipmaps: boolean; minFilter: number };
-            roughnessMap?: { generateMipmaps: boolean; minFilter: number };
+          const material = (child as unknown as { 
+            material: { 
+              map?: { 
+                generateMipmaps: boolean; 
+                minFilter: number; 
+                magFilter: number;
+                image?: { width?: number; height?: number };
+              }; 
+              normalMap?: { 
+                generateMipmaps: boolean; 
+                minFilter: number; 
+                magFilter: number;
+                image?: { width?: number; height?: number };
+              }; 
+              roughnessMap?: { 
+                generateMipmaps: boolean; 
+                minFilter: number; 
+                magFilter: number;
+                image?: { width?: number; height?: number };
+              };
+            } 
+          }).material;
+          
+          // Aggressive texture optimization for memory reduction
+          const optimizeTexture = (texture: typeof material.map) => {
+            if (texture) {
+              texture.generateMipmaps = false; // Disable mipmaps to save memory
+              texture.minFilter = 1006; // LinearFilter for better performance
+              texture.magFilter = 1006; // LinearFilter for magnification
+              
+              // Log texture size for debugging
+              if (texture.image?.width && texture.image?.height) {
+                const size = texture.image.width * texture.image.height * 4; // RGBA
+                console.log(`Texture size: ${texture.image.width}x${texture.image.height} (${Math.round(size/1024/1024*100)/100}MB)`);
+              }
+            }
           };
           
-          if (materialWithTextures.map) {
-            materialWithTextures.map.generateMipmaps = false; // Save memory
-            materialWithTextures.map.minFilter = 1006; // LinearFilter
-          }
-          if (materialWithTextures.normalMap) {
-            materialWithTextures.normalMap.generateMipmaps = false;
-            materialWithTextures.normalMap.minFilter = 1006;
-          }
-          if (materialWithTextures.roughnessMap) {
-            materialWithTextures.roughnessMap.generateMipmaps = false;
-            materialWithTextures.roughnessMap.minFilter = 1006;
-          }
+          optimizeTexture(material.map);
+          optimizeTexture(material.normalMap);
+          optimizeTexture(material.roughnessMap);
         }
       });
     }
@@ -181,8 +194,45 @@ export function useResourcePreloader() {
 
     return () => {
       cancelled = true;
-      // Cleanup optimizer
-      textureOptimizer.dispose();
+      
+      // Dispose all loaded resources
+      const resources = resourcesRef.current;
+      
+      // Dispose textures
+      Object.values(resources.textures).forEach(texture => {
+        if (texture) texture.dispose();
+      });
+      
+      // Dispose model materials and geometries
+      Object.values(resources.models).forEach(gltf => {
+        if (gltf) {
+          gltf.scene.traverse((child) => {
+            const mesh = child as {
+              geometry?: { dispose: () => void };
+              material?: { dispose: () => void } | { dispose: () => void }[];
+            };
+            if (mesh.geometry) {
+              mesh.geometry.dispose();
+            }
+            if (mesh.material) {
+              if (Array.isArray(mesh.material)) {
+                mesh.material.forEach(mat => mat.dispose());
+              } else {
+                mesh.material.dispose();
+              }
+            }
+          });
+        }
+      });
+      
+      // Clear resource references
+      resourcesRef.current = {
+        textures: {},
+        models: {},
+        fonts: {},
+      };
+      
+      // Optimizer disposal is handled in the finally block of preloadResources
     };
   }, []);
 

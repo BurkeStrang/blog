@@ -51,7 +51,8 @@ const OceanScene: React.FC = () => {
   scene.fog = new FogExp2(0x2a2a38, 0.0009); // more grey, dark grey-purple color
   useEffect(() => {
     // Load normals texture
-    const normals = new TextureLoader().load(waterNormalsUrl, (t) => {
+    const textureLoader = new TextureLoader();
+    const normals = textureLoader.load(waterNormalsUrl, (t) => {
       t.wrapS = t.wrapT = RepeatWrapping;
     });
 
@@ -92,6 +93,7 @@ const OceanScene: React.FC = () => {
       scene.remove(water);
       geo.dispose();
       water.material.dispose();
+      normals.dispose(); // Critical: dispose texture
     };
   }, [scene]);
 
