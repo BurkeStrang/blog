@@ -117,9 +117,25 @@ class MemoryTracker {
 
 export const memoryTracker = new MemoryTracker();
 
-// Auto-log summary every 30 seconds in development
+// Auto-log summary every 30 seconds in development with proper cleanup
+let memoryLogInterval: ReturnType<typeof setInterval> | null = null;
+
 if (process.env.NODE_ENV === 'development') {
-  setInterval(() => {
+  memoryLogInterval = setInterval(() => {
     memoryTracker.logSummary();
   }, 30000);
+}
+
+// Export cleanup function for when the module is unloaded
+export const cleanupMemoryTracker = () => {
+  if (memoryLogInterval) {
+    clearInterval(memoryLogInterval);
+    memoryLogInterval = null;
+  }
+  memoryTracker.clear();
+};
+
+// Cleanup on page unload
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', cleanupMemoryTracker);
 }

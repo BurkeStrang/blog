@@ -98,7 +98,12 @@ export class TextureStreaming {
       cached.texture.dispose();
     });
     this.textureCache.clear();
-    clearInterval(this.gcInterval);
+    
+    // Safely clear interval
+    if (this.gcInterval) {
+      clearInterval(this.gcInterval);
+      this.gcInterval = null as unknown as ReturnType<typeof setInterval>;
+    }
   }
 }
 

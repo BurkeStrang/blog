@@ -14,7 +14,7 @@ import PostBox from "./PostBox";
 import FollowerSphere from "./FollowerSphere";
 import type { Post } from "./AppContent";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
-import { memoryMonitor } from "./utils/textureOptimizer";
+import { memoryMonitor } from "./utils/memoryMonitor";
 import { GeometryPool, lodManager } from "./utils/lodManager";
 
 // TypeScript augmentation for outputEncoding
@@ -206,18 +206,71 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     // Configure renderer for memory efficiency
     gl.setPixelRatio(Math.min(window.devicePixelRatio, performanceMode.isLowEnd ? 1.5 : 2));
     
+    // Advanced memory optimization settings
+    gl.capabilities.maxTextures = Math.min(gl.capabilities.maxTextures, performanceMode.isLowEnd ? 8 : 16);
+    gl.capabilities.maxVertexTextures = Math.min(gl.capabilities.maxVertexTextures, 4);
+    gl.capabilities.maxTextureSize = Math.min(gl.capabilities.maxTextureSize, performanceMode.isLowEnd ? 2048 : 4096);
+    
+    // Renderer state optimization
+    gl.sortObjects = true; // Enable object sorting for better batching
+    gl.autoClear = true;
+    gl.autoClearColor = true;
+    gl.autoClearDepth = true;
+    gl.autoClearStencil = false; // Disable stencil clearing if not needed
+    
+    // Context loss handling for memory recovery
+    const canvas = gl.domElement;
+    const handleContextLost = (event: Event) => {
+      event.preventDefault();
+      console.warn('🔄 WebGL context lost, pausing rendering');
+      memoryMonitor.takeSnapshot('OceanCanvas', 'context-lost');
+    };
+    
+    const handleContextRestored = () => {
+      console.log('✅ WebGL context restored');
+      memoryMonitor.takeSnapshot('OceanCanvas', 'context-restored');
+    };
+    
+    canvas.addEventListener('webglcontextlost', handleContextLost);
+    canvas.addEventListener('webglcontextrestored', handleContextRestored);
+    
+    // Force garbage collection hints (Chrome DevTools only)
+    if (process.env.NODE_ENV === 'development' && 'gc' in window) {
+      const gcInterval = setInterval(() => {
+        const globalWindow = window as Window & { gc?: () => void };
+        if (typeof globalWindow.gc === 'function') {
+          globalWindow.gc();
+        }
+      }, 60000); // Every minute in development
+      
+      // Store interval for cleanup
+      const extendedRenderer = gl as WebGLRenderer & { __gcInterval?: ReturnType<typeof setInterval> };
+      extendedRenderer.__gcInterval = gcInterval;
+    }
+    
     // Set up memory monitoring
     memoryMonitor.setRenderer(gl);
+    memoryMonitor.takeSnapshot('OceanCanvas', 'renderer-created');
     
     // Mark scene as loaded after a frame
     const frameId = requestAnimationFrame(() => {
       setSceneLoaded(true);
-      memoryMonitor.logMemoryUsage();
+      memoryMonitor.takeSnapshot('OceanCanvas', 'scene-loaded');
     });
     
-    // Store frameId for cleanup (though this is unlikely to be needed)
+    // CRITICAL: Return cleanup function to cancel animation frame and event listeners
     return () => {
       cancelAnimationFrame(frameId);
+      canvas.removeEventListener('webglcontextlost', handleContextLost);
+      canvas.removeEventListener('webglcontextrestored', handleContextRestored);
+      
+      // Clear development GC interval
+      const extendedRenderer = gl as WebGLRenderer & { __gcInterval?: ReturnType<typeof setInterval> };
+      if (extendedRenderer.__gcInterval) {
+        clearInterval(extendedRenderer.__gcInterval);
+      }
+      
+      memoryMonitor.takeSnapshot('OceanCanvas', 'cleanup');
     };
   };
   

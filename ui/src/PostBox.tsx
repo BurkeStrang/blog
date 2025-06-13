@@ -5,6 +5,7 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 import type { Font } from "three/examples/jsm/loaders/FontLoader";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { MathUtils } from "three";
+import { MaterialPool } from "./utils/objectPool";
 
 // --- 1. Optimized text measurement with caching ---
 const textWidthCache = new Map<string, number>();
@@ -163,39 +164,60 @@ function PostBoxCore(props: PostBoxProps) {
     [frontWidth, frontHeight]
   );
 
-  // --- Materials (memoize, share across renders) ---
+  // --- Materials using object pooling for memory efficiency ---
   const backdropMaterial = useMemo(
     () =>
-      new THREE.MeshStandardMaterial({
-        color: 0x000000,
-        opacity: 0.8,
-        transparent: true,
-        side: THREE.DoubleSide,
-      }),
+      MaterialPool.getMaterial(
+        'postbox-backdrop',
+        () => new THREE.MeshStandardMaterial({
+          color: 0x000000,
+          opacity: 0.8,
+          transparent: true,
+          side: THREE.DoubleSide,
+        }),
+        (mat) => {
+          mat.color.setHex(0x000000);
+          mat.opacity = 0.8;
+        }
+      ),
     []
   );
   const neonMat = useMemo(
     () =>
-      new THREE.MeshStandardMaterial({
-        color: 0x006060,
-        emissive: 0x00ffff,
-        roughness: 1,
-        metalness: 1,
-        toneMapped: false,
-        transparent: true,
-      }),
+      MaterialPool.getMaterial(
+        'postbox-neon',
+        () => new THREE.MeshStandardMaterial({
+          color: 0x006060,
+          emissive: 0x00ffff,
+          roughness: 1,
+          metalness: 1,
+          toneMapped: false,
+          transparent: true,
+        }),
+        (mat) => {
+          (mat as THREE.MeshStandardMaterial).color.setHex(0x006060);
+          (mat as THREE.MeshStandardMaterial).emissive.setHex(0x00ffff);
+        }
+      ),
     []
   );
   const glowMat = useMemo(
     () =>
-      new THREE.MeshBasicMaterial({
-        color: 0x000066,
-        side: THREE.BackSide,
-        transparent: true,
-        opacity: 1,
-        blending: THREE.AdditiveBlending,
-        depthWrite: true,
-      }),
+      MaterialPool.getMaterial(
+        'postbox-glow',
+        () => new THREE.MeshBasicMaterial({
+          color: 0x000066,
+          side: THREE.BackSide,
+          transparent: true,
+          opacity: 1,
+          blending: THREE.AdditiveBlending,
+          depthWrite: true,
+        }),
+        (mat) => {
+          (mat as THREE.MeshBasicMaterial).color.setHex(0x000066);
+          mat.opacity = 1;
+        }
+      ),
     []
   );
 
@@ -206,12 +228,30 @@ function PostBoxCore(props: PostBoxProps) {
       textGeometries.forEach((g) => g.dispose());
       // Dispose backdrop geometry
       backdropGeo.dispose();
-      // Dispose all materials
-      backdropMaterial.dispose();
-      neonMat.dispose();
-      glowMat.dispose();
+      // Return materials to pool instead of disposing
+      MaterialPool.releaseMaterial('postbox-backdrop', backdropMaterial);
+      MaterialPool.releaseMaterial('postbox-neon', neonMat);
+      MaterialPool.releaseMaterial('postbox-glow', glowMat);
+      
+      // CRITICAL: Dispose cloned GLTF scene and all its resources
+      blockScene.traverse((child) => {
+        const meshChild = child as THREE.Mesh;
+        if (meshChild.geometry) {
+          meshChild.geometry.dispose();
+        }
+        if (meshChild.material) {
+          if (Array.isArray(meshChild.material)) {
+            meshChild.material.forEach(mat => mat.dispose());
+          } else {
+            meshChild.material.dispose();
+          }
+        }
+      });
+      
+      // Reset cursor to auto on unmount to prevent stuck cursor states
+      document.body.style.cursor = "auto";
     };
-  }, [textGeometries, backdropGeo, backdropMaterial, neonMat, glowMat]);
+  }, [textGeometries, backdropGeo, backdropMaterial, neonMat, glowMat, blockScene]);
 
   // --- Animation (frame loop) ---
   const hoverLift = 11;

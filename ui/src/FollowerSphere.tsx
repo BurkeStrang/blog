@@ -221,6 +221,9 @@ export default function FollowerSphere({
       neonSolidMat.dispose();
       greyOutlineMat.dispose();
       glowShellMat.dispose();
+      
+      // Reset cursor on unmount to prevent stuck cursor states
+      gl.domElement.style.cursor = "auto";
     };
   }, [
     labelGeo,
@@ -231,6 +234,7 @@ export default function FollowerSphere({
     neonSolidMat,
     greyOutlineMat,
     glowShellMat,
+    gl.domElement,
   ]);
 
   return (
