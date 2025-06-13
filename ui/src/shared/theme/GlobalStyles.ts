@@ -1,5 +1,5 @@
 import styled, { createGlobalStyle, keyframes } from "styled-components";
-import mega from "../fonts/MegatransRounded-Regular.otf";
+import mega from "../../assets/fonts/MegatransRounded-Regular.otf";
 import SortIcon from "@mui/icons-material/Sort";
 import {
   backgroundColor,

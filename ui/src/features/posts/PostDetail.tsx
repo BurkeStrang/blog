@@ -1,8 +1,8 @@
 import React from "react";
 import { useParams, Navigate } from "react-router-dom";
-import { Post } from "./AppContent";
+import { Post } from "../../app/AppContent";
 import styled from "styled-components";
-import { backgroundColor, lightgrey, primary, accent } from "./theme/colors";
+import { backgroundColor, lightgrey, primary, accent } from "../../shared/theme/colors";
 
 const Article = styled.article`
   margin: 4rem auto;

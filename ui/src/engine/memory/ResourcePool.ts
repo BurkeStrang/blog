@@ -53,7 +53,7 @@ export class MaterialPool {
     resetFn?: (material: T) => void
   ): T {
     if (!this.pools.has(key)) {
-      this.pools.set(key, new ObjectPool(factory, resetFn as (obj: THREE.Material) => void));
+      this.pools.set(key, new ObjectPool<THREE.Material>(factory as () => THREE.Material, resetFn as (obj: THREE.Material) => void));
     }
     return this.pools.get(key)!.get() as T;
   }
@@ -195,7 +195,7 @@ export class MeshPool {
         mesh.visible = true;
       };
       
-      this.pools.set(key, new ObjectPool(factory, resetFn, 20));
+      this.pools.set(key, new ObjectPool<THREE.Mesh>(factory as () => THREE.Mesh, resetFn as (obj: THREE.Mesh) => void, 20));
     }
     
     return this.pools.get(key)!.get();
@@ -268,7 +268,7 @@ if (typeof window !== 'undefined') {
       const stats = getPoolStats();
       const hasContent = Object.values(stats).some(value => {
         if (typeof value === 'number') return value > 0;
-        if (typeof value === 'object') return Object.keys(value).length > 0;
+        if (typeof value === 'object' && value !== null) return Object.keys(value).length > 0;
         return false;
       });
       

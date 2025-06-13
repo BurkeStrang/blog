@@ -9,9 +9,9 @@ import {
   SearchBar,
   SortDirectionButton,
   Cloud,
-} from "./theme/GlobalStyles";
-import { Post } from "./AppContent";
-import cloudImg from "./textures/darkcloud.png";
+} from "../../shared/theme/GlobalStyles";
+import { Post } from "../../app/AppContent";
+import cloudImg from "../../assets/textures/darkcloud.png";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
@@ -42,7 +42,7 @@ const SearchBarMemo = React.memo(function SearchBarMemo({
           type="text"
           placeholder="Search"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
         />
         {query && (
           <ClearButton onClick={() => setQuery("")} aria-label="Clear search">

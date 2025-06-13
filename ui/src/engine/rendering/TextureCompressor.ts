@@ -1,6 +1,6 @@
 import { Texture, TextureLoader, WebGLRenderer } from 'three';
 
-interface TextureConfig {
+export interface TextureConfig {
   maxSize?: number;
   quality?: number;
   format?: 'webp' | 'avif' | 'jpg' | 'png';

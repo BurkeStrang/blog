@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { NavLink, useLocation, Navigate } from "react-router-dom";
 import styled, { css } from "styled-components";
-import { lightgrey, primary } from "./theme/colors";
+import { lightgrey, primary } from "../../shared/theme/colors";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 

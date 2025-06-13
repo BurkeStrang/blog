@@ -9,13 +9,13 @@ import {
   Texture,
 } from "three";
 import { Water } from "three/examples/jsm/objects/Water";
-import ScrollCamera from "./ScrollCamera";
-import PostBox from "./PostBox";
-import FollowerSphere from "./FollowerSphere";
-import type { Post } from "./AppContent";
+import OceanCamera from "./OceanCamera";
+import { PostCube } from "../posts";
+import { PostNavigation } from "../posts";
+import type { Post } from "../../app/AppContent";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
-import { memoryMonitor } from "./utils/memoryMonitor";
-import { GeometryPool, lodManager } from "./utils/lodManager";
+import { memoryProfiler } from "../../engine/memory";
+import { GeometryPool, lodManager } from "../../engine/rendering";
 
 // TypeScript augmentation for outputEncoding
 declare module "three" {
@@ -223,12 +223,12 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     const handleContextLost = (event: Event) => {
       event.preventDefault();
       console.warn('🔄 WebGL context lost, pausing rendering');
-      memoryMonitor.takeSnapshot('OceanCanvas', 'context-lost');
+      memoryProfiler.takeSnapshot('OceanCanvas', 'context-lost');
     };
     
     const handleContextRestored = () => {
       console.log('✅ WebGL context restored');
-      memoryMonitor.takeSnapshot('OceanCanvas', 'context-restored');
+      memoryProfiler.takeSnapshot('OceanCanvas', 'context-restored');
     };
     
     canvas.addEventListener('webglcontextlost', handleContextLost);
@@ -249,13 +249,13 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     }
     
     // Set up memory monitoring
-    memoryMonitor.setRenderer(gl);
-    memoryMonitor.takeSnapshot('OceanCanvas', 'renderer-created');
+    memoryProfiler.setRenderer(gl);
+    memoryProfiler.takeSnapshot('OceanCanvas', 'renderer-created');
     
     // Mark scene as loaded after a frame
     const frameId = requestAnimationFrame(() => {
       setSceneLoaded(true);
-      memoryMonitor.takeSnapshot('OceanCanvas', 'scene-loaded');
+      memoryProfiler.takeSnapshot('OceanCanvas', 'scene-loaded');
     });
     
     // CRITICAL: Return cleanup function to cancel animation frame and event listeners
@@ -270,7 +270,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         clearInterval(extendedRenderer.__gcInterval);
       }
       
-      memoryMonitor.takeSnapshot('OceanCanvas', 'cleanup');
+      memoryProfiler.takeSnapshot('OceanCanvas', 'cleanup');
     };
   };
   
@@ -308,7 +308,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         waterNormals={resources.textures.waterNormals!} 
         performanceMode={performanceMode}
       />
-      <FollowerSphere
+      <PostNavigation
         offset={[27, -8, 0]}
         onLeftClick={() => console.log("Left click")}
         onRightClick={() => console.log("Right click")}
@@ -318,7 +318,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
       {posts.map((post, i) => {
         const p = positions[i];
         return (
-          <PostBox
+          <PostCube
             key={post.slug}
             index={i}
             title={post.title}
@@ -330,7 +330,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
           />
         );
       })}
-      <ScrollCamera
+      <OceanCamera
         positions={offsetPositions}
         lerpFactor={0.08}
         stepSize={1}

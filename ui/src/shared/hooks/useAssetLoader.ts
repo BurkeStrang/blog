@@ -2,13 +2,13 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 import { Texture } from 'three';
 import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader';
-import { TextureOptimizer } from '../utils/textureOptimizer';
+import { TextureCompressor } from '../../engine/rendering';
 
-import waterNormalsUrl from '../textures/waternormals.jpg?url';
-import cloudTextureUrl from '../textures/waterbackground.png?url';
-import sphereUrl from '../models/sphere/scene.gltf?url';
-import blockModelUrl from '../models/rubikscube/scene.gltf?url';
-import fontJson from '../fonts/gentilis_regular.typeface.json';
+import waterNormalsUrl from '../../assets/textures/waternormals.jpg?url';
+import cloudTextureUrl from '../../assets/textures/waterbackground.png?url';
+import sphereUrl from '../../assets/models/sphere/scene.gltf?url';
+import blockModelUrl from '../../assets/models/rubikscube/scene.gltf?url';
+import fontJson from '../../assets/fonts/gentilis_regular.typeface.json';
 
 interface ResourceCache {
   textures: {
@@ -62,7 +62,7 @@ export function useResourcePreloader() {
 
   useEffect(() => {
     let cancelled = false;
-    const textureOptimizer = new TextureOptimizer();
+    const textureOptimizer = new TextureCompressor();
     
     async function preloadResources() {
       try {

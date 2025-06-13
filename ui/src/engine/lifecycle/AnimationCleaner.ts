@@ -27,13 +27,14 @@ export class AnimationManager {
    */
   requestAnimationFrame(callback: FrameRequestCallback, name: string = 'anonymous'): number {
     const id = this.nextId++;
-    const rafId: number = requestAnimationFrame(wrappedCallback);
     
     const wrappedCallback = (time: number) => {
       // Remove from tracking when it executes (RAF only runs once)
       this.handles.delete(id);
       callback(time);
     };
+    
+    const rafId: number = requestAnimationFrame(wrappedCallback);
     
     
     this.handles.set(id, {
@@ -74,13 +75,14 @@ export class AnimationManager {
    */
   setTimeout(callback: () => void, delay: number, name: string = 'anonymous'): number {
     const id = this.nextId++;
-    const timeoutId: ReturnType<typeof setTimeout> = setTimeout(wrappedCallback, delay);
     
     const wrappedCallback = () => {
       // Remove from tracking when it executes (timeout only runs once)
       this.handles.delete(id);
       callback();
     };
+    
+    const timeoutId: ReturnType<typeof setTimeout> = setTimeout(wrappedCallback, delay);
     
     
     this.handles.set(id, {

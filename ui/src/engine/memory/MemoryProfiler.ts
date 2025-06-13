@@ -4,7 +4,7 @@
  */
 
 import { WebGLRenderer } from 'three';
-import { getPoolStats } from './objectPool';
+import { getPoolStats } from './ResourcePool';
 
 interface MemorySnapshot {
   timestamp: number;

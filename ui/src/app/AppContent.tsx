@@ -1,18 +1,16 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
-import SideBar from "./SideBar";
-import Posts from "./Posts";
-import About from "./About";
-import { CanvasBackground, GlobalStyle } from "./theme/GlobalStyles";
-import OceanDemoCanvas from "./OceanDemoCanvas";
+import { SideBar } from "../features/layout";
+import { Posts, PostDetail } from "../features/posts";
+import { About, Profile } from "../features/pages";
+import { CanvasBackground, GlobalStyle } from "../shared/theme/GlobalStyles";
+import { OceanScene } from "../features/ocean";
 import styled from "styled-components";
-import ModernLoader from "./components/ModernLoader";
-import Profile from "./Profile";
+import { LoadingSpinner } from "../shared/components";
 import * as THREE from "three";
-import PostDetail from "./PostDetail";
-import { backgroundColor } from "./theme/colors";
-import { useResourcePreloader } from "./hooks/useResourcePreloader";
-import { memoryTracker } from "./utils/memoryTracker";
+import { backgroundColor } from "../shared/theme/colors";
+import { useAssetLoader } from "../shared/hooks";
+import { memoryTracker } from "../engine/memory/MemoryTracker";
 
 export interface Post {
   slug: string;
@@ -47,7 +45,7 @@ const AppContent: React.FC = () => {
   const navigate = useNavigate();
   
   // Preload all assets once
-  const { isLoading, error, resources } = useResourcePreloader();
+  const { isLoading, error, resources } = useAssetLoader();
   const [postsLoaded, setPostsLoaded] = useState(false);
   const [canvasLoaded, setCanvasLoaded] = useState(false);
   
@@ -111,7 +109,7 @@ const AppContent: React.FC = () => {
       {resourcesReady && (
         <PersistentCanvasWrapper hidden={isDetail}>
           <CanvasBackground>
-            <OceanDemoCanvas
+            <OceanScene
               posts={posts}
               onPostClick={handlePostClick}
               resources={resources}
@@ -130,7 +128,7 @@ const AppContent: React.FC = () => {
               <div style={{ marginTop: '10px', fontSize: '0.8em' }}>Refresh to try again</div>
             </div>
           ) : (
-            <ModernLoader
+            <LoadingSpinner
               size={120}
               color="#0ff"
             />
