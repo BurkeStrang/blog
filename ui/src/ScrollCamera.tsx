@@ -9,11 +9,7 @@ interface ScrollCameraProps {
   stepSize: number;
 }
 
-function ScrollCamera({
-  positions,
-  lerpFactor,
-  stepSize,
-}: ScrollCameraProps) {
+function ScrollCamera({ positions, lerpFactor, stepSize }: ScrollCameraProps) {
   const { camera, gl } = useThree();
   const [scrollY, setScrollY] = useState(0);
 
@@ -28,15 +24,15 @@ function ScrollCamera({
     // WHEEL
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      setScrollY((cur) => clamp(cur + e.deltaY / 100, 0, maxScroll));
+      setScrollY((cur) => clamp(cur + e.deltaY / 500, 0, maxScroll));
     };
 
     // KEYS
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowDown" || e.key === "ArrowRight" || e.key === "l") {
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") {
         e.preventDefault();
         setScrollY((cur) => clamp(cur + stepSize, 0, maxScroll));
-      } else if (e.key === "ArrowUp" || e.key === "ArrowLeft" || e.key === "h") {
+      } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
         e.preventDefault();
         setScrollY((cur) => clamp(cur - stepSize, 0, maxScroll));
       }

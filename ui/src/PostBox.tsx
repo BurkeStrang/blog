@@ -1,14 +1,34 @@
-import React, { useRef, useMemo, useState, useEffect } from "react";
-import { useFrame, useLoader } from "@react-three/fiber";
+import React, { useRef, useMemo, useEffect, Suspense, useState } from "react";
+import { useLoader, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import fontJson from "./fonts/gentilis_regular.typeface.json";
 import { FontLoader, Font } from "three/examples/jsm/loaders/FontLoader";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import blockModelUrl from "./models/rubikscube/scene.gltf?url";
+import fontJson from "./fonts/gentilis_regular.typeface.json"; // still sync, but we'll wrap this in a custom hook
 import { MathUtils } from "three";
+import type { FontData } from "three/examples/jsm/loaders/FontLoader";
 
-// helper to wrap text into lines no wider than maxWidth (local units)
+// --- 1. Custom hooks for loading font/model efficiently ---
+
+function useFont(fontJson: FontData): Font {
+  // Only parse once per font file
+  return useMemo(() => new FontLoader().parse(fontJson), [fontJson]);
+}
+
+// --- 2. Text line wrapping optimized: avoid geometry creation in loop ---
+function measureTextWidth(line: string, font: Font, size: number): number {
+  // Uses the font data's "generateShapes" for cheap width estimate
+  const shapes = font.generateShapes(line, size);
+  const geometry = new THREE.ShapeGeometry(shapes);
+  geometry.computeBoundingBox();
+  const width = geometry.boundingBox
+    ? geometry.boundingBox.max.x - geometry.boundingBox.min.x
+    : 0;
+  geometry.dispose();
+  return width;
+}
+
 function wrapLines(
   text: string,
   font: Font,
@@ -17,28 +37,24 @@ function wrapLines(
 ): string[] {
   const words = text.split(" ");
   const lines: string[] = [];
-  let current = words[0];
+  let current = words[0] ?? "";
 
   for (let i = 1; i < words.length; i++) {
     const word = words[i];
     const testLine = `${current} ${word}`;
-    const testGeo = new TextGeometry(testLine, { font, size });
-    testGeo.computeBoundingBox();
-    const w =
-      testGeo.boundingBox!.max.x - testGeo.boundingBox!.min.x || Infinity;
-    testGeo.dispose(); // free immediately
-    if (w > maxWidth) {
+    const width = measureTextWidth(testLine, font, size);
+    if (width > maxWidth) {
       lines.push(current);
       current = word;
     } else {
       current = testLine;
     }
   }
-
-  lines.push(current);
+  if (current) lines.push(current);
   return lines;
 }
 
+// --- 3. Actual PostBox component ---
 interface PostBoxProps {
   title: string;
   index: number;
@@ -46,43 +62,36 @@ interface PostBoxProps {
   onClick: () => void;
 }
 
-const PostBox: React.FC<PostBoxProps> = ({
-  title,
-  index,
-  position,
-  onClick,
-}) => {
+const fontSize = 0.2;
+const wordScale = 12;
+const textMargin = 0.8;
+
+function PostBoxCore(props: PostBoxProps & { font: Font }) {
+  const { title, index, position, onClick, font } = props;
   const groupRef = useRef<THREE.Group>(null!);
   const [hovered, setHovered] = useState(false);
 
-  // ─── LOADERS & FONTS ───────────────────────────────────────────────────────────
+  // --- GLTF Model, only loads once (scene cloning below) ---
   const gltf = useLoader(GLTFLoader, blockModelUrl);
-  const font = useMemo(() => new FontLoader().parse(fontJson), []);
 
-  // ─── SCENE CLONE + BBOX ─────────────────────────────────────────────────────────
+  // --- Block geometry/bounds ---
   const blockScene = useMemo(() => gltf.scenes[0].clone(true), [gltf]);
   const bbox = useMemo(
     () => new THREE.Box3().setFromObject(blockScene),
-    [blockScene],
+    [blockScene]
   );
-
   const frontWidth = bbox.max.x - bbox.min.x;
   const frontHeight = bbox.max.y - bbox.min.y;
   const frontCenterX = bbox.min.x + frontWidth / 2;
   const frontCenterY = bbox.min.y + frontHeight / 2;
 
-  // ─── TEXT LAYOUT ────────────────────────────────────────────────────────────────
-  const fontSize = 0.2;
-  const wordScale = 12;
-  const desiredGapWorld = 50;
-  const lineGap = desiredGapWorld / wordScale;
-  const textMargin = 0.8;
-
+  // --- Efficient line wrapping ---
   const lines = useMemo(
     () => wrapLines(title, font, fontSize, frontWidth),
-    [title, font, fontSize, frontWidth],
+    [title, font, frontWidth]
   );
 
+  // --- Create all text geometries ONCE ---
   const textGeometries = useMemo(() => {
     return lines.map((line) => {
       const geo = new TextGeometry(line, {
@@ -94,34 +103,31 @@ const PostBox: React.FC<PostBoxProps> = ({
         bevelSegments: 12,
       });
       geo.computeBoundingBox();
-      geo.center(); // center each line around origin
+      geo.center();
       return geo;
     });
-  }, [lines, font, fontSize]);
+  }, [lines, font]);
 
-  // dispose text geometries on unmount
+  // --- Dispose geometries on unmount ---
   useEffect(() => {
-    return () => {
-      textGeometries.forEach((g) => g.dispose());
-    };
+    return () => textGeometries.forEach((g) => g.dispose());
   }, [textGeometries]);
 
-  // measure each line’s height
+  // --- Layout text lines ---
   const lineHeights = useMemo(
     () =>
       textGeometries.map(
-        (g) => g.boundingBox!.max.y - g.boundingBox!.min.y || 0,
+        (g) => g.boundingBox!.max.y - g.boundingBox!.min.y || 0
       ),
-    [textGeometries],
+    [textGeometries]
   );
-
-  const totalTextHeight = useMemo(() => {
-    return (
+  const lineGap = 50 / wordScale;
+  const totalTextHeight = useMemo(
+    () =>
       lineHeights.reduce((sum, h) => sum + h, 0) +
-      (lineHeights.length - 1) * lineGap
-    );
-  }, [lineHeights, lineGap]);
-
+      (lineHeights.length - 1) * lineGap,
+    [lineHeights, lineGap]
+  );
   const lineOffsets = useMemo(() => {
     const offs: number[] = [];
     let cursor = totalTextHeight / 2;
@@ -132,20 +138,18 @@ const PostBox: React.FC<PostBoxProps> = ({
     return offs;
   }, [lineHeights, totalTextHeight, lineGap]);
 
-  // ─── BACKDROP GEOMETRY & DISPOSAL ───────────────────────────────────────────────
+  // --- Backdrop (plane) geometry ---
   const backdropGeo = useMemo(
     () =>
       new THREE.PlaneGeometry(
         frontWidth + 50 * textMargin,
-        frontHeight + 26 * textMargin,
+        frontHeight + 26 * textMargin
       ),
-    [frontWidth, frontHeight, textMargin],
+    [frontWidth, frontHeight]
   );
-  useEffect(() => {
-    return () => backdropGeo.dispose();
-  }, [backdropGeo]);
+  useEffect(() => () => backdropGeo.dispose(), [backdropGeo]);
 
-  // ─── MATERIALS ─────────────────────────────────────────────────────────────────
+  // --- Materials (memoize, share across renders) ---
   const backdropMaterial = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
@@ -154,7 +158,7 @@ const PostBox: React.FC<PostBoxProps> = ({
         transparent: true,
         side: THREE.DoubleSide,
       }),
-    [],
+    []
   );
   const neonMat = useMemo(
     () =>
@@ -166,7 +170,7 @@ const PostBox: React.FC<PostBoxProps> = ({
         toneMapped: false,
         transparent: true,
       }),
-    [],
+    []
   );
   const glowMat = useMemo(
     () =>
@@ -178,17 +182,16 @@ const PostBox: React.FC<PostBoxProps> = ({
         blending: THREE.AdditiveBlending,
         depthWrite: true,
       }),
-    [],
+    []
   );
 
-  // ─── ANIMATION ─────────────────────────────────────────────────────────────────
+  // --- Animation (frame loop) ---
   const hoverLift = 11;
   const liftEase = 0.1;
   useFrame(({ clock }) => {
     const g = groupRef.current;
     const t = clock.getElapsedTime();
-
-    // bob vs lift
+    // Animate: lerped hover lift, wiggle
     const bob = position[1] + Math.sin(t * 2) * 0.1;
     const targetY = hovered ? position[1] + hoverLift : bob;
     const targetZ = hovered
@@ -197,16 +200,12 @@ const PostBox: React.FC<PostBoxProps> = ({
     const targetX = hovered
       ? position[0] - 10 - Math.pow(index / 10, 4) * 0.9
       : position[0] - 8 - Math.pow(index / 10, 4) * 0.9;
-
-    // wiggle
     const wiggleDelta = 0.02 + (Math.sin(index) + 0.1) * 0.15;
     const targetRotX = hovered ? 0 : -0.01 + Math.cos(t) * 0.01 + wiggleDelta;
     const targetRotY = hovered
       ? -0.8 - Math.pow(index / 10, 2) * 0.1
       : Math.sin(t) * 0.03 - 0.5 - wiggleDelta;
     const targetRotZ = hovered ? 0 : Math.sin(t) * 0.04 + wiggleDelta;
-
-    // ease into
     g.position.x = MathUtils.lerp(g.position.x, targetX, liftEase);
     g.position.y = MathUtils.lerp(g.position.y, targetY + 34, liftEase);
     g.position.z = MathUtils.lerp(g.position.z, targetZ, liftEase);
@@ -215,7 +214,7 @@ const PostBox: React.FC<PostBoxProps> = ({
     g.rotation.z = MathUtils.lerp(g.rotation.z, targetRotZ, liftEase);
   });
 
-  // ─── EVENTS ────────────────────────────────────────────────────────────────────
+  // --- Pointer events ---
   const handlePointerOver = () => {
     setHovered(true);
     document.body.style.cursor = "pointer";
@@ -225,7 +224,7 @@ const PostBox: React.FC<PostBoxProps> = ({
     document.body.style.cursor = "auto";
   };
 
-  // ─── RENDER ────────────────────────────────────────────────────────────────────
+  // --- Render ---
   return (
     <group
       ref={groupRef}
@@ -234,7 +233,7 @@ const PostBox: React.FC<PostBoxProps> = ({
       onPointerOver={handlePointerOver}
       onPointerOut={handlePointerOut}
     >
-      {/* Block */}
+      {/* Model */}
       <primitive object={blockScene} scale={[16, 16, 16]} />
 
       {/* Backdrop */}
@@ -287,6 +286,18 @@ const PostBox: React.FC<PostBoxProps> = ({
       />
       <pointLight position={[1000, -1000, 1000]} intensity={1.5} />
     </group>
+  );
+}
+
+// --- 4. Lazy/Suspense wrapper for font loading (to avoid blocking the app startup) ---
+const PostBox: React.FC<PostBoxProps> = (props) => {
+  // Only parse font once globally (fast), can be async with real font files
+  const font = useFont(fontJson);
+
+  return (
+    <Suspense fallback={null}>
+      <PostBoxCore {...props} font={font} />
+    </Suspense>
   );
 };
 

@@ -67,16 +67,15 @@ export const Header = styled.header`
   position: relative;
   overflow: visible;
   text-align: center;
-  padding: 1rem 0;
+  padding-top: 3.5rem;
 
   h1 {
     position: relative;
     color: ${primary}; /* e.g. #0ff */
     font-size: clamp(2rem, 6vw, 3rem);
     letter-spacing: 0.1em;
-    margin: 0;
     height: clamp(2rem, 6vw, 3rem);
-    margin: 0;
+    margin: 1rem 0;
     height: 3rem;
 
     /* sharp cyan stroke */
@@ -112,24 +111,21 @@ const drift = keyframes`
 
 export const Cloud = styled.img`
   position: absolute;
-  top: -110vh;
-  left: 60%;
   transform: translateX(-50%);
-  width: 140%;
   height: auto;
   pointer-events: none;
   z-index: -1;
   animation: ${drift} 40s ease-in-out infinite;
 
   @media (max-height: 1600px) {
-    width: 110%;
-    top: -90vh;
-    left: 60%;
+    width: 130%;
+    top: -100vh;
+    left: 50%;
   }
   @media (max-height: 1024px) {
-    width: 110%;
-    top: -70vh;
-    left: 60%;
+    width: 130%;
+    top: -100vh;
+    left: 50%;
   }
 
   @media (max-height: 600px) {
@@ -145,9 +141,9 @@ export const SortButton = styled(SortIcon)`
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  top: 8rem;
+  top: 12rem;
   cursor: pointer;
-  color: ${backgroundColor};
+  color: ${lightgrey};
 
   &:hover {
     color: ${secondary};
@@ -160,10 +156,10 @@ export const SortDirectionButton = styled.div<{ isUp$: boolean }>`
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  top: 8.8rem;
+  top: 12.8rem;
   cursor: pointer;
   scale: 0.8;
-  color: ${backgroundColor};
+  color: ${lightgrey};
 
   &:hover {
     color: ${secondary};
@@ -172,6 +168,7 @@ export const SortDirectionButton = styled.div<{ isUp$: boolean }>`
 
 export const SearchBar = styled.div`
   position: absolute;
+  color: ${lightgrey};
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -188,7 +185,7 @@ export const SearchContainer = styled.div`
   width: 200px;
   height: 32px;
   border-radius: 15px;
-  outline: solid 2px ${backgroundColor};
+  outline: solid 2px ${lightgrey};
   overflow: hidden;
   transition: width 0.3s ease;
 
@@ -230,7 +227,7 @@ export const ClearButton = styled.button`
   cursor: pointer;
   font-size: 1.2rem;
   line-height: 1;
-  color: ${backgroundColor};
+  color: ${lightgrey};
   opacity: 0.6;
   transition: opacity 0.2s;
 
