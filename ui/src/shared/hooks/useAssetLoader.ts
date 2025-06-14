@@ -4,8 +4,8 @@ import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader';
 import { TextureCompressor } from '../../engine/rendering';
 
-import waterNormalsUrl from '../../assets/textures/waternormals.jpg?url';
-import cloudTextureUrl from '../../assets/textures/waterbackground.png?url';
+import waterNormalsUrl from '../../assets/textures/waternormals.avif?url';
+import cloudTextureUrl from '../../assets/textures/waterbackground.webp?url';
 import sphereUrl from '../../assets/models/sphere/scene.gltf?url';
 import blockModelUrl from '../../assets/models/rubikscube/scene.gltf?url';
 import fontJson from '../../assets/fonts/gentilis_regular.typeface.json';

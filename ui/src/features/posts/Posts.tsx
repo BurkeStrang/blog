@@ -11,7 +11,7 @@ import {
   Cloud,
 } from "../../shared/theme/GlobalStyles";
 import { Post } from "../../app/AppContent";
-import cloudImg from "../../assets/textures/darkcloud.png";
+import cloudImg from "../../assets/textures/darkcloud.avif";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
