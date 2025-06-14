@@ -1,7 +1,7 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 
-interface ModernLoaderProps {
+interface LoadingSpinnerProps {
   size?: number;
   color?: string;
 }
@@ -32,7 +32,7 @@ const Cube = styled.div<{ $size: number; $color: string; $delay: number }>`
   animation-delay: ${props => props.$delay}s;
 `;
 
-const ModernLoader: React.FC<ModernLoaderProps> = ({ size = 100, color = '#0ff' }) => (
+const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = 100, color = '#0ff' }) => (
   <LoaderContainer $size={size}>
     {Array.from({ length: 3 }, (_, i) => (
       <Cube key={i} $size={size} $color={color} $delay={i * 0.3} />
@@ -40,4 +40,4 @@ const ModernLoader: React.FC<ModernLoaderProps> = ({ size = 100, color = '#0ff' 
   </LoaderContainer>
 );
 
-export default ModernLoader;
+export default LoadingSpinner;

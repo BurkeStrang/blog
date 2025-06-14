@@ -197,19 +197,26 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     }
   }, [sceneLoaded, postBoxesLoaded, posts.length, onLoaded]);
   
-  // Renderer config with memory optimization
+  // Renderer config with aggressive memory optimization
   const handleCreated = ({ gl }: { gl: WebGLRenderer }) => {
     gl.toneMapping = NO_TONE_MAPPING;
     gl.outputEncoding = LINEAR_ENCODING;
     gl.setClearColor(0x000000, 0);
     
-    // Configure renderer for memory efficiency
-    gl.setPixelRatio(Math.min(window.devicePixelRatio, performanceMode.isLowEnd ? 1.5 : 2));
+    // Configure renderer for maximum memory efficiency
+    gl.setPixelRatio(Math.min(window.devicePixelRatio, performanceMode.isLowEnd ? 1 : 1.5));
     
-    // Advanced memory optimization settings
-    gl.capabilities.maxTextures = Math.min(gl.capabilities.maxTextures, performanceMode.isLowEnd ? 8 : 16);
-    gl.capabilities.maxVertexTextures = Math.min(gl.capabilities.maxVertexTextures, 4);
-    gl.capabilities.maxTextureSize = Math.min(gl.capabilities.maxTextureSize, performanceMode.isLowEnd ? 2048 : 4096);
+    // Aggressive memory optimization settings
+    gl.capabilities.maxTextures = Math.min(gl.capabilities.maxTextures, performanceMode.isLowEnd ? 4 : 8);
+    gl.capabilities.maxVertexTextures = Math.min(gl.capabilities.maxVertexTextures, 2);
+    gl.capabilities.maxTextureSize = Math.min(gl.capabilities.maxTextureSize, performanceMode.isLowEnd ? 1024 : 2048);
+    
+    // Additional WebGL optimizations for memory
+    gl.debug.checkShaderErrors = false; // Disable in production
+    gl.shadowMap.enabled = false; // Disable shadows completely
+    gl.shadowMap.autoUpdate = false;
+    
+    // Note: antialias and powerPreference are set during canvas creation, not on renderer
     
     // Renderer state optimization
     gl.sortObjects = true; // Enable object sorting for better batching

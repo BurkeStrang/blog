@@ -28,8 +28,8 @@ export class TextureOptimizer {
     }
 
     const {
-      maxSize = 1024,
-      quality = 0.8,
+      maxSize = 512, // Reduced from 1024 for better memory usage
+      quality = 0.75, // Slightly reduced for better compression
       format = 'webp',
       generateMipmaps = true,
       flipY = false

@@ -5,17 +5,24 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run type-check && npm run lint:check && vite build --mode production",
+    "build": "pnpm run type-check && pnpm run lint:check && vite build --mode production",
     "build:fast": "vite build",
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:check": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings 0",
-    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "optimize:textures": "node scripts/compress-textures.js",
+    "optimize:gltf": "node scripts/optimize-gltf.js",
+    "optimize:assets": "pnpm run optimize:textures && pnpm run optimize:gltf"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@gltf-transform/cli": "^4.2.0",
+    "@gltf-transform/core": "^4.2.0",
+    "@gltf-transform/extensions": "^4.2.0",
+    "@gltf-transform/functions": "^4.2.0",
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
     "@react-three/drei": "^10.0.8",
@@ -25,8 +32,10 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.0",
+    "sharp": "^0.34.2",
     "styled-components": "^6.1.18",
     "three": "^0.176.0",
+    "three-stdlib": "^2.36.0",
     "troika-three-text": "^0.52.4"
   },
   "devDependencies": {

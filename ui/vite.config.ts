@@ -30,6 +30,7 @@ export default defineConfig({
     include: ["three", "@react-three/fiber"],
   },
   build: {
+    chunkSizeWarningLimit: 1000, // Increase limit to 1MB for Three.js
     rollupOptions: {
       onwarn(warning, warn) {
         // Fail build on warnings
@@ -38,6 +39,15 @@ export default defineConfig({
         }
         warn(warning);
       },
+      output: {
+        manualChunks: {
+          // Separate Three.js into its own chunk
+          'three-vendor': ['three'],
+          'react-three': ['@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
+          'ui-vendor': ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
+          'react-vendor': ['react', 'react-dom', 'react-router-dom']
+        }
+      }
     },
   },
 });

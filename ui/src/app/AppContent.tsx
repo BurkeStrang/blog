@@ -4,7 +4,7 @@ import { SideBar } from "../features/layout";
 import { Posts, PostDetail } from "../features/posts";
 import { About, Profile } from "../features/pages";
 import { CanvasBackground, GlobalStyle } from "../shared/theme/GlobalStyles";
-import { OceanScene } from "../features/ocean";
+import { LazyOceanCanvas } from "../features/ocean";
 import styled from "styled-components";
 import { LoadingSpinner } from "../shared/components";
 import * as THREE from "three";
@@ -109,12 +109,13 @@ const AppContent: React.FC = () => {
       {resourcesReady && (
         <PersistentCanvasWrapper hidden={isDetail}>
           <CanvasBackground>
-            <OceanScene
+            <LazyOceanCanvas
               posts={posts}
               onPostClick={handlePostClick}
               resources={resources}
               onLoaded={() => setCanvasLoaded(true)}
               isPaused={isDetail}
+              loadTrigger="viewport"
             />
           </CanvasBackground>
         </PersistentCanvasWrapper>
