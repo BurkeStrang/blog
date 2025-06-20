@@ -73,6 +73,7 @@ interface PostBoxProps {
   rubiksCubeModel: GLTF;
   font: Font;
   onReady?: () => void;
+  isVisible?: boolean; // New prop for search filtering
 }
 
 const fontSize = 0.2;
@@ -80,7 +81,7 @@ const wordScale = 12;
 const textMargin = 0.8;
 
 function PostBoxCore(props: PostBoxProps) {
-  const { title, index, position, onClick, rubiksCubeModel, font, onReady } = props;
+  const { title, index, position, onClick, rubiksCubeModel, font, onReady, isVisible = true } = props;
   const groupRef = useRef<THREE.Group>(null!);
   const [hovered, setHovered] = useState(false);
 
@@ -255,28 +256,46 @@ function PostBoxCore(props: PostBoxProps) {
 
   // --- Animation (frame loop) ---
   const hoverLift = 11;
+  const underwaterDepth = -60; // How deep underwater hidden posts go
   const liftEase = 0.1;
+  const visibilityEase = 0.05; // Slower easing for underwater transitions
+  
   useFrame(({ clock }) => {
     const g = groupRef.current;
     const t = clock.getElapsedTime();
+    
     // Animate: lerped hover lift, wiggle
     const bob = position[1] + Math.sin(t * 2) * 0.1;
-    const targetY = hovered ? position[1] + hoverLift : bob;
-    const targetZ = hovered
+    
+    // Calculate base target positions
+    let baseTargetY = hovered ? position[1] + hoverLift : bob;
+    let baseTargetZ = hovered
       ? position[2] + 10 + Math.pow(index / 10, 4) * 0.9
       : position[2] + 8 + Math.pow(index / 10, 4) * 0.9;
-    const targetX = hovered
+    let baseTargetX = hovered
       ? position[0] - 10 - Math.pow(index / 10, 4) * 0.9
       : position[0] - 8 - Math.pow(index / 10, 4) * 0.9;
+    
+    // Override positions if not visible (send underwater)
+    if (!isVisible) {
+      baseTargetY = underwaterDepth;
+      baseTargetZ = position[2]; // Keep original Z position underwater
+      baseTargetX = position[0]; // Keep original X position underwater
+    }
+    
     const wiggleDelta = 0.02 + (Math.sin(index) + 0.1) * 0.15;
     const targetRotX = hovered ? 0 : -0.01 + Math.cos(t) * 0.01 + wiggleDelta;
     const targetRotY = hovered
       ? -0.8 - Math.pow(index / 10, 2) * 0.1
       : Math.sin(t) * 0.03 - 0.5 - wiggleDelta;
     const targetRotZ = hovered ? 0 : Math.sin(t) * 0.04 + wiggleDelta;
-    g.position.x = MathUtils.lerp(g.position.x, targetX, liftEase);
-    g.position.y = MathUtils.lerp(g.position.y, targetY + 34, liftEase);
-    g.position.z = MathUtils.lerp(g.position.z, targetZ, liftEase);
+    
+    // Use different easing speeds for visibility changes vs normal movement
+    const currentEase = isVisible ? liftEase : visibilityEase;
+    
+    g.position.x = MathUtils.lerp(g.position.x, baseTargetX, currentEase);
+    g.position.y = MathUtils.lerp(g.position.y, baseTargetY + 34, currentEase);
+    g.position.z = MathUtils.lerp(g.position.z, baseTargetZ, currentEase);
     g.rotation.x = MathUtils.lerp(g.rotation.x, targetRotX, liftEase);
     g.rotation.y = MathUtils.lerp(g.rotation.y, targetRotY, liftEase);
     g.rotation.z = MathUtils.lerp(g.rotation.z, targetRotZ, liftEase);
@@ -284,6 +303,7 @@ function PostBoxCore(props: PostBoxProps) {
 
   // --- Pointer events ---
   const handlePointerOver = () => {
+    if (!isVisible) return; // Don't allow hover when underwater
     setHovered(true);
     document.body.style.cursor = "pointer";
   };
@@ -291,13 +311,18 @@ function PostBoxCore(props: PostBoxProps) {
     setHovered(false);
     document.body.style.cursor = "auto";
   };
+  
+  const handleClick = () => {
+    if (!isVisible) return; // Don't allow clicks when underwater
+    onClick();
+  };
 
   // --- Render ---
   return (
     <group
       ref={groupRef}
       position={position}
-      onClick={onClick}
+      onClick={handleClick}
       onPointerOver={handlePointerOver}
       onPointerOut={handlePointerOut}
     >

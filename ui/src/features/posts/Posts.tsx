@@ -14,6 +14,7 @@ import { Post } from "../../app/AppContent";
 import cloudImg from "../../assets/textures/darkcloud.avif";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import { useSearch } from "../../shared/contexts/SearchContext";
 
 interface PostsProps {
   selectedPost: Post | null;
@@ -28,19 +29,15 @@ const SortIcon = React.memo(
 );
 SortIcon.displayName = "SortIcon";
 
-const SearchBarMemo = React.memo(function SearchBarMemo({
-  query,
-  setQuery,
-}: {
-  query: string;
-  setQuery: (v: string) => void;
-}) {
+const SearchBarMemo = React.memo(function SearchBarMemo() {
+  const { query, setQuery } = useSearch();
+  
   return (
     <SearchBar>
       <SearchContainer>
         <SearchInput
           type="text"
-          placeholder="Search"
+          placeholder="Search posts..."
           value={query}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
         />
@@ -55,8 +52,8 @@ const SearchBarMemo = React.memo(function SearchBarMemo({
 });
 
 const Posts: React.FC<PostsProps> = ({ selectedPost }) => {
-  const [query, setQuery] = useState("");
   const [isSortUp, setIsSortUp] = useState(true);
+  const { filteredPosts } = useSearch();
 
   const toggleSort = useCallback(() => setIsSortUp((prev) => !prev), []);
 
@@ -68,9 +65,19 @@ const Posts: React.FC<PostsProps> = ({ selectedPost }) => {
             <Cloud src={cloudImg} alt="" />
             <h1>BRXSTNG BLG</h1>
           </Header>
-          <SearchBarMemo query={query} setQuery={setQuery} />
+          <SearchBarMemo />
           <SortButton />
           <SortIcon isUp={isSortUp} onClick={toggleSort} />
+          {filteredPosts.length === 0 && (
+            <div style={{ 
+              textAlign: 'center', 
+              color: '#666', 
+              marginTop: '2rem',
+              fontSize: '1.1rem'
+            }}>
+              No posts found matching your search.
+            </div>
+          )}
         </>
       )}
       {/* Navigation is handled by AppContent, no need for additional Navigate */}

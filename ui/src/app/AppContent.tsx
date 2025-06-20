@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { SideBar } from "../features/layout";
 import { Posts, PostDetail } from "../features/posts";
@@ -11,6 +11,7 @@ import * as THREE from "three";
 import { backgroundColor } from "../shared/theme/colors";
 import { useAssetLoader } from "../shared/hooks";
 import { memoryTracker } from "../engine/memory/MemoryTracker";
+import { useSearch } from "../shared/contexts/SearchContext";
 
 export interface Post {
   slug: string;
@@ -44,6 +45,14 @@ const AppContent: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Use search context
+  const { filteredPosts, setAllPosts } = useSearch();
+  
+  // Create a Set of visible post slugs for efficient lookup
+  const visiblePostSlugs = useMemo(() => {
+    return new Set(filteredPosts.map(post => post.slug));
+  }, [filteredPosts]);
   
   // Track navigation history to determine if we should load canvas
   const [hasVisitedHome, setHasVisitedHome] = useState(false);
@@ -126,6 +135,7 @@ const AppContent: React.FC = () => {
         })
         .then((data) => {
           setPosts(data);
+          setAllPosts(data); // Update search context with all posts
           setPostsLoaded(true);
         })
         .catch((err) => {
@@ -154,6 +164,7 @@ const AppContent: React.FC = () => {
               onLoaded={() => setCanvasLoaded(true)}
               isPaused={isDetail}
               loadTrigger="viewport"
+              visiblePostSlugs={visiblePostSlugs}
             />
           </CanvasBackground>
         </PersistentCanvasWrapper>

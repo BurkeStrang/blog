@@ -19,6 +19,9 @@ function ScrollCamera({ positions, lerpFactor, stepSize }: ScrollCameraProps) {
   // handle wheel and key events
   useEffect(() => {
     const canvas = gl.domElement;
+    // Guard against empty positions array
+    if (positions.length === 0) return;
+    
     const maxScroll = ((positions.length - 1) * stepSize) / 1.5;
 
     // WHEEL
@@ -69,11 +72,18 @@ function ScrollCamera({ positions, lerpFactor, stepSize }: ScrollCameraProps) {
   }, [gl.domElement, positions.length, stepSize]);
 
   useFrame(() => {
+    // Guard against empty positions array
+    if (positions.length === 0) return;
+    
     const max = ((positions.length - 1) * stepSize) / 1.5;
     const t = clamp(scrollY / max, 0, 1);
     const idx = Math.round(t * (positions.length - 1));
-    const target = positions[idx].clone();
-    camera.position.lerp(target, lerpFactor);
+    
+    // Ensure idx is within bounds and the position exists
+    if (idx >= 0 && idx < positions.length && positions[idx]) {
+      const target = positions[idx].clone();
+      camera.position.lerp(target, lerpFactor);
+    }
   });
 
   return null;

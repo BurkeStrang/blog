@@ -1,9 +1,12 @@
 import { BrowserRouter } from "react-router-dom";
 import AppContent from "./AppContent";
+import { SearchProvider } from "../shared/contexts/SearchContext";
 
 const App: React.FC = () => (
   <BrowserRouter>
-    <AppContent />
+    <SearchProvider>
+      <AppContent />
+    </SearchProvider>
   </BrowserRouter>
 );
 

@@ -142,6 +142,7 @@ interface OceanDemoCanvasProps {
   resources: ResourceCache;
   onLoaded?: () => void;
   isPaused?: boolean;
+  visiblePostSlugs?: Set<string>; // New prop to track which posts should be visible
 }
 
 const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
@@ -150,21 +151,39 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   resources,
   isPaused = false,
   onLoaded,
+  visiblePostSlugs,
 }) => {
   // Positions memoized for efficiency
   const positions = useMemo(
-    () =>
-      posts.map(
-        (_, i) => new Vector3(i * 50 - (posts.length - 1) * 25, -8.5, i * 40)
-      ),
+    () => {
+      if (!posts || !Array.isArray(posts) || posts.length === 0) return [];
+      return posts
+        .filter(post => post) // Filter out any undefined posts
+        .map((_, i) => new Vector3(i * 50 - (posts.length - 1) * 25, -8.5, i * 40));
+    },
     [posts]
   );
-  const offsetPositions = useMemo(
-    () => positions.map((p) => p.clone().add(new Vector3(-100, 30, 100))),
-    [positions]
-  );
+  // Calculate offset positions only for visible posts for camera positioning
+  const offsetPositions = useMemo(() => {
+    if (!visiblePostSlugs) {
+      // If no visibility filter, use all positions
+      return positions.filter(p => p).map((p) => p.clone().add(new Vector3(-100, 30, 100)));
+    }
+    
+    // Only include positions for visible posts
+    return posts
+      .map((post, i) => ({ post, position: positions[i] }))
+      .filter(({ post, position }) => position && visiblePostSlugs.has(post.slug))
+      .map(({ position }) => position.clone().add(new Vector3(-100, 30, 100)));
+  }, [positions, posts, visiblePostSlugs]);
   const startPos = useMemo(
-    () => offsetPositions[0].clone().add(new Vector3(-100, 0, 300)),
+    () => {
+      // Provide default position when no posts are available
+      if (offsetPositions.length === 0) {
+        return new Vector3(-200, 30, 400);
+      }
+      return offsetPositions[0].clone().add(new Vector3(-100, 0, 300));
+    },
     [offsetPositions]
   );
 
@@ -281,13 +300,15 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     };
   };
   
-  // Early return if resources aren't ready
+  // Early return if resources aren't ready or posts is invalid
   if (
     !resources.textures.waterNormals ||
     !resources.textures.cloudBackground ||
     !resources.models.sphere ||
     !resources.models.rubiksCube ||
-    !resources.fonts.gentilis
+    !resources.fonts.gentilis ||
+    !posts ||
+    !Array.isArray(posts)
   ) {
     return null;
   }
@@ -324,6 +345,12 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
       />
       {posts.map((post, i) => {
         const p = positions[i];
+        // Safety check: ensure position exists
+        if (!p) return null;
+        
+        // Determine if this post should be visible
+        const isVisible = !visiblePostSlugs || visiblePostSlugs.has(post.slug);
+        
         return (
           <PostCube
             key={post.slug}
@@ -334,6 +361,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
             rubiksCubeModel={resources.models.rubiksCube!}
             font={resources.fonts.gentilis!}
             onReady={() => setPostBoxesLoaded(prev => prev + 1)}
+            isVisible={isVisible}
           />
         );
       })}
