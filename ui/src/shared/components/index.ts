@@ -3,4 +3,4 @@
  * Reusable UI components across the application
  */
 
-export { default as LoadingSpinner } from './LoadingSpinner';
+export { default as LoadingCubes } from './LoadingCubes';

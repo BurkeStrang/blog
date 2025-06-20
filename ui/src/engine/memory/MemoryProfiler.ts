@@ -39,6 +39,7 @@ export class MemoryMonitor {
   private maxSnapshots = 100;
   private isMonitoring = false;
   private monitoringInterval?: ReturnType<typeof setInterval>;
+  private reportInterval?: ReturnType<typeof setInterval>;
   
   static getInstance(): MemoryMonitor {
     if (!MemoryMonitor.instance) {
@@ -203,6 +204,10 @@ export class MemoryMonitor {
       .filter(point => point.value > 0);
   }
 
+  getSnapshotCount(): number {
+    return this.snapshots.length;
+  }
+
   startContinuousMonitoring(intervalMs: number = 30000): void {
     if (this.isMonitoring) return;
     
@@ -277,6 +282,10 @@ export class MemoryMonitor {
 
   dispose(): void {
     this.stopContinuousMonitoring();
+    if (this.reportInterval) {
+      clearInterval(this.reportInterval);
+      this.reportInterval = undefined;
+    }
     this.clear();
     this.renderer = undefined;
   }
@@ -298,9 +307,9 @@ if (typeof window !== 'undefined') {
       memoryMonitor.startContinuousMonitoring(30000);
     }, 5000);
 
-    // Generate periodic reports
-    setInterval(() => {
-      if (memoryMonitor['snapshots'].length > 10) {
+    // Generate periodic reports - store interval reference for cleanup
+    const reportInterval = setInterval(() => {
+      if (memoryMonitor.getSnapshotCount() > 10) {
         const report = memoryMonitor.generateReport();
         if (report.leaks.length > 0) {
           console.group('📊 Memory Report');
@@ -310,6 +319,9 @@ if (typeof window !== 'undefined') {
         }
       }
     }, 120000); // Every 2 minutes
+    
+    // Store interval reference for cleanup
+    (memoryMonitor as MemoryMonitor & { reportInterval?: ReturnType<typeof setInterval> }).reportInterval = reportInterval;
 
     // Expose to window for debugging
     (window as Window & { memoryMonitor?: MemoryMonitor }).memoryMonitor = memoryMonitor;

@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { SideBar } from "../features/layout";
 import { Posts, PostDetail } from "../features/posts";
 import { About, Profile } from "../features/pages";
 import { CanvasBackground, GlobalStyle } from "../shared/theme/GlobalStyles";
 import { LazyOceanCanvas } from "../features/ocean";
 import styled from "styled-components";
-import { LoadingSpinner } from "../shared/components";
+import { LoadingCubes } from "../shared/components";
 import * as THREE from "three";
 import { backgroundColor } from "../shared/theme/colors";
 import { useAssetLoader } from "../shared/hooks";
@@ -43,6 +43,11 @@ const AppContent: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Track navigation history to determine if we should load canvas
+  const [hasVisitedHome, setHasVisitedHome] = useState(false);
+  const [shouldLoadCanvas, setShouldLoadCanvas] = useState(false);
   
   // Preload all assets once
   const { isLoading, error, resources } = useAssetLoader();
@@ -52,7 +57,34 @@ const AppContent: React.FC = () => {
   // Resources are ready when both assets and posts are loaded
   const resourcesReady = !isLoading && postsLoaded && posts.length > 0;
   // Canvas is fully ready when 3D scene has finished rendering
-  const canvasReady = resourcesReady && canvasLoaded;
+  const canvasReady = resourcesReady && canvasLoaded && shouldLoadCanvas;
+
+  // Determine when to load canvas based on route and navigation history
+  useEffect(() => {
+    const isPostRoute = location.pathname.startsWith('/posts/');
+    const isPostsRoute = location.pathname === '/posts';
+    const isHomeRoute = location.pathname === '/';
+    
+    // Load canvas immediately if on home or posts list route
+    if (isHomeRoute || isPostsRoute) {
+      setHasVisitedHome(true);
+      setShouldLoadCanvas(true);
+    }
+    // If directly navigating to a post, don't load canvas unless coming from home
+    else if (isPostRoute) {
+      if (hasVisitedHome) {
+        setShouldLoadCanvas(true);
+      } else {
+        setShouldLoadCanvas(false);
+      }
+    }
+    // For other routes, load canvas if we've visited home
+    else {
+      if (hasVisitedHome) {
+        setShouldLoadCanvas(true);
+      }
+    }
+  }, [location.pathname, hasVisitedHome]);
 
   // Memory tracking (async to avoid blocking)
   useEffect(() => {
@@ -78,6 +110,9 @@ const AppContent: React.FC = () => {
   const handleClose = useCallback(() => {
     // Immediate state updates for instant response
     setSelectedPost(null);
+    // Ensure canvas loads when navigating back to posts
+    setHasVisitedHome(true);
+    setShouldLoadCanvas(true);
     navigate("/posts");
   }, [navigate]);
 
@@ -102,11 +137,14 @@ const AppContent: React.FC = () => {
 
   // Simplest possible detail detection for maximum speed
   const isDetail = selectedPost !== null;
+  
+  // Show UI immediately for direct post navigation, with loading state for canvas routes
+  const showUI = resourcesReady && (shouldLoadCanvas ? canvasLoaded : true);
 
   return (
     <>
       <GlobalStyle />
-      {resourcesReady && (
+      {resourcesReady && shouldLoadCanvas && (
         <PersistentCanvasWrapper hidden={isDetail}>
           <CanvasBackground>
             <LazyOceanCanvas
@@ -121,7 +159,7 @@ const AppContent: React.FC = () => {
         </PersistentCanvasWrapper>
       )}
 
-      {!canvasReady && (
+      {!showUI && (
         <LoaderOverlay>
           {error ? (
             <div style={{ color: '#ff4444', textAlign: 'center' }}>
@@ -129,7 +167,7 @@ const AppContent: React.FC = () => {
               <div style={{ marginTop: '10px', fontSize: '0.8em' }}>Refresh to try again</div>
             </div>
           ) : (
-            <LoadingSpinner
+            <LoadingCubes
               size={120}
               color="#0ff"
             />
@@ -137,7 +175,7 @@ const AppContent: React.FC = () => {
         </LoaderOverlay>
       )}
 
-      {canvasReady && (
+      {showUI && (
         <>
           <SideBar />
           <Routes>

@@ -258,13 +258,22 @@ export const getPoolStats = (): Record<string, unknown> => {
   };
 };
 
+// Store interval reference for cleanup
+let poolStatsInterval: ReturnType<typeof setInterval> | undefined;
+
 // Auto cleanup on page unload
 if (typeof window !== 'undefined') {
-  window.addEventListener('beforeunload', clearAllPools);
+  window.addEventListener('beforeunload', () => {
+    clearAllPools();
+    if (poolStatsInterval) {
+      clearInterval(poolStatsInterval);
+      poolStatsInterval = undefined;
+    }
+  });
   
   // Development helper - log pool stats every 2 minutes
   if (process.env.NODE_ENV === 'development') {
-    setInterval(() => {
+    poolStatsInterval = setInterval(() => {
       const stats = getPoolStats();
       const hasContent = Object.values(stats).some(value => {
         if (typeof value === 'number') return value > 0;

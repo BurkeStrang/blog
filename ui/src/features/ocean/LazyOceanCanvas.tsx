@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useState, useEffect } from 'react';
-import LoadingSpinner from '../../shared/components/LoadingSpinner';
+import LoadingCubes from '../../shared/components/LoadingCubes';
 import type { Post } from '../../app/AppContent';
 
 // Lazy load the heavy OceanDemoCanvas component
@@ -108,7 +108,7 @@ const LazyOceanCanvas: React.FC<LazyOceanCanvasProps> = ({
       }}
     >
       <div style={{ textAlign: 'center' }}>
-        <LoadingSpinner />
+        <LoadingCubes />
         <div style={{ marginTop: '16px' }}>Loading 3D Scene...</div>
         <div style={{ marginTop: '8px', fontSize: '14px', opacity: 0.7 }}>
           Optimizing for your device...
@@ -199,7 +199,7 @@ const LazyOceanCanvas: React.FC<LazyOceanCanvasProps> = ({
           }}
         >
           <div style={{ textAlign: 'center' }}>
-            <LoadingSpinner />
+            <LoadingCubes />
             <div style={{ marginTop: '16px' }}>Loading Resources...</div>
             <div style={{ marginTop: '8px', fontSize: '12px', opacity: 0.7 }}>
               Textures, models, and fonts
