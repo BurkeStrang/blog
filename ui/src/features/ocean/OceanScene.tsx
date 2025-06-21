@@ -153,8 +153,8 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   onLoaded,
   visiblePostSlugs,
 }) => {
-  // Positions memoized for efficiency
-  const positions = useMemo(
+  // Original positions for all posts (used when no search filter)
+  const originalPositions = useMemo(
     () => {
       if (!posts || !Array.isArray(posts) || posts.length === 0) return [];
       return posts
@@ -163,19 +163,56 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     },
     [posts]
   );
-  // Calculate offset positions only for visible posts for camera positioning
-  const offsetPositions = useMemo(() => {
+
+  // Compacted positions - always use positions 0, 1, 2, etc. for visible posts
+  const compactedPositions = useMemo(() => {
+    if (!visiblePostSlugs) return originalPositions;
+    
+    const visiblePosts = posts.filter(post => visiblePostSlugs.has(post.slug));
+    if (visiblePosts.length === 0) return [];
+    
+    // Always place visible posts at the first N positions (0, 1, 2, ...)
+    return visiblePosts.map((_, i) => 
+      new Vector3(i * 50 - (posts.length - 1) * 25, -8.5, i * 40)
+    );
+  }, [posts, visiblePostSlugs, originalPositions]);
+  // Create a mapping of post index to target position
+  const postTargetPositions = useMemo(() => {
+    const targetMap = new Map<number, Vector3>();
+    
     if (!visiblePostSlugs) {
-      // If no visibility filter, use all positions
-      return positions.filter(p => p).map((p) => p.clone().add(new Vector3(-100, 30, 100)));
+      // No search filter - use original positions
+      originalPositions.forEach((pos, i) => {
+        targetMap.set(i, pos);
+      });
+    } else {
+      // Search filter active - map visible posts to compacted positions
+      let compactIndex = 0;
+      posts.forEach((post, originalIndex) => {
+        if (visiblePostSlugs.has(post.slug)) {
+          // Visible post gets compacted position
+          if (compactIndex < compactedPositions.length) {
+            targetMap.set(originalIndex, compactedPositions[compactIndex]);
+            compactIndex++;
+          }
+        } else {
+          // Hidden post keeps original position (will be sent underwater)
+          if (originalIndex < originalPositions.length) {
+            targetMap.set(originalIndex, originalPositions[originalIndex]);
+          }
+        }
+      });
     }
     
-    // Only include positions for visible posts
-    return posts
-      .map((post, i) => ({ post, position: positions[i] }))
-      .filter(({ post, position }) => position && visiblePostSlugs.has(post.slug))
-      .map(({ position }) => position.clone().add(new Vector3(-100, 30, 100)));
-  }, [positions, posts, visiblePostSlugs]);
+    return targetMap;
+  }, [posts, originalPositions, compactedPositions, visiblePostSlugs]);
+
+  // Calculate offset positions for camera positioning (only visible posts)
+  const offsetPositions = useMemo(() => {
+    return compactedPositions
+      .filter(p => p)
+      .map((p) => p.clone().add(new Vector3(-100, 30, 100)));
+  }, [compactedPositions]);
   const startPos = useMemo(
     () => {
       // Provide default position when no posts are available
@@ -190,6 +227,9 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   // Track when scene is fully loaded
   const [sceneLoaded, setSceneLoaded] = useState(false);
   const [postBoxesLoaded, setPostBoxesLoaded] = useState(0);
+  
+  // Shared map of all post positions for collision detection
+  const allPostPositions = useMemo(() => new Map<number, Vector3>(), []);
   
   // Memory optimization
   const performanceMode = useMemo(() => {
@@ -344,9 +384,11 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         font={resources.fonts.gentilis!}
       />
       {posts.map((post, i) => {
-        const p = positions[i];
-        // Safety check: ensure position exists
-        if (!p) return null;
+        const originalPos = originalPositions[i];
+        const targetPos = postTargetPositions.get(i);
+        
+        // Safety check: ensure positions exist
+        if (!originalPos || !targetPos) return null;
         
         // Determine if this post should be visible
         const isVisible = !visiblePostSlugs || visiblePostSlugs.has(post.slug);
@@ -356,12 +398,14 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
             key={post.slug}
             index={i}
             title={post.title}
-            position={[p.x, p.y, p.z]}
+            position={[originalPos.x, originalPos.y, originalPos.z]}
+            targetPosition={[targetPos.x, targetPos.y, targetPos.z]}
             onClick={() => onPostClick?.(post.slug)}
             rubiksCubeModel={resources.models.rubiksCube!}
             font={resources.fonts.gentilis!}
             onReady={() => setPostBoxesLoaded(prev => prev + 1)}
             isVisible={isVisible}
+            allPostPositions={allPostPositions}
           />
         );
       })}

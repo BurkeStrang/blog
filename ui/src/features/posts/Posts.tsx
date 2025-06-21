@@ -75,7 +75,6 @@ const Posts: React.FC<PostsProps> = ({ selectedPost }) => {
               marginTop: '2rem',
               fontSize: '1.1rem'
             }}>
-              No posts found matching your search.
             </div>
           )}
         </>

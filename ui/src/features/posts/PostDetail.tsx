@@ -105,7 +105,6 @@ const Content = styled.div`
   a {
     color: ${accent};
     text-decoration: none;
-    border-bottom: 1px solid ${accent};
     transition: all 0.2s ease;
     
     &:hover {
@@ -124,8 +123,7 @@ const BackButtonContainer = styled.div`
   display: flex;
   justify-content: center;
   margin-top: 3rem;
-  padding: 2rem 0 1rem 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2rem 0 3rem 0;
   position: sticky;
   bottom: 0;
   background: linear-gradient(to bottom, transparent 0%, ${backgroundColor} 20%, ${backgroundColor} 100%);

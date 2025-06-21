@@ -68,12 +68,14 @@ function wrapLines(
 interface PostBoxProps {
   title: string;
   index: number;
-  position: [number, number, number];
+  position: [number, number, number]; // Original/base position
   onClick: () => void;
   rubiksCubeModel: GLTF;
   font: Font;
   onReady?: () => void;
   isVisible?: boolean; // New prop for search filtering
+  targetPosition?: [number, number, number]; // Target position for compacting
+  allPostPositions?: Map<number, THREE.Vector3>; // All current post positions for collision detection
 }
 
 const fontSize = 0.2;
@@ -81,7 +83,7 @@ const wordScale = 12;
 const textMargin = 0.8;
 
 function PostBoxCore(props: PostBoxProps) {
-  const { title, index, position, onClick, rubiksCubeModel, font, onReady, isVisible = true } = props;
+  const { title, index, position, onClick, rubiksCubeModel, font, onReady, isVisible = true, targetPosition, allPostPositions } = props;
   const groupRef = useRef<THREE.Group>(null!);
   const [hovered, setHovered] = useState(false);
 
@@ -258,29 +260,73 @@ function PostBoxCore(props: PostBoxProps) {
   const hoverLift = 11;
   const underwaterDepth = -60; // How deep underwater hidden posts go
   const liftEase = 0.1;
-  const visibilityEase = 0.05; // Slower easing for underwater transitions
+  const underwaterEase = 0.2; // Fast easing for going underwater
+  const repositionEase = 0.1; // Slow easing for repositioning visible posts
+  const hoverEase = 0.15;
+  const collisionRadius = 30; // Minimum distance between cubes
+  
+  // Collision detection helper
+  const checkCollisions = (targetPos: THREE.Vector3): THREE.Vector3 => {
+    if (!allPostPositions) return targetPos;
+    
+    const adjustedPos = targetPos.clone();
+    let hasCollision = true;
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    while (hasCollision && attempts < maxAttempts) {
+      hasCollision = false;
+      
+      // Check against all other posts
+      for (const [otherIndex, otherPos] of allPostPositions) {
+        if (otherIndex === index) continue; // Skip self
+        
+        const distance = adjustedPos.distanceTo(otherPos);
+        if (distance < collisionRadius) {
+          hasCollision = true;
+          
+          // Calculate repulsion vector
+          const repulsion = adjustedPos.clone().sub(otherPos).normalize();
+          if (repulsion.length() === 0) {
+            // If positions are identical, create random offset
+            repulsion.set(Math.random() - 0.5, 0, Math.random() - 0.5).normalize();
+          }
+          
+          // Move away from collision
+          const pushDistance = collisionRadius - distance + 2;
+          adjustedPos.add(repulsion.multiplyScalar(pushDistance));
+        }
+      }
+      attempts++;
+    }
+    
+    return adjustedPos;
+  };
   
   useFrame(({ clock }) => {
     const g = groupRef.current;
     const t = clock.getElapsedTime();
     
-    // Animate: lerped hover lift, wiggle
-    const bob = position[1] + Math.sin(t * 2) * 0.1;
+    // Determine which base position to use (target for spacing, original for underwater)
+    const basePos = isVisible && targetPosition ? targetPosition : position;
     
-    // Calculate base target positions
-    let baseTargetY = hovered ? position[1] + hoverLift : bob;
+    // Animate: lerped hover lift, wiggle
+    const bob = basePos[1] + Math.sin(t * 2) * 0.1;
+    
+    // Calculate base target positions using the determined base position
+    let baseTargetY = hovered ? basePos[1] + hoverLift : bob;
     let baseTargetZ = hovered
-      ? position[2] + 10 + Math.pow(index / 10, 4) * 0.9
-      : position[2] + 8 + Math.pow(index / 10, 4) * 0.9;
+      ? basePos[2] + 10 + Math.pow(index / 10, 4) * 0.9
+      : basePos[2] + 8 + Math.pow(index / 10, 4) * 0.9;
     let baseTargetX = hovered
-      ? position[0] - 10 - Math.pow(index / 10, 4) * 0.9
-      : position[0] - 8 - Math.pow(index / 10, 4) * 0.9;
+      ? basePos[0] - 10 - Math.pow(index / 10, 4) * 0.9
+      : basePos[0] - 8 - Math.pow(index / 10, 4) * 0.9;
     
     // Override positions if not visible (send underwater)
     if (!isVisible) {
       baseTargetY = underwaterDepth;
-      baseTargetZ = position[2]; // Keep original Z position underwater
-      baseTargetX = position[0]; // Keep original X position underwater
+      baseTargetZ = position[2]; // Use original Z position underwater
+      baseTargetX = position[0]; // Use original X position underwater
     }
     
     const wiggleDelta = 0.02 + (Math.sin(index) + 0.1) * 0.15;
@@ -290,12 +336,31 @@ function PostBoxCore(props: PostBoxProps) {
       : Math.sin(t) * 0.03 - 0.5 - wiggleDelta;
     const targetRotZ = hovered ? 0 : Math.sin(t) * 0.04 + wiggleDelta;
     
-    // Use different easing speeds for visibility changes vs normal movement
-    const currentEase = isVisible ? liftEase : visibilityEase;
+    // Apply collision detection to prevent overlapping
+    const rawTargetPos = new THREE.Vector3(baseTargetX, baseTargetY + 34, baseTargetZ);
+    const collisionFreePos = checkCollisions(rawTargetPos);
     
-    g.position.x = MathUtils.lerp(g.position.x, baseTargetX, currentEase);
-    g.position.y = MathUtils.lerp(g.position.y, baseTargetY + 34, currentEase);
-    g.position.z = MathUtils.lerp(g.position.z, baseTargetZ, currentEase);
+    // Determine easing speed based on type of movement
+    let currentEase = liftEase; // Default for normal hover/bob movements
+    
+    if (!isVisible) {
+      // Fast movement for going underwater
+      currentEase = underwaterEase;
+    } else if (targetPosition && 
+               (Math.abs(basePos[0] - position[0]) > 0.1 || 
+                Math.abs(basePos[2] - position[2]) > 0.1)) {
+      // Slow movement for repositioning visible posts that moved positions
+      currentEase = hovered ? hoverEase : repositionEase;
+    }
+    
+    // Update the allPostPositions map with our current position for other cubes
+    if (allPostPositions) {
+      allPostPositions.set(index, g.position.clone());
+    }
+    
+    g.position.x = MathUtils.lerp(g.position.x, collisionFreePos.x, currentEase);
+    g.position.y = MathUtils.lerp(g.position.y, collisionFreePos.y, currentEase);
+    g.position.z = MathUtils.lerp(g.position.z, collisionFreePos.z, currentEase);
     g.rotation.x = MathUtils.lerp(g.rotation.x, targetRotX, liftEase);
     g.rotation.y = MathUtils.lerp(g.rotation.y, targetRotY, liftEase);
     g.rotation.z = MathUtils.lerp(g.rotation.z, targetRotZ, liftEase);
