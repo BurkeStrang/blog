@@ -29,6 +29,8 @@ interface LazyOceanCanvasProps {
   isPaused?: boolean;
   loadTrigger?: 'immediate' | 'viewport' | 'user-interaction';
   visiblePostSlugs?: Set<string>;
+  sortedPosts?: Post[];
+  isSorting?: boolean;
 }
 
 /**
@@ -41,7 +43,9 @@ const LazyOceanCanvas: React.FC<LazyOceanCanvasProps> = ({
   onLoaded,
   isPaused = false,
   loadTrigger = 'viewport',
-  visiblePostSlugs
+  visiblePostSlugs,
+  sortedPosts,
+  isSorting = false
 }) => {
   const [shouldLoad, setShouldLoad] = useState(loadTrigger === 'immediate');
   const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null);
@@ -180,6 +184,8 @@ const LazyOceanCanvas: React.FC<LazyOceanCanvasProps> = ({
             onLoaded={onLoaded}
             isPaused={isPaused}
             visiblePostSlugs={visiblePostSlugs}
+            sortedPosts={sortedPosts}
+            isSorting={isSorting}
           />
         </Suspense>
       )}

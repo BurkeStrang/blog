@@ -19,6 +19,7 @@ export interface Post {
   body: string;
   position?: THREE.Vector3;
   date?: Date;
+  pageViews?: number;
 }
 
 const LoaderOverlay = styled.div`
@@ -47,7 +48,7 @@ const AppContent: React.FC = () => {
   const location = useLocation();
   
   // Use search context
-  const { filteredPosts, setAllPosts } = useSearch();
+  const { filteredPosts, setAllPosts, isSorting } = useSearch();
   
   // Create a Set of visible post slugs for efficient lookup
   const visiblePostSlugs = useMemo(() => {
@@ -165,6 +166,8 @@ const AppContent: React.FC = () => {
               isPaused={isDetail}
               loadTrigger="viewport"
               visiblePostSlugs={visiblePostSlugs}
+              sortedPosts={filteredPosts}
+              isSorting={isSorting}
             />
           </CanvasBackground>
         </PersistentCanvasWrapper>

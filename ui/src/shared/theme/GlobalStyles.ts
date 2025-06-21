@@ -1,6 +1,6 @@
 import styled, { createGlobalStyle, keyframes } from "styled-components";
 import mega from "../../assets/fonts/MegatransRounded-Regular.otf";
-import SortIcon from "@mui/icons-material/Sort";
+// import SortIcon from "@mui/icons-material/Sort";
 import {
   backgroundColor,
   darkgrey,
@@ -135,18 +135,30 @@ export const Cloud = styled.img`
   }
 `;
 
-export const SortButton = styled(SortIcon)`
+export const SortButton = styled.button`
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
+  justify-content: center;
   top: 12rem;
   cursor: pointer;
   color: ${lightgrey};
+  background: transparent;
+  border: 2px solid ${lightgrey};
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-family: 'mega', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
 
   &:hover {
     color: ${secondary};
+    border-color: ${secondary};
+    background: rgba(255, 255, 255, 0.05);
   }
 `;
 

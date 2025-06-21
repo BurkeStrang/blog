@@ -1,11 +1,21 @@
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
 import type { Post } from '../../app/AppContent';
+
+export type SortCriteria = 'pageViews' | 'date';
+export type SortDirection = 'asc' | 'desc';
 
 interface SearchContextType {
   query: string;
   setQuery: (query: string) => void;
   filteredPosts: Post[];
   setAllPosts: (posts: Post[]) => void;
+  sortBy: SortCriteria;
+  setSortBy: (criteria: SortCriteria) => void;
+  sortDirection: SortDirection;
+  setSortDirection: (direction: SortDirection) => void;
+  toggleSortDirection: () => void;
+  cycleSortCriteria: () => void;
+  isSorting: boolean;
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
@@ -37,21 +47,79 @@ const searchPosts = (posts: Post[], query: string): Post[] => {
   });
 };
 
+// Sorting functions
+const sortPosts = (posts: Post[], sortBy: SortCriteria, direction: SortDirection): Post[] => {
+  const sorted = [...posts].sort((a, b) => {
+    let comparison = 0;
+    
+    if (sortBy === 'pageViews') {
+      const aViews = a.pageViews || 0;
+      const bViews = b.pageViews || 0;
+      comparison = aViews - bViews;
+    } else if (sortBy === 'date') {
+      const aDate = a.date ? new Date(a.date).getTime() : 0;
+      const bDate = b.date ? new Date(b.date).getTime() : 0;
+      comparison = aDate - bDate;
+    }
+    
+    return direction === 'desc' ? -comparison : comparison;
+  });
+  
+  return sorted;
+};
+
 export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [allPosts, setAllPosts] = useState<Post[]>([]);
+  const [sortBy, setSortBy] = useState<SortCriteria>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [isSorting, setIsSorting] = useState(false);
 
-  // Memoize filtered posts to avoid unnecessary recalculations
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  // Toggle sort direction
+  const toggleSortDirection = () => {
+    setIsSorting(true);
+    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    // Reset sorting state after animation time
+    setTimeout(() => setIsSorting(false), 1000);
+  };
+
+  // Cycle through sort criteria
+  const cycleSortCriteria = () => {
+    setIsSorting(true);
+    setSortBy(prev => prev === 'pageViews' ? 'date' : 'pageViews');
+    // Reset sorting state after animation time
+    setTimeout(() => setIsSorting(false), 1000);
+  };
+
+  // Memoize filtered and sorted posts to avoid unnecessary recalculations
   const filteredPosts = useMemo(() => {
-    return searchPosts(allPosts, query);
-  }, [allPosts, query]);
+    const searched = searchPosts(allPosts, debouncedQuery);
+    return sortPosts(searched, sortBy, sortDirection);
+  }, [allPosts, debouncedQuery, sortBy, sortDirection]);
 
   const value = useMemo(() => ({
     query,
     setQuery,
     filteredPosts,
     setAllPosts,
-  }), [query, filteredPosts]);
+    sortBy,
+    setSortBy,
+    sortDirection,
+    setSortDirection,
+    toggleSortDirection,
+    cycleSortCriteria,
+    isSorting,
+  }), [query, filteredPosts, sortBy, sortDirection, isSorting]);
 
   return (
     <SearchContext.Provider value={value}>

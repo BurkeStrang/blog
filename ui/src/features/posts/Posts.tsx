@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React from "react";
 import {
   Page,
   Header,
@@ -52,10 +52,7 @@ const SearchBarMemo = React.memo(function SearchBarMemo() {
 });
 
 const Posts: React.FC<PostsProps> = ({ selectedPost }) => {
-  const [isSortUp, setIsSortUp] = useState(true);
-  const { filteredPosts } = useSearch();
-
-  const toggleSort = useCallback(() => setIsSortUp((prev) => !prev), []);
+  const { filteredPosts, sortBy, sortDirection, toggleSortDirection, cycleSortCriteria } = useSearch();
 
   return (
     <Page>
@@ -66,8 +63,10 @@ const Posts: React.FC<PostsProps> = ({ selectedPost }) => {
             <h1>BRXSTNG BLG</h1>
           </Header>
           <SearchBarMemo />
-          <SortButton />
-          <SortIcon isUp={isSortUp} onClick={toggleSort} />
+          <SortButton onClick={cycleSortCriteria}>
+            {sortBy === 'pageViews' ? 'VIEWS' : 'DATE'}
+          </SortButton>
+          <SortIcon isUp={sortDirection === 'asc'} onClick={toggleSortDirection} />
           {filteredPosts.length === 0 && (
             <div style={{ 
               textAlign: 'center', 
@@ -75,6 +74,7 @@ const Posts: React.FC<PostsProps> = ({ selectedPost }) => {
               marginTop: '2rem',
               fontSize: '1.1rem'
             }}>
+              No posts found matching your search.
             </div>
           )}
         </>

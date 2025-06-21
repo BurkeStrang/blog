@@ -76,6 +76,7 @@ interface PostBoxProps {
   isVisible?: boolean; // New prop for search filtering
   targetPosition?: [number, number, number]; // Target position for compacting
   allPostPositions?: Map<number, THREE.Vector3>; // All current post positions for collision detection
+  sortingActive?: boolean; // New prop to indicate sorting is happening
 }
 
 const fontSize = 0.2;
@@ -83,9 +84,31 @@ const wordScale = 12;
 const textMargin = 0.8;
 
 function PostBoxCore(props: PostBoxProps) {
-  const { title, index, position, onClick, rubiksCubeModel, font, onReady, isVisible = true, targetPosition, allPostPositions } = props;
+  const { title, index, position, onClick, rubiksCubeModel, font, onReady, isVisible = true, targetPosition, allPostPositions, sortingActive = false } = props;
   const groupRef = useRef<THREE.Group>(null!);
   const [hovered, setHovered] = useState(false);
+  const [sortingPhase, setSortingPhase] = useState<'none' | 'underwater' | 'surfacing'>('none');
+  
+  // Track sorting state changes
+  useEffect(() => {
+    if (sortingActive && sortingPhase === 'none') {
+      // Start sorting sequence by going underwater
+      setSortingPhase('underwater');
+    } else if (!sortingActive && sortingPhase === 'underwater') {
+      // Sorting finished, start surfacing
+      const delay = index * 100; // Stagger surfacing animation
+      const timer = setTimeout(() => {
+        setSortingPhase('surfacing');
+      }, delay);
+      return () => clearTimeout(timer);
+    } else if (!sortingActive && sortingPhase === 'surfacing') {
+      // Complete the surfacing animation
+      const timer = setTimeout(() => {
+        setSortingPhase('none');
+      }, 800); // Allow time for surfacing animation
+      return () => clearTimeout(timer);
+    }
+  }, [sortingActive, sortingPhase, index]);
 
   // --- Block geometry/bounds ---
   const blockScene = useMemo(() => rubiksCubeModel.scenes[0].clone(true), [rubiksCubeModel]);
@@ -258,12 +281,13 @@ function PostBoxCore(props: PostBoxProps) {
 
   // --- Animation (frame loop) ---
   const hoverLift = 11;
-  const underwaterDepth = -60; // How deep underwater hidden posts go
+  const underwaterDepth = -140; // How deep underwater hidden posts go
+  const sortingDepth = -140; // Much deeper for sorting animation
   const liftEase = 0.1;
-  const underwaterEase = 0.2; // Fast easing for going underwater
+  const underwaterEase = 0.1; // Fast easing for going underwater
   const repositionEase = 0.1; // Slow easing for repositioning visible posts
   const hoverEase = 0.15;
-  const collisionRadius = 30; // Minimum distance between cubes
+  const collisionRadius = 1; // Minimum distance between cubes
   
   // Collision detection helper
   const checkCollisions = (targetPos: THREE.Vector3): THREE.Vector3 => {
@@ -322,11 +346,22 @@ function PostBoxCore(props: PostBoxProps) {
       ? basePos[0] - 10 - Math.pow(index / 10, 4) * 0.9
       : basePos[0] - 8 - Math.pow(index / 10, 4) * 0.9;
     
-    // Override positions if not visible (send underwater)
-    if (!isVisible) {
+    // Handle sorting animation phases
+    if (sortingPhase === 'underwater') {
+      // Send deep underwater during sorting
+      baseTargetY = sortingDepth;
+      baseTargetZ = position[2]; // Use original Z position underwater
+      baseTargetX = position[0]; // Use original X position underwater
+    } else if (!isVisible && sortingPhase === 'none') {
+      // Send to regular depth when filtered out (not sorting)
       baseTargetY = underwaterDepth;
       baseTargetZ = position[2]; // Use original Z position underwater
       baseTargetX = position[0]; // Use original X position underwater
+    } else if (sortingPhase === 'surfacing') {
+      // Coming up from underwater during sorting
+      baseTargetY = basePos[1] + Math.sin(t * 2) * 0.1; // Surface to normal position
+      baseTargetZ = basePos[2] + 8 + Math.pow(index / 10, 4) * 0.9;
+      baseTargetX = basePos[0] - 8 - Math.pow(index / 10, 4) * 0.9;
     }
     
     const wiggleDelta = 0.02 + (Math.sin(index) + 0.1) * 0.15;
@@ -342,15 +377,35 @@ function PostBoxCore(props: PostBoxProps) {
     
     // Determine easing speed based on type of movement
     let currentEase = liftEase; // Default for normal hover/bob movements
+    let yEase = liftEase; // Separate easing for Y position
     
-    if (!isVisible) {
-      // Fast movement for going underwater
+    if (sortingPhase === 'underwater') {
+      // Fast movement for going deep underwater during sorting
       currentEase = underwaterEase;
+      yEase = underwaterEase;
+    } else if (!isVisible && sortingPhase === 'none') {
+      // Fast movement for going underwater when filtered out
+      currentEase = underwaterEase;
+      yEase = underwaterEase;
+    } else if (sortingPhase === 'surfacing') {
+      // Medium speed for surfacing
+      currentEase = 0.08;
+      yEase = 0.08;
     } else if (targetPosition && 
                (Math.abs(basePos[0] - position[0]) > 0.1 || 
                 Math.abs(basePos[2] - position[2]) > 0.1)) {
       // Slow movement for repositioning visible posts that moved positions
       currentEase = hovered ? hoverEase : repositionEase;
+      
+      // Check if X and Z positions are close to target - if so, allow Y movement
+      const xCloseToTarget = Math.abs(g.position.x - collisionFreePos.x) < 5;
+      const zCloseToTarget = Math.abs(g.position.z - collisionFreePos.z) < 5;
+      
+      if (xCloseToTarget && zCloseToTarget) {
+        yEase = currentEase; // Normal Y movement when X/Z are in position
+      } else {
+        yEase = 0.02; // Very slow Y movement while X/Z are moving
+      }
     }
     
     // Update the allPostPositions map with our current position for other cubes
@@ -358,9 +413,12 @@ function PostBoxCore(props: PostBoxProps) {
       allPostPositions.set(index, g.position.clone());
     }
     
+    // Move X and Z first with normal easing
     g.position.x = MathUtils.lerp(g.position.x, collisionFreePos.x, currentEase);
-    g.position.y = MathUtils.lerp(g.position.y, collisionFreePos.y, currentEase);
     g.position.z = MathUtils.lerp(g.position.z, collisionFreePos.z, currentEase);
+    
+    // Move Y with potentially different easing (slower until X/Z are in position)
+    g.position.y = MathUtils.lerp(g.position.y, collisionFreePos.y, yEase);
     g.rotation.x = MathUtils.lerp(g.rotation.x, targetRotX, liftEase);
     g.rotation.y = MathUtils.lerp(g.rotation.y, targetRotY, liftEase);
     g.rotation.z = MathUtils.lerp(g.rotation.z, targetRotZ, liftEase);
@@ -368,7 +426,7 @@ function PostBoxCore(props: PostBoxProps) {
 
   // --- Pointer events ---
   const handlePointerOver = () => {
-    if (!isVisible) return; // Don't allow hover when underwater
+    if (!isVisible || sortingPhase !== 'none') return; // Don't allow hover when underwater or sorting
     setHovered(true);
     document.body.style.cursor = "pointer";
   };
@@ -378,7 +436,7 @@ function PostBoxCore(props: PostBoxProps) {
   };
   
   const handleClick = () => {
-    if (!isVisible) return; // Don't allow clicks when underwater
+    if (!isVisible || sortingPhase !== 'none') return; // Don't allow clicks when underwater or sorting
     onClick();
   };
 
