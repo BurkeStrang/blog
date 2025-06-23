@@ -71,32 +71,18 @@ const AppContent: React.FC = () => {
   // Canvas is fully ready when 3D scene has finished rendering
   const canvasReady = resourcesReady && canvasLoaded && shouldLoadCanvas;
 
-  // Determine when to load canvas based on route and navigation history
+  // Load canvas on first visit to any route and keep it loaded
   useEffect(() => {
     const isPostRoute = location.pathname.startsWith('/posts/');
     const isPostsRoute = location.pathname === '/posts';
     const isHomeRoute = location.pathname === '/';
     
-    // Load canvas immediately if on home or posts list route
-    if (isHomeRoute || isPostsRoute) {
+    // Load canvas once for any relevant route and keep it loaded
+    if (isHomeRoute || isPostsRoute || isPostRoute) {
       setHasVisitedHome(true);
       setShouldLoadCanvas(true);
     }
-    // If directly navigating to a post, don't load canvas unless coming from home
-    else if (isPostRoute) {
-      if (hasVisitedHome) {
-        setShouldLoadCanvas(true);
-      } else {
-        setShouldLoadCanvas(false);
-      }
-    }
-    // For other routes, load canvas if we've visited home
-    else {
-      if (hasVisitedHome) {
-        setShouldLoadCanvas(true);
-      }
-    }
-  }, [location.pathname, hasVisitedHome]);
+  }, [location.pathname]);
 
   // Memory tracking (async to avoid blocking)
   useEffect(() => {

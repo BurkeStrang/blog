@@ -15,6 +15,7 @@ export const GlobalStyle = createGlobalStyle`
   @font-face {
     font-family: 'mega';
     src: url(${mega}) format('opentype');
+    font-display: swap;
   }
 
   html {

@@ -37,7 +37,7 @@ const SearchBarMemo = React.memo(function SearchBarMemo() {
       <SearchContainer>
         <SearchInput
           type="text"
-          placeholder="Search posts..."
+          placeholder="Search"
           value={query}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
         />
@@ -56,30 +56,26 @@ const Posts: React.FC<PostsProps> = ({ selectedPost }) => {
 
   return (
     <Page>
-      {!selectedPost && (
-        <>
-          <Header>
-            <Cloud src={cloudImg} alt="" />
-            <h1>BRXSTNG BLG</h1>
-          </Header>
-          <SearchBarMemo />
-          <SortButton onClick={cycleSortCriteria}>
-            {sortBy === 'pageViews' ? 'VIEWS' : 'DATE'}
-          </SortButton>
-          <SortIcon isUp={sortDirection === 'asc'} onClick={toggleSortDirection} />
-          {filteredPosts.length === 0 && (
-            <div style={{ 
-              textAlign: 'center', 
-              color: '#666', 
-              marginTop: '2rem',
-              fontSize: '1.1rem'
-            }}>
-              No posts found matching your search.
-            </div>
-          )}
-        </>
-      )}
-      {/* Navigation is handled by AppContent, no need for additional Navigate */}
+      <Header style={{ display: selectedPost ? 'none' : 'block' }}>
+        <Cloud src={cloudImg} alt="" />
+        <h1>BRXSTNG BLG</h1>
+      </Header>
+      <div style={{ display: selectedPost ? 'none' : 'block' }}>
+        <SearchBarMemo />
+        <SortButton onClick={cycleSortCriteria}>
+          {sortBy === 'pageViews' ? 'VIEWS' : 'DATE'}
+        </SortButton>
+        <SortIcon isUp={sortDirection === 'asc'} onClick={toggleSortDirection} />
+        {filteredPosts.length === 0 && (
+          <div style={{ 
+            textAlign: 'center', 
+            color: '#666', 
+            marginTop: '2rem',
+            fontSize: '1.1rem'
+          }}>
+          </div>
+        )}
+      </div>
     </Page>
   );
 };
