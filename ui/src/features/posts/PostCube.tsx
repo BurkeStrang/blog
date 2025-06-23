@@ -362,9 +362,9 @@ function PostBoxCore(props: PostBoxProps) {
       cameraMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
       frustum.setFromProjectionMatrix(cameraMatrix);
       
-      // Create a bounding sphere around the post cube
+      // Create a bounding sphere around the post cube with extra margin for text pre-loading
       const worldPosition = g.position.clone();
-      const boundingSphere = new THREE.Sphere(worldPosition, 50); // 50 unit radius around cube
+      const boundingSphere = new THREE.Sphere(worldPosition, 1000); // 150 unit radius for early text rendering
       
       const isInFrustum = frustum.intersectsSphere(boundingSphere);
       setInFrustum(isInFrustum);
@@ -494,7 +494,7 @@ function PostBoxCore(props: PostBoxProps) {
     onClick();
   };
 
-  // Don't render anything if not in camera frustum (unless sorting/filtering is happening)
+  // Always render when in extended frustum for text pre-loading, or when sorting/filtering
   const shouldRender = inFrustum || isVisible || sortingPhase !== 'none';
   
   // Debug: Log frustum culling in development
@@ -529,8 +529,8 @@ function PostBoxCore(props: PostBoxProps) {
             ]}
           />
 
-          {/* Text lines - only render text at high/medium LOD */}
-          {(lodLevel === 'high' || lodLevel === 'medium') && textGeometries.map((geo, i) => {
+          {/* Text lines - always render text geometry when in extended frustum for pre-loading */}
+          {textGeometries.map((geo, i) => {
             const zBase = bbox.max.z + textMargin - 0.02 + 27;
             return (
               <React.Fragment key={i}>
@@ -544,7 +544,7 @@ function PostBoxCore(props: PostBoxProps) {
                     zBase,
                   ]}
                 />
-                {/* Only render glow effect at high LOD */}
+                {/* Only render glow effect at high LOD and when close */}
                 {lodLevel === 'high' && (
                   <mesh
                     geometry={geo}
