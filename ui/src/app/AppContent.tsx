@@ -11,6 +11,8 @@ import * as THREE from "three";
 import { backgroundColor } from "../shared/theme/colors";
 import { useAssetLoader } from "../shared/hooks";
 import { memoryTracker } from "../engine/memory/MemoryTracker";
+import { memoryMonitor } from "../engine/memory/MemoryProfiler";
+import { cleanupResourcePoolIntervals } from "../engine/memory/ResourcePool";
 import { useSearch } from "../shared/contexts/SearchContext";
 
 export interface Post {
@@ -105,6 +107,19 @@ const AppContent: React.FC = () => {
       }, 0);
     }
   }, [canvasReady]);
+
+  // Cleanup all memory-related intervals and resources on unmount
+  useEffect(() => {
+    return () => {
+      // Cleanup all development intervals and memory monitoring
+      memoryMonitor.dispose();
+      cleanupResourcePoolIntervals();
+      // Force a final memory snapshot
+      setTimeout(() => {
+        memoryTracker.takeSnapshot('AppContent-Cleanup');
+      }, 100);
+    };
+  }, []);
 
   const handlePostClick = useCallback(
     (slug: string) => {

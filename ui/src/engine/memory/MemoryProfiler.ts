@@ -286,6 +286,14 @@ export class MemoryMonitor {
       clearInterval(this.reportInterval);
       this.reportInterval = undefined;
     }
+    
+    // Clean up development interval that was stored on the instance
+    const extendedInstance = this as MemoryMonitor & { reportInterval?: ReturnType<typeof setInterval> };
+    if (extendedInstance.reportInterval) {
+      clearInterval(extendedInstance.reportInterval);
+      delete extendedInstance.reportInterval;
+    }
+    
     this.clear();
     this.renderer = undefined;
   }

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useMemo, useState } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 import {
   PlaneGeometry,
   Vector3,
@@ -15,7 +16,7 @@ import { PostNavigation } from "../posts";
 import type { Post } from "../../app/AppContent";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { memoryProfiler } from "../../engine/memory";
-import { GeometryPool, lodManager } from "../../engine/rendering";
+// import { GeometryPool, lodManager } from "../../engine/rendering";
 
 // TypeScript augmentation for outputEncoding
 declare module "three" {
@@ -34,29 +35,27 @@ interface PerformanceMode {
   enableBloom: boolean;
 }
 
-// Memory-optimized Ocean Scene with preloaded resources
-const OceanScene: React.FC<{ waterNormals: Texture; performanceMode: PerformanceMode }> = ({ 
-  waterNormals, 
-  performanceMode 
-}) => {
+// Tiled Water Tile Component
+const WaterTile: React.FC<{ 
+  position: [number, number, number]; 
+  size: number; 
+  waterNormals: Texture; 
+  performanceMode: PerformanceMode;
+  visible: boolean;
+}> = ({ position, size, waterNormals, performanceMode, visible }) => {
   const { scene } = useThree();
   const waterRef = useRef<Water>(null!);
 
-  useEffect(() => {
-    // Only set fog once
-    scene.fog = new FogExp2(0x2a2a38, 0.0009);
+  const water = useMemo(() => {
+    if (!visible) return null;
 
-    // Adaptive geometry based on performance
     const segments = performanceMode.isLowEnd ? 1 : 2;
     const textureSize = performanceMode.isLowEnd ? 128 : 256;
     
-    // Use geometry pool for memory efficiency
-    const geo = GeometryPool.getGeometry(
-      `water-${segments}`,
-      () => new PlaneGeometry(10000, 10000, segments, segments)
-    );
+    // Create smaller tile geometry
+    const geo = new PlaneGeometry(size, size, segments, segments);
     
-    const water = new Water(geo, {
+    const waterTile = new Water(geo, {
       textureWidth: textureSize,
       textureHeight: textureSize,
       waterNormals,
@@ -66,13 +65,13 @@ const OceanScene: React.FC<{ waterNormals: Texture; performanceMode: Performance
       fog: Boolean(scene.fog),
     });
 
-    // Material setup (transparency, glow, etc.)
-    water.material.transparent = true;
-    water.material.uniforms.alpha.value = 0.99;
-    water.material.opacity = 0.99;
-    water.material.uniforms.waterColor.value.set(0x00000f);
-    water.material.uniforms.distortionScale.value = 0.5;
-    water.material.onBeforeCompile = (shader) => {
+    // Material setup
+    waterTile.material.transparent = true;
+    waterTile.material.uniforms.alpha.value = 0.99;
+    waterTile.material.opacity = 0.99;
+    waterTile.material.uniforms.waterColor.value.set(0x00000f);
+    waterTile.material.uniforms.distortionScale.value = 0.5;
+    waterTile.material.onBeforeCompile = (shader) => {
       shader.fragmentShader = shader.fragmentShader.replace(
         `#include <color_fragment>`,
         `#include <color_fragment>;
@@ -81,22 +80,25 @@ const OceanScene: React.FC<{ waterNormals: Texture; performanceMode: Performance
         `
       );
     };
-    water.rotation.x = -Math.PI / 2;
-    scene.add(water);
-    waterRef.current = water;
+    
+    waterTile.rotation.x = -Math.PI / 2;
+    waterTile.position.set(position[0], position[1], position[2]);
+    
+    return waterTile;
+  }, [visible, size, waterNormals, performanceMode, scene, position]);
 
-    // LOD setup for water based on camera distance
-    lodManager.addLODObject('water', new Vector3(0, 0, 0), [
-      { distance: 1000, object: water },
-      { distance: 5000, object: water }
-    ]);
-
-    return () => {
-      scene.remove(water);
-      GeometryPool.releaseGeometry(geo);
-      water.material.dispose();
-    };
-  }, [scene, waterNormals, performanceMode]);
+  useEffect(() => {
+    if (water) {
+      scene.add(water);
+      waterRef.current = water;
+      
+      return () => {
+        scene.remove(water);
+        water.geometry.dispose();
+        water.material.dispose();
+      };
+    }
+  }, [water, scene]);
 
   useFrame((_, delta) => {
     if (waterRef.current) {
@@ -105,12 +107,100 @@ const OceanScene: React.FC<{ waterNormals: Texture; performanceMode: Performance
       };
       mat.uniforms.time.value += delta;
     }
-    
-    // Update LOD system
-    lodManager.update();
   });
 
   return null;
+};
+
+// Tiled Ocean Scene with frustum culling
+const OceanScene: React.FC<{ waterNormals: Texture; performanceMode: PerformanceMode }> = ({ 
+  waterNormals, 
+  performanceMode 
+}) => {
+  const { scene, camera } = useThree();
+  const [visibleTiles, setVisibleTiles] = useState<Set<string>>(new Set());
+  
+  // Create frustum for tile culling
+  const frustum = useMemo(() => new THREE.Frustum(), []);
+  const cameraMatrix = useMemo(() => new THREE.Matrix4(), []);
+
+  useEffect(() => {
+    // Only set fog once
+    scene.fog = new FogExp2(0x2a2a38, 0.0009);
+  }, [scene]);
+
+  // Generate tile grid based on camera position and posts
+  const tileConfig = useMemo(() => {
+    const tileSize = 500; // Size of each water tile
+    const gridExtent = 2000; // How far the grid extends from center
+    const tiles: Array<{id: string; position: [number, number, number]; size: number}> = [];
+    
+    // Create a grid of tiles
+    for (let x = -gridExtent; x <= gridExtent; x += tileSize) {
+      for (let z = -gridExtent; z <= gridExtent; z += tileSize) {
+        tiles.push({
+          id: `tile_${x}_${z}`,
+          position: [x, -8.5, z], // Same Y level as posts
+          size: tileSize
+        });
+      }
+    }
+    
+    return { tiles, tileSize };
+  }, []);
+
+  // Update visible tiles based on camera frustum (every few frames for performance)
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    
+    // Check frustum every ~5 frames
+    if (Math.floor(t * 10) % 5 === 0) {
+      cameraMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+      frustum.setFromProjectionMatrix(cameraMatrix);
+      
+      const newVisibleTiles = new Set<string>();
+      
+      tileConfig.tiles.forEach(tile => {
+        // Create bounding box for tile
+        const tileCenter = new THREE.Vector3(tile.position[0], tile.position[1], tile.position[2]);
+        const boundingBox = new THREE.Box3().setFromCenterAndSize(
+          tileCenter,
+          new THREE.Vector3(tile.size, 10, tile.size) // 10 unit height for water
+        );
+        
+        // Check if tile intersects camera frustum
+        if (frustum.intersectsBox(boundingBox)) {
+          newVisibleTiles.add(tile.id);
+        }
+      });
+      
+      // Update state only if tiles changed
+      if (newVisibleTiles.size !== visibleTiles.size || 
+          [...newVisibleTiles].some(id => !visibleTiles.has(id))) {
+        setVisibleTiles(newVisibleTiles);
+        
+        // Debug log in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🌊 Water tiles visible: ${newVisibleTiles.size}/${tileConfig.tiles.length}`);
+        }
+      }
+    }
+  });
+
+  return (
+    <>
+      {tileConfig.tiles.map(tile => (
+        <WaterTile
+          key={tile.id}
+          position={tile.position}
+          size={tile.size}
+          waterNormals={waterNormals}
+          performanceMode={performanceMode}
+          visible={visibleTiles.has(tile.id)}
+        />
+      ))}
+    </>
+  );
 };
 
 // Background: use preloaded texture
@@ -224,13 +314,13 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   const offsetPositions = useMemo(() => {
     return compactedPositions
       .filter(p => p)
-      .map((p) => p.clone().add(new Vector3(-100, 30, 100)));
+      .map((p) => p.clone().add(new Vector3(-100, 20, 100)));
   }, [compactedPositions]);
   const startPos = useMemo(
     () => {
       // Provide default position when no posts are available
       if (offsetPositions.length === 0) {
-        return new Vector3(-200, 30, 400);
+        return new Vector3(-200, 20, 400);
       }
       return offsetPositions[0].clone().add(new Vector3(-100, 0, 300));
     },

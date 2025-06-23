@@ -287,3 +287,11 @@ if (typeof window !== 'undefined') {
     }, 120000);
   }
 }
+
+// Export cleanup function for manual cleanup
+export const cleanupResourcePoolIntervals = () => {
+  if (poolStatsInterval) {
+    clearInterval(poolStatsInterval);
+    poolStatsInterval = undefined;
+  }
+};

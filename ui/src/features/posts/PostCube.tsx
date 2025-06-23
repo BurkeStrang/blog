@@ -1,5 +1,5 @@
 import React, { useRef, useMemo, useEffect, useState } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 import type { Font } from "three/examples/jsm/loaders/FontLoader";
@@ -85,9 +85,27 @@ const textMargin = 0.8;
 
 function PostBoxCore(props: PostBoxProps) {
   const { title, index, position, onClick, rubiksCubeModel, font, onReady, isVisible = true, targetPosition, allPostPositions, sortingActive = false } = props;
+  const { camera } = useThree();
   const groupRef = useRef<THREE.Group>(null!);
   const [hovered, setHovered] = useState(false);
   const [sortingPhase, setSortingPhase] = useState<'none' | 'underwater' | 'surfacing'>('none');
+  const [inFrustum, setInFrustum] = useState(true);
+  const timeoutRefs = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  
+  // Create frustum for culling checks
+  const frustum = useMemo(() => new THREE.Frustum(), []);
+  const cameraMatrix = useMemo(() => new THREE.Matrix4(), []);
+  
+  // LOD (Level of Detail) state
+  const [lodLevel, setLodLevel] = useState<'high' | 'medium' | 'low'>('high');
+  
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      timeoutRefs.current.forEach(timeoutId => clearTimeout(timeoutId));
+      timeoutRefs.current.clear();
+    };
+  }, []);
   
   // Track sorting state changes
   useEffect(() => {
@@ -100,13 +118,21 @@ function PostBoxCore(props: PostBoxProps) {
       const timer = setTimeout(() => {
         setSortingPhase('surfacing');
       }, delay);
-      return () => clearTimeout(timer);
+      timeoutRefs.current.add(timer);
+      return () => {
+        clearTimeout(timer);
+        timeoutRefs.current.delete(timer);
+      };
     } else if (!sortingActive && sortingPhase === 'surfacing') {
       // Complete the surfacing animation
       const timer = setTimeout(() => {
         setSortingPhase('none');
       }, 800); // Allow time for surfacing animation
-      return () => clearTimeout(timer);
+      timeoutRefs.current.add(timer);
+      return () => {
+        clearTimeout(timer);
+        timeoutRefs.current.delete(timer);
+      };
     }
   }, [sortingActive, sortingPhase, index]);
 
@@ -331,6 +357,34 @@ function PostBoxCore(props: PostBoxProps) {
     const g = groupRef.current;
     const t = clock.getElapsedTime();
     
+    // Frustum culling and LOD check - only do this every few frames for performance
+    if (Math.floor(t * 10) % 3 === 0) { // Check every ~3 frames
+      cameraMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+      frustum.setFromProjectionMatrix(cameraMatrix);
+      
+      // Create a bounding sphere around the post cube
+      const worldPosition = g.position.clone();
+      const boundingSphere = new THREE.Sphere(worldPosition, 50); // 50 unit radius around cube
+      
+      const isInFrustum = frustum.intersectsSphere(boundingSphere);
+      setInFrustum(isInFrustum);
+      
+      // Calculate distance for LOD
+      const distance = camera.position.distanceTo(worldPosition);
+      if (distance > 200) {
+        setLodLevel('low');
+      } else if (distance > 100) {
+        setLodLevel('medium');
+      } else {
+        setLodLevel('high');
+      }
+      
+      // Early exit if not in frustum and not visible (filtered out)
+      if (!isInFrustum && !isVisible) {
+        return;
+      }
+    }
+    
     // Determine which base position to use (target for spacing, original for underwater)
     const basePos = isVisible && targetPosition ? targetPosition : position;
     
@@ -372,7 +426,7 @@ function PostBoxCore(props: PostBoxProps) {
     const targetRotZ = hovered ? 0 : Math.sin(t) * 0.04 + wiggleDelta;
     
     // Apply collision detection to prevent overlapping
-    const rawTargetPos = new THREE.Vector3(baseTargetX, baseTargetY + 34, baseTargetZ);
+    const rawTargetPos = new THREE.Vector3(baseTargetX, baseTargetY + 28, baseTargetZ);
     const collisionFreePos = checkCollisions(rawTargetPos);
     
     // Determine easing speed based on type of movement
@@ -440,6 +494,16 @@ function PostBoxCore(props: PostBoxProps) {
     onClick();
   };
 
+  // Don't render anything if not in camera frustum (unless sorting/filtering is happening)
+  const shouldRender = inFrustum || isVisible || sortingPhase !== 'none';
+  
+  // Debug: Log frustum culling in development
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && index === 0) {
+      console.log(`🎥 PostCube frustum culling: ${inFrustum ? 'visible' : 'culled'} (shouldRender: ${shouldRender})`);
+    }
+  }, [inFrustum, shouldRender, index]);
+  
   // --- Render ---
   return (
     <group
@@ -449,58 +513,69 @@ function PostBoxCore(props: PostBoxProps) {
       onPointerOver={handlePointerOver}
       onPointerOut={handlePointerOut}
     >
-      {/* Model */}
-      <primitive object={blockScene} scale={[16, 16, 16]} />
+      {shouldRender && (
+        <>
+          {/* Model */}
+          <primitive object={blockScene} scale={[16, 16, 16]} />
 
-      {/* Backdrop */}
-      <mesh
-        geometry={backdropGeo}
-        material={backdropMaterial}
-        position={[
-          frontCenterX + 4,
-          frontCenterY,
-          bbox.max.z + textMargin + 22,
-        ]}
-      />
+          {/* Backdrop */}
+          <mesh
+            geometry={backdropGeo}
+            material={backdropMaterial}
+            position={[
+              frontCenterX + 4,
+              frontCenterY,
+              bbox.max.z + textMargin + 22,
+            ]}
+          />
 
-      {/* Text lines */}
-      {textGeometries.map((geo, i) => {
-        const zBase = bbox.max.z + textMargin - 0.02 + 27;
-        return (
-          <React.Fragment key={i}>
-            <mesh
-              geometry={geo}
-              material={neonMat}
-              scale={[wordScale, wordScale, 0.04]}
-              position={[
-                frontCenterX + 2,
-                frontCenterY + lineOffsets[i],
-                zBase,
-              ]}
-            />
-            <mesh
-              geometry={geo}
-              material={glowMat}
-              scale={[wordScale * 1.01, wordScale * 1.01, 0.2]}
-              position={[
-                frontCenterX + 2,
-                frontCenterY + lineOffsets[i],
-                zBase,
-              ]}
-            />
-          </React.Fragment>
-        );
-      })}
+          {/* Text lines - only render text at high/medium LOD */}
+          {(lodLevel === 'high' || lodLevel === 'medium') && textGeometries.map((geo, i) => {
+            const zBase = bbox.max.z + textMargin - 0.02 + 27;
+            return (
+              <React.Fragment key={i}>
+                <mesh
+                  geometry={geo}
+                  material={neonMat}
+                  scale={[wordScale, wordScale, 0.04]}
+                  position={[
+                    frontCenterX + 2,
+                    frontCenterY + lineOffsets[i],
+                    zBase,
+                  ]}
+                />
+                {/* Only render glow effect at high LOD */}
+                {lodLevel === 'high' && (
+                  <mesh
+                    geometry={geo}
+                    material={glowMat}
+                    scale={[wordScale * 1.01, wordScale * 1.01, 0.2]}
+                    position={[
+                      frontCenterX + 2,
+                      frontCenterY + lineOffsets[i],
+                      zBase,
+                    ]}
+                  />
+                )}
+              </React.Fragment>
+            );
+          })}
 
-      {/* Lights */}
-      <ambientLight intensity={0.1} />
-      <hemisphereLight groundColor={0x101010} intensity={1.2} />
-      <directionalLight
-        position={[-1000, 1000, 1000]}
-        intensity={1.8}
-        castShadow
-      />
-      <pointLight position={[1000, -1000, 1000]} intensity={1.5} />
+          {/* Lights - reduce lighting complexity at low LOD */}
+          <ambientLight intensity={0.1} />
+          <hemisphereLight groundColor={0x101010} intensity={1.2} />
+          {lodLevel !== 'low' && (
+            <>
+              <directionalLight
+                position={[-1000, 1000, 1000]}
+                intensity={1.8}
+                castShadow={lodLevel === 'high'}
+              />
+              <pointLight position={[1000, -1000, 1000]} intensity={1.5} />
+            </>
+          )}
+        </>
+      )}
     </group>
   );
 }
