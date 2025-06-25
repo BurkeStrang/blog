@@ -50,8 +50,8 @@ const WaterTile: React.FC<{
   const water = useMemo(() => {
     if (!visible) return null;
 
-    const segments = performanceMode.isLowEnd ? 4 : 16;
-    const textureSize = performanceMode.isLowEnd ? 128 : 256;
+    const segments = performanceMode.isLowEnd ? 16 : 32;
+    const textureSize = performanceMode.isLowEnd ? 256 : 512;
     
     // Create smaller tile geometry
     const geo = new PlaneGeometry(size, size, segments, segments);

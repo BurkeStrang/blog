@@ -80,7 +80,7 @@ interface PostBoxProps {
 }
 
 const fontSize = 0.2;
-const wordScale = 12;
+const wordScale = 13;
 const textMargin = 0.8;
 
 function PostBoxCore(props: PostBoxProps) {
@@ -223,13 +223,13 @@ function PostBoxCore(props: PostBoxProps) {
         'postbox-backdrop',
         () => new THREE.MeshStandardMaterial({
           color: 0x000000,
-          opacity: 0.8,
+          opacity: 0.95,
           transparent: true,
           side: THREE.DoubleSide,
         }),
         (mat) => {
           mat.color.setHex(0x000000);
-          mat.opacity = 0.8;
+          mat.opacity = 0.95;
         }
       ),
     []
@@ -239,39 +239,41 @@ function PostBoxCore(props: PostBoxProps) {
       MaterialPool.getMaterial(
         'postbox-neon',
         () => new THREE.MeshStandardMaterial({
-          color: 0x006060,
+          color: 0x00aaaa,
           emissive: 0x00ffff,
-          roughness: 1,
-          metalness: 1,
+          emissiveIntensity: 1.5,
+          roughness: 0.1,
+          metalness: 0.1,
           toneMapped: false,
           transparent: true,
         }),
         (mat) => {
-          (mat as THREE.MeshStandardMaterial).color.setHex(0x006060);
+          (mat as THREE.MeshStandardMaterial).color.setHex(0x00aaaa);
           (mat as THREE.MeshStandardMaterial).emissive.setHex(0x00ffff);
+          (mat as THREE.MeshStandardMaterial).emissiveIntensity = 1.5;
         }
       ),
     []
   );
-  const glowMat = useMemo(
-    () =>
-      MaterialPool.getMaterial(
-        'postbox-glow',
-        () => new THREE.MeshBasicMaterial({
-          color: 0x000066,
-          side: THREE.BackSide,
-          transparent: true,
-          opacity: 1,
-          blending: THREE.AdditiveBlending,
-          depthWrite: true,
-        }),
-        (mat) => {
-          (mat as THREE.MeshBasicMaterial).color.setHex(0x000066);
-          mat.opacity = 1;
-        }
-      ),
-    []
-  );
+  // const glowMat = useMemo(
+  //   () =>
+  //     MaterialPool.getMaterial(
+  //       'postbox-glow',
+  //       () => new THREE.MeshBasicMaterial({
+  //         color: 0x000066,
+  //         side: THREE.BackSide,
+  //         transparent: true,
+  //         opacity: 0.2,
+  //         blending: THREE.AdditiveBlending,
+  //         depthWrite: false,
+  //       }),
+  //       (mat) => {
+  //         (mat as THREE.MeshBasicMaterial).color.setHex(0x000066);
+  //         mat.opacity = 0.2;
+  //       }
+  //     ),
+  //   []
+  // );
 
   // --- Master cleanup effect for all disposable resources ---
   useEffect(() => {
@@ -283,7 +285,7 @@ function PostBoxCore(props: PostBoxProps) {
       // Return materials to pool instead of disposing
       MaterialPool.releaseMaterial('postbox-backdrop', backdropMaterial);
       MaterialPool.releaseMaterial('postbox-neon', neonMat);
-      MaterialPool.releaseMaterial('postbox-glow', glowMat);
+      // MaterialPool.releaseMaterial('postbox-glow', glowMat);
       
       // CRITICAL: Dispose cloned GLTF scene and all its resources
       blockScene.traverse((child) => {
@@ -303,12 +305,12 @@ function PostBoxCore(props: PostBoxProps) {
       // Reset cursor to auto on unmount to prevent stuck cursor states
       document.body.style.cursor = "auto";
     };
-  }, [textGeometries, backdropGeo, backdropMaterial, neonMat, glowMat, blockScene]);
+  }, [textGeometries, backdropGeo, backdropMaterial, neonMat, blockScene]);
 
   // --- Animation (frame loop) ---
   const hoverLift = 11;
-  const underwaterDepth = -140; // How deep underwater hidden posts go
-  const sortingDepth = -140; // Much deeper for sorting animation
+  const underwaterDepth = -250; // How deep underwater hidden posts go
+  const sortingDepth = -250; // Much deeper for sorting animation
   const liftEase = 0.1;
   const underwaterEase = 0.1; // Fast easing for going underwater
   const repositionEase = 0.1; // Slow easing for repositioning visible posts
@@ -529,7 +531,7 @@ function PostBoxCore(props: PostBoxProps) {
                 <mesh
                   geometry={geo}
                   material={neonMat}
-                  scale={[wordScale, wordScale, 0.04]}
+                  scale={[wordScale, wordScale, 0.01]}
                   position={[
                     frontCenterX + 2,
                     frontCenterY + lineOffsets[i],
@@ -540,10 +542,9 @@ function PostBoxCore(props: PostBoxProps) {
               </React.Fragment>
             );
           })}
-
-          {/* Simplified lighting for better performance */}
-          <ambientLight intensity={0.3} />
-          <hemisphereLight groundColor={0x101010} intensity={0.8} />
+    
+          <directionalLight position={[-500, 200, 200]} intensity={0.8} color={0xffffff} />
+          <directionalLight position={[25, -300, 200]} intensity={0.2} color={0x4488cc} />
         </>
       )}
     </group>

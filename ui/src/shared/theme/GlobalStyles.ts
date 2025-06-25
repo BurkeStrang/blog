@@ -4,7 +4,6 @@ import mega from "../../assets/fonts/MegatransRounded-Regular.otf";
 import {
   backgroundColor,
   darkgrey,
-  lightgrey,
   neon,
   primary,
   secondary,
@@ -93,6 +92,36 @@ export const Header = styled.header`
       0 0 30px rgba(0, 0, 255, 0.3),
       0 0 40px rgba(0, 0, 255, 0.2);
   }
+
+  @media (max-height: 800px) {
+    padding-top: 2rem;
+    
+    h1 {
+      font-size: clamp(1.8rem, 5.5vw, 2.5rem);
+      height: 2.5rem;
+      margin: 0.75rem 0;
+    }
+  }
+
+  @media (max-height: 600px) {
+    padding-top: 1rem;
+    
+    h1 {
+      font-size: clamp(1.4rem, 4.5vw, 1.8rem);
+      height: 1.8rem;
+      margin: 0.5rem 0;
+    }
+  }
+
+  @media (max-height: 450px) {
+    padding-top: 0.5rem;
+    
+    h1 {
+      font-size: clamp(1rem, 3.5vw, 1.2rem);
+      height: 1.2rem;
+      margin: 0.25rem 0;
+    }
+  }
 `;
 
 const drift = keyframes`
@@ -145,9 +174,9 @@ export const SortButton = styled.button`
   justify-content: center;
   top: 12rem;
   cursor: pointer;
-  color: ${lightgrey};
+  color: ${darkgrey};
   background: transparent;
-  border: 2px solid ${lightgrey};
+  border: 2px solid ${darkgrey};
   border-radius: 8px;
   padding: 0.5rem 1rem;
   font-family: 'mega', sans-serif;
@@ -172,22 +201,132 @@ export const SortDirectionButton = styled.div<{ $isUp: boolean }>`
   top: 12.8rem;
   cursor: pointer;
   scale: 0.8;
-  color: ${lightgrey};
+  color: ${darkgrey};
 
   &:hover {
     color: ${secondary};
   }
 `;
 
+export const FilterContainer = styled.div`
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 12rem;
+
+  @media (max-height: 800px) {
+    top: 9rem;
+  }
+
+  @media (max-height: 600px) {
+    top: 6rem;
+  }
+
+  @media (max-height: 450px) {
+    top: 4rem;
+  }
+`;
+
+export const FilterButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: ${darkgrey};
+  background: transparent;
+  border: 2px solid ${darkgrey};
+  border-radius: 6px;
+  padding: 0.3rem;
+  font-family: 'mega', sans-serif;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: ${secondary};
+    border-color: ${secondary};
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  @media (max-height: 800px) {
+    padding: 0.25rem;
+    border-width: 1.5px;
+    border-radius: 5px;
+  }
+
+  @media (max-height: 600px) {
+    padding: 0.2rem;
+    border-width: 1px;
+    border-radius: 4px;
+  }
+
+  @media (max-height: 450px) {
+    padding: 0.15rem;
+    border-width: 1px;
+    border-radius: 3px;
+  }
+`;
+
+export const FilterDropdown = styled.div<{ $isOpen: boolean }>`
+  position: absolute;
+  top: 100%;
+  min-width: 200px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid ${darkgrey};
+  border-radius: 8px 8px 8px 8px;
+  opacity: ${p => p.$isOpen ? 1 : 0};
+  visibility: ${p => p.$isOpen ? 'visible' : 'hidden'};
+  transform: translateY(${p => p.$isOpen ? '0' : '-10px'});
+  transition: all 0.2s ease;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+`;
+
+export const FilterOption = styled.button`
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  color: ${darkgrey};
+  font-family: 'mega', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: ${secondary};
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &:first-child {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+`;
+
 export const SearchBar = styled.div`
   position: absolute;
-  color: ${lightgrey};
+  color: ${darkgrey};
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 2rem 0;
+
+  @media (max-height: 800px) {
+    padding: 1.5rem 0;
+  }
+
+  @media (max-height: 600px) {
+    padding: 0.75rem 0;
+  }
+
+  @media (max-height: 450px) {
+    padding: 0.25rem 0;
+  }
 `;
 
 export const SearchContainer = styled.div`
@@ -198,13 +337,43 @@ export const SearchContainer = styled.div`
   width: 200px;
   height: 32px;
   border-radius: 15px;
-  outline: solid 2px ${lightgrey};
+  outline: solid 2px ${darkgrey};
   overflow: hidden;
   transition: width 0.3s ease;
 
   &:hover,
   &:focus-within {
     width: 300px;
+  }
+
+  @media (max-height: 800px) {
+    width: 180px;
+    height: 30px;
+    
+    &:hover,
+    &:focus-within {
+      width: 280px;
+    }
+  }
+
+  @media (max-height: 600px) {
+    width: 160px;
+    height: 26px;
+    
+    &:hover,
+    &:focus-within {
+      width: 240px;
+    }
+  }
+
+  @media (max-height: 450px) {
+    width: 140px;
+    height: 22px;
+    
+    &:hover,
+    &:focus-within {
+      width: 200px;
+    }
   }
 `;
 
@@ -216,16 +385,34 @@ export const SearchInput = styled.input`
   border: none;
   font-size: 1rem;
   background: transparent;
-  color: ${lightgrey};
+  color: ${darkgrey};
   font-family: "mega", sans-serif;
 
   &::placeholder {
-    color: ${lightgrey};
+    color: ${darkgrey};
     opacity: 0.8;
   }
 
   &:focus {
     outline: none;
+  }
+
+  @media (max-height: 800px) {
+    font-size: 0.9rem;
+    padding: 0 0.6rem;
+    padding-right: 1.8rem;
+  }
+
+  @media (max-height: 600px) {
+    font-size: 0.8rem;
+    padding: 0 0.5rem;
+    padding-right: 1.6rem;
+  }
+
+  @media (max-height: 450px) {
+    font-size: 0.7rem;
+    padding: 0 0.4rem;
+    padding-right: 1.4rem;
   }
 `;
 
@@ -240,7 +427,7 @@ export const ClearButton = styled.button`
   cursor: pointer;
   font-size: 1.2rem;
   line-height: 1;
-  color: ${lightgrey};
+  color: ${darkgrey};
   opacity: 0.6;
   transition: opacity 0.2s;
 

@@ -5,29 +5,55 @@ import {
   SearchContainer,
   SearchInput,
   ClearButton,
-  SortButton,
   SearchBar,
-  SortDirectionButton,
   Cloud,
+  FilterContainer,
+  FilterButton,
+  FilterDropdown,
+  FilterOption,
 } from "../../shared/theme/GlobalStyles";
 import { Post } from "../../app/AppContent";
 import cloudImg from "../../assets/textures/darkcloud.avif";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import { useSearch } from "../../shared/contexts/SearchContext";
 
 interface PostsProps {
   selectedPost: Post | null;
 }
 
-const SortIcon = React.memo(
-  ({ isUp, onClick }: { isUp: boolean; onClick: () => void }) => (
-    <SortDirectionButton $isUp={isUp} onClick={onClick}>
-      {isUp ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />}
-    </SortDirectionButton>
-  ),
-);
-SortIcon.displayName = "SortIcon";
+const FilterDropdownComponent = React.memo(function FilterDropdownComponent() {
+  const { sortBy, sortDirection, toggleSortDirection, cycleSortCriteria } = useSearch();
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const handleOptionClick = (action: () => void) => {
+    action();
+    setIsOpen(false);
+  };
+
+  return (
+    <FilterContainer>
+      <FilterButton onClick={() => setIsOpen(!isOpen)} aria-label="Filter options">
+        <FilterListIcon 
+          sx={{ 
+            fontSize: {
+              '@media (max-height: 800px)': '1rem',
+              '@media (max-height: 600px)': '0.9rem', 
+              '@media (max-height: 450px)': '0.8rem'
+            }
+          }}
+        />
+      </FilterButton>
+      <FilterDropdown $isOpen={isOpen}>
+        <FilterOption onClick={() => handleOptionClick(cycleSortCriteria)}>
+          Sort by {sortBy === 'pageViews' ? 'DATE' : 'VIEWS'}
+        </FilterOption>
+        <FilterOption onClick={() => handleOptionClick(toggleSortDirection)}>
+          Order: {sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+        </FilterOption>
+      </FilterDropdown>
+    </FilterContainer>
+  );
+});
 
 const SearchBarMemo = React.memo(function SearchBarMemo() {
   const { query, setQuery } = useSearch();
@@ -52,7 +78,6 @@ const SearchBarMemo = React.memo(function SearchBarMemo() {
 });
 
 const Posts: React.FC<PostsProps> = ({ selectedPost }) => {
-  const { filteredPosts, sortBy, sortDirection, toggleSortDirection, cycleSortCriteria } = useSearch();
 
   return (
     <Page>
@@ -62,19 +87,7 @@ const Posts: React.FC<PostsProps> = ({ selectedPost }) => {
       </Header>
       <div style={{ display: selectedPost ? 'none' : 'block' }}>
         <SearchBarMemo />
-        <SortButton onClick={cycleSortCriteria}>
-          {sortBy === 'pageViews' ? 'VIEWS' : 'DATE'}
-        </SortButton>
-        <SortIcon isUp={sortDirection === 'asc'} onClick={toggleSortDirection} />
-        {filteredPosts.length === 0 && (
-          <div style={{ 
-            textAlign: 'center', 
-            color: '#666', 
-            marginTop: '2rem',
-            fontSize: '1.1rem'
-          }}>
-          </div>
-        )}
+        <FilterDropdownComponent />
       </div>
     </Page>
   );

@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { NavLink, useLocation, Navigate } from "react-router-dom";
 import styled, { css } from "styled-components";
-import { lightgrey, primary } from "../../shared/theme/colors";
+import { darkgrey, primary } from "../../shared/theme/colors";
 import MenuIcon from "@mui/icons-material/Menu";
-import CloseIcon from "@mui/icons-material/Close";
 
 // Sidebar container
 const Sidebar = styled.nav<{ open: boolean }>`
@@ -15,8 +14,8 @@ const Sidebar = styled.nav<{ open: boolean }>`
   width: 240px;
   z-index: 200;
   padding-top: 3.5rem;
-  transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
-  transform: translateX(${p => (p.open ? "0" : "-110%")});
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(${(p) => (p.open ? "0" : "-110%")});
   display: flex;
   flex-direction: column;
 `;
@@ -28,21 +27,15 @@ const HamburgerBtn = styled.button`
   background: none;
   border: none;
   z-index: 210;
-  color: ${lightgrey};
+  color: ${darkgrey};
   cursor: pointer;
   font-size: 2rem;
   padding: 0.5rem;
   transition: background 0.2s;
   border-radius: 50%;
   &:hover {
-    background: rgba(0,0,0,0.10);
+    background: rgba(0, 0, 0, 0.1);
   }
-`;
-
-const CloseBtn = styled(HamburgerBtn)`
-  left: 200px;
-  top: 1.1rem;
-  color: #0ff;
 `;
 
 const SidebarLinks = styled.ul`
@@ -81,8 +74,8 @@ const sidebarLinkBase = css`
       0 0 2px #0ff,
       0 0 5px #0ff,
       0 0 15px #0ff,
-      0 0 24px rgba(40,0,255,0.4),
-      0 0 40px rgba(40,0,255,0.18);
+      0 0 24px rgba(40, 0, 255, 0.4),
+      0 0 40px rgba(40, 0, 255, 0.18);
     transform: scale(1.025);
   }
 `;
@@ -103,14 +96,11 @@ const SidebarNav: React.FC = () => {
 
   return (
     <>
-      <HamburgerBtn aria-label="Open menu" onClick={() => setOpen(true)}>
+      <HamburgerBtn aria-label="Toggle menu" onClick={() => setOpen(!open)}>
         <MenuIcon fontSize="inherit" />
       </HamburgerBtn>
 
       <Sidebar open={open} aria-label="Sidebar navigation">
-        <CloseBtn aria-label="Close menu" onClick={() => setOpen(false)}>
-          <CloseIcon fontSize="inherit" />
-        </CloseBtn>
         <SidebarLinks>
           <SidebarItem>
             <SidebarLink to="/about" onClick={() => setOpen(false)}>
