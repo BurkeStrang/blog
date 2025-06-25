@@ -287,13 +287,6 @@ export class MemoryMonitor {
       this.reportInterval = undefined;
     }
     
-    // Clean up development interval that was stored on the instance
-    const extendedInstance = this as MemoryMonitor & { reportInterval?: ReturnType<typeof setInterval> };
-    if (extendedInstance.reportInterval) {
-      clearInterval(extendedInstance.reportInterval);
-      delete extendedInstance.reportInterval;
-    }
-    
     this.clear();
     this.renderer = undefined;
   }
@@ -328,8 +321,8 @@ if (typeof window !== 'undefined') {
       }
     }, 120000); // Every 2 minutes
     
-    // Store interval reference for cleanup
-    (memoryMonitor as MemoryMonitor & { reportInterval?: ReturnType<typeof setInterval> }).reportInterval = reportInterval;
+    // Store interval reference on window for cleanup
+    (window as Window & { memoryReportInterval?: ReturnType<typeof setInterval> }).memoryReportInterval = reportInterval;
 
     // Expose to window for debugging
     (window as Window & { memoryMonitor?: MemoryMonitor }).memoryMonitor = memoryMonitor;

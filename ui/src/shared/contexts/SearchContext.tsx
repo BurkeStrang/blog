@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useMemo, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import type { Post } from '../../app/AppContent';
 
 export type SortCriteria = 'pageViews' | 'date';
@@ -79,11 +79,11 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
   // Track timeouts for proper cleanup
   const timeoutRefs = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
-  // Debounce search query
+  // Debounce search query - reduced from 1000ms to 500ms for better responsiveness
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
-    }, 1000);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [query]);
@@ -96,23 +96,23 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     };
   }, []);
 
-  // Toggle sort direction
-  const toggleSortDirection = () => {
+  // Toggle sort direction - memoize with useCallback
+  const toggleSortDirection = useCallback(() => {
     setIsSorting(true);
     setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     // Reset sorting state after animation time
     const timeoutId = setTimeout(() => setIsSorting(false), 1000);
     timeoutRefs.current.add(timeoutId);
-  };
+  }, []);
 
-  // Cycle through sort criteria
-  const cycleSortCriteria = () => {
+  // Cycle through sort criteria - memoize with useCallback
+  const cycleSortCriteria = useCallback(() => {
     setIsSorting(true);
     setSortBy(prev => prev === 'pageViews' ? 'date' : 'pageViews');
     // Reset sorting state after animation time
     const timeoutId = setTimeout(() => setIsSorting(false), 1000);
     timeoutRefs.current.add(timeoutId);
-  };
+  }, []);
 
   // Memoize filtered and sorted posts to avoid unnecessary recalculations
   const filteredPosts = useMemo(() => {

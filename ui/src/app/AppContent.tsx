@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo, memo } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { SideBar } from "../features/layout";
 import { Posts, PostDetail } from "../features/posts";
@@ -43,7 +43,7 @@ const PersistentCanvasWrapper = styled.div<{ hidden: boolean }>`
   /* Removed transition for instant hiding */
 `;
 
-const AppContent: React.FC = () => {
+const AppContent: React.FC = memo(() => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const navigate = useNavigate();
@@ -52,24 +52,29 @@ const AppContent: React.FC = () => {
   // Use search context
   const { filteredPosts, setAllPosts, isSorting } = useSearch();
   
-  // Create a Set of visible post slugs for efficient lookup
+  // Create a Set of visible post slugs for efficient lookup - memoized more efficiently
   const visiblePostSlugs = useMemo(() => {
     return new Set(filteredPosts.map(post => post.slug));
   }, [filteredPosts]);
-  
+
   // Track navigation history to determine if we should load canvas
-  const [hasVisitedHome, setHasVisitedHome] = useState(false);
+  const [, setHasVisitedHome] = useState(false);
   const [shouldLoadCanvas, setShouldLoadCanvas] = useState(false);
   
   // Preload all assets once
   const { isLoading, error, resources } = useAssetLoader();
   const [postsLoaded, setPostsLoaded] = useState(false);
   const [canvasLoaded, setCanvasLoaded] = useState(false);
+
+  // Memoize resource loading state to prevent unnecessary re-renders
+  const resourceState = useMemo(() => ({
+    isLoading,
+    postsLoaded,
+    resourcesReady: !isLoading && postsLoaded && posts.length > 0,
+  }), [isLoading, postsLoaded, posts.length]);
   
-  // Resources are ready when both assets and posts are loaded
-  const resourcesReady = !isLoading && postsLoaded && posts.length > 0;
   // Canvas is fully ready when 3D scene has finished rendering
-  const canvasReady = resourcesReady && canvasLoaded && shouldLoadCanvas;
+  const canvasReady = resourceState.resourcesReady && canvasLoaded && shouldLoadCanvas;
 
   // Load canvas on first visit to any route and keep it loaded
   useEffect(() => {
@@ -151,12 +156,12 @@ const AppContent: React.FC = () => {
   const isDetail = selectedPost !== null;
   
   // Show UI immediately for direct post navigation, with loading state for canvas routes
-  const showUI = resourcesReady && (shouldLoadCanvas ? canvasLoaded : true);
+  const showUI = resourceState.resourcesReady && (shouldLoadCanvas ? canvasLoaded : true);
 
   return (
     <>
       <GlobalStyle />
-      {resourcesReady && shouldLoadCanvas && (
+      {resourceState.resourcesReady && shouldLoadCanvas && (
         <PersistentCanvasWrapper hidden={isDetail}>
           <CanvasBackground>
             <LazyOceanCanvas
@@ -230,6 +235,8 @@ const AppContent: React.FC = () => {
       )}
     </>
   );
-};
+});
+
+AppContent.displayName = 'AppContent';
 
 export default AppContent;

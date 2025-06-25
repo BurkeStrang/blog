@@ -14,7 +14,8 @@ import OceanCamera from "./OceanCamera";
 import { PostCube } from "../posts";
 import { PostNavigation } from "../posts";
 import type { Post } from "../../app/AppContent";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
+// Post-processing imports removed for performance optimization
+// import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { memoryProfiler } from "../../engine/memory";
 // import { GeometryPool, lodManager } from "../../engine/rendering";
 
@@ -49,8 +50,8 @@ const WaterTile: React.FC<{
   const water = useMemo(() => {
     if (!visible) return null;
 
-    const segments = performanceMode.isLowEnd ? 16 : 64;
-    const textureSize = performanceMode.isLowEnd ? 512 : 1024;
+    const segments = performanceMode.isLowEnd ? 4 : 16;
+    const textureSize = performanceMode.isLowEnd ? 128 : 256;
     
     // Create smaller tile geometry
     const geo = new PlaneGeometry(size, size, segments, segments);
@@ -131,8 +132,8 @@ const OceanScene: React.FC<{ waterNormals: Texture; performanceMode: Performance
 
   // Generate tile grid based on camera position and posts
   const tileConfig = useMemo(() => {
-    const tileSize = 500; // Size of each water tile
-    const gridExtent = 2000; // How far the grid extends from center
+    const tileSize = 1000; // Larger tiles, fewer of them
+    const gridExtent = 1000; // Much smaller grid for better performance
     const tiles: Array<{id: string; position: [number, number, number]; size: number}> = [];
     
     // Create a grid of tiles
@@ -153,8 +154,8 @@ const OceanScene: React.FC<{ waterNormals: Texture; performanceMode: Performance
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
     
-    // Check frustum every ~5 frames
-    if (Math.floor(t * 10) % 5 === 0) {
+    // Check frustum every ~10 frames for better performance
+    if (Math.floor(t * 6) % 10 === 0) {
       cameraMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
       frustum.setFromProjectionMatrix(cameraMatrix);
       
@@ -253,7 +254,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
       if (!posts || !Array.isArray(posts) || posts.length === 0) return [];
       return posts
         .filter(post => post) // Filter out any undefined posts
-        .map((_, i) => new Vector3(i * 50 - (posts.length - 1) * 25, -8.5, i * 40));
+        .map((_, i) => new Vector3(i * 50 - (posts.length - 1) * 25, -100, i * 40));
     },
     [posts]
   );
@@ -264,7 +265,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
       // No filter - use sorted posts if available, otherwise original posts
       const postsToUse = sortedPosts || posts;
       return postsToUse.map((_, i) => 
-        new Vector3(i * 50 - (postsToUse.length - 1) * 25, -8.5, i * 40)
+        new Vector3(i * 50 - (postsToUse.length - 1) * 25, -100, i * 40)
       );
     }
     
@@ -341,10 +342,10 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     const hardwareConcurrency = navigator.hardwareConcurrency || 4;
     
     return {
-      isLowEnd: deviceMemory < 4 || hardwareConcurrency < 4,
+      isLowEnd: deviceMemory < 6 || hardwareConcurrency < 6,
       textureQuality: deviceMemory < 4 ? 'low' : deviceMemory < 8 ? 'medium' : 'high',
-      particleCount: deviceMemory < 4 ? 50 : 100,
-      enableBloom: deviceMemory >= 4
+      particleCount: deviceMemory < 4 ? 25 : 50,
+      enableBloom: deviceMemory >= 8 && hardwareConcurrency >= 6
     };
   }, []);
   
@@ -366,7 +367,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     gl.setClearColor(0x000000, 0);
     
     // Configure renderer for maximum memory efficiency
-    gl.setPixelRatio(Math.min(window.devicePixelRatio, performanceMode.isLowEnd ? 1 : 1.5));
+    gl.setPixelRatio(Math.min(window.devicePixelRatio, performanceMode.isLowEnd ? 0.8 : 1.2));
     
     // Aggressive memory optimization settings
     gl.capabilities.maxTextures = Math.min(gl.capabilities.maxTextures, performanceMode.isLowEnd ? 4 : 8);
@@ -519,19 +520,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         stepSize={1}
       />
 
-      {/* Conditional bloom effect based on device capability */}
-      {performanceMode.enableBloom && (
-        <EffectComposer 
-          enableNormalPass={false}
-          multisampling={performanceMode.isLowEnd ? 0 : 2}
-        >
-          <Bloom
-            luminanceThreshold={performanceMode.isLowEnd ? 0.3 : 0}
-            luminanceSmoothing={performanceMode.isLowEnd ? 0.4 : 0.2}
-            intensity={performanceMode.isLowEnd ? 0.5 : 0.8}
-          />
-        </EffectComposer>
-      )}
+      {/* Bloom effects disabled for performance */}
     </Canvas>
   );
 };

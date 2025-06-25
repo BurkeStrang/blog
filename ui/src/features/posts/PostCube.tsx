@@ -96,8 +96,8 @@ function PostBoxCore(props: PostBoxProps) {
   const frustum = useMemo(() => new THREE.Frustum(), []);
   const cameraMatrix = useMemo(() => new THREE.Matrix4(), []);
   
-  // LOD (Level of Detail) state
-  const [lodLevel, setLodLevel] = useState<'high' | 'medium' | 'low'>('high');
+  // LOD (Level of Detail) state - removed for performance optimization
+  // const [lodLevel, setLodLevel] = useState<'high' | 'medium' | 'low'>('high');
   
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -159,10 +159,10 @@ function PostBoxCore(props: PostBoxProps) {
       const geo = new TextGeometry(line, {
         font,
         size: fontSize,
-        bevelEnabled: true,
-        bevelSize: 0.002,
-        bevelThickness: 0.002,
-        bevelSegments: 12,
+        bevelEnabled: false, // Disable bevel for better performance
+        bevelSize: 0,
+        bevelThickness: 0,
+        bevelSegments: 0,
       });
       geo.computeBoundingBox();
       geo.center();
@@ -358,7 +358,7 @@ function PostBoxCore(props: PostBoxProps) {
     const t = clock.getElapsedTime();
     
     // Frustum culling and LOD check - only do this every few frames for performance
-    if (Math.floor(t * 10) % 3 === 0) { // Check every ~3 frames
+    if (Math.floor(t * 6) % 6 === 0) { // Check every ~6 frames for better performance
       cameraMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
       frustum.setFromProjectionMatrix(cameraMatrix);
       
@@ -369,15 +369,7 @@ function PostBoxCore(props: PostBoxProps) {
       const isInFrustum = frustum.intersectsSphere(boundingSphere);
       setInFrustum(isInFrustum);
       
-      // Calculate distance for LOD
-      const distance = camera.position.distanceTo(worldPosition);
-      if (distance > 200) {
-        setLodLevel('low');
-      } else if (distance > 100) {
-        setLodLevel('medium');
-      } else {
-        setLodLevel('high');
-      }
+      // LOD calculation removed for performance optimization
       
       // Early exit if not in frustum and not visible (filtered out)
       if (!isInFrustum && !isVisible) {
@@ -544,36 +536,14 @@ function PostBoxCore(props: PostBoxProps) {
                     zBase,
                   ]}
                 />
-                {/* Only render glow effect at high LOD and when close */}
-                {lodLevel === 'high' && (
-                  <mesh
-                    geometry={geo}
-                    material={glowMat}
-                    scale={[wordScale * 1.01, wordScale * 1.01, 0.2]}
-                    position={[
-                      frontCenterX + 2,
-                      frontCenterY + lineOffsets[i],
-                      zBase,
-                    ]}
-                  />
-                )}
+                {/* Glow effect disabled for performance */}
               </React.Fragment>
             );
           })}
 
-          {/* Lights - reduce lighting complexity at low LOD */}
-          <ambientLight intensity={0.1} />
-          <hemisphereLight groundColor={0x101010} intensity={1.2} />
-          {lodLevel !== 'low' && (
-            <>
-              <directionalLight
-                position={[-1000, 1000, 1000]}
-                intensity={1.8}
-                castShadow={lodLevel === 'high'}
-              />
-              <pointLight position={[1000, -1000, 1000]} intensity={1.5} />
-            </>
-          )}
+          {/* Simplified lighting for better performance */}
+          <ambientLight intensity={0.3} />
+          <hemisphereLight groundColor={0x101010} intensity={0.8} />
         </>
       )}
     </group>
