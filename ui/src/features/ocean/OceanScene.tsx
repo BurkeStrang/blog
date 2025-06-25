@@ -481,7 +481,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         performanceMode={performanceMode}
       />
       <PostNavigation
-        offset={[27, -8, 0]}
+        offset={[30, -16, -30]}
         onLeftClick={() => console.log("Left click")}
         onRightClick={() => console.log("Right click")}
         sphereModel={resources.models.sphere!}

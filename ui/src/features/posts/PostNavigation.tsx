@@ -127,7 +127,7 @@ export default function FollowerSphere({
         child.renderOrder = 1;
       }
     });
-    sphereClone.rotation.set(1, -1, 1.5);
+    sphereClone.rotation.set(1, -1, 0);
     group.add(sphereClone);
 
     // helper to add text/arrow meshes
@@ -241,7 +241,7 @@ export default function FollowerSphere({
     <primitive
       ref={groupRef}
       object={sphereGroup}
-      scale={[1.25, 1.25, 1.25]}
+      scale={[3, 3, 3]}
       onPointerDown={handlePointerDown}
       onPointerOver={handlePointerOver}
       onPointerOut={handlePointerOut}

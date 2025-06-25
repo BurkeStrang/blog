@@ -67,7 +67,7 @@ export const Header = styled.header`
   position: relative;
   overflow: visible;
   text-align: center;
-  padding-top: 3.5rem;
+  padding-top: 2rem;
 
   h1 {
     position: relative;
@@ -94,7 +94,7 @@ export const Header = styled.header`
   }
 
   @media (max-height: 800px) {
-    padding-top: 2rem;
+    padding-top: 1rem;
     
     h1 {
       font-size: clamp(1.8rem, 5.5vw, 2.5rem);
@@ -104,7 +104,7 @@ export const Header = styled.header`
   }
 
   @media (max-height: 600px) {
-    padding-top: 1rem;
+    padding-top: 0.5rem;
     
     h1 {
       font-size: clamp(1.4rem, 4.5vw, 1.8rem);
@@ -208,34 +208,18 @@ export const SortDirectionButton = styled.div<{ $isUp: boolean }>`
   }
 `;
 
-export const FilterContainer = styled.div`
+export const FilterButton = styled.button`
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  top: 12rem;
-
-  @media (max-height: 800px) {
-    top: 9rem;
-  }
-
-  @media (max-height: 600px) {
-    top: 6rem;
-  }
-
-  @media (max-height: 450px) {
-    top: 4rem;
-  }
-`;
-
-export const FilterButton = styled.button`
+  top: 3rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: ${darkgrey};
   background: transparent;
-  border: 2px solid ${darkgrey};
-  border-radius: 6px;
+  border: none;
   padding: 0.3rem;
   font-family: 'mega', sans-serif;
   font-size: 0.8rem;
@@ -243,39 +227,36 @@ export const FilterButton = styled.button`
 
   &:hover {
     color: ${secondary};
-    border-color: ${secondary};
     background: rgba(255, 255, 255, 0.05);
   }
 
   @media (max-height: 800px) {
+    top: 2.5rem;
     padding: 0.25rem;
-    border-width: 1.5px;
-    border-radius: 5px;
   }
 
   @media (max-height: 600px) {
+    top: 2rem;
     padding: 0.2rem;
-    border-width: 1px;
-    border-radius: 4px;
   }
 
   @media (max-height: 450px) {
+    top: 1.5rem;
     padding: 0.15rem;
-    border-width: 1px;
-    border-radius: 3px;
   }
 `;
 
 export const FilterDropdown = styled.div<{ $isOpen: boolean }>`
   position: absolute;
   top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(${p => p.$isOpen ? '55px' : '0'});
   min-width: 200px;
   background: rgba(0, 0, 0, 0.7);
   border: 2px solid ${darkgrey};
   border-radius: 8px 8px 8px 8px;
   opacity: ${p => p.$isOpen ? 1 : 0};
   visibility: ${p => p.$isOpen ? 'visible' : 'hidden'};
-  transform: translateY(${p => p.$isOpen ? '0' : '-10px'});
   transition: all 0.2s ease;
   z-index: 100;
   backdrop-filter: blur(8px);
