@@ -87,6 +87,7 @@ function PostBoxCore(props: PostBoxProps) {
   const { title, index, position, onClick, rubiksCubeModel, font, onReady, isVisible = true, targetPosition, allPostPositions, sortingActive = false } = props;
   const { gl } = useThree();
   const { camera } = useThree();
+  
   const groupRef = useRef<THREE.Group>(null!);
   const [hovered, setHovered] = useState(false);
   const [sortingPhase, setSortingPhase] = useState<'none' | 'underwater' | 'surfacing'>('none');
@@ -544,8 +545,6 @@ function PostBoxCore(props: PostBoxProps) {
             );
           })}
     
-          <directionalLight position={[-1000, 800, 300]} intensity={1.4} color={0xffffff} />
-          <directionalLight position={[-1000, -800, 300]} intensity={1.4} color={0x4488cc} />
         </>
       )}
     </group>

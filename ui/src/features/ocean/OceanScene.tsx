@@ -36,10 +36,10 @@ interface PerformanceMode {
 }
 
 // Tiled Water Tile Component
-const WaterTile: React.FC<{ 
-  position: [number, number, number]; 
-  size: number; 
-  waterNormals: Texture; 
+const WaterTile: React.FC<{
+  position: [number, number, number];
+  size: number;
+  waterNormals: Texture;
   performanceMode: PerformanceMode;
   visible: boolean;
 }> = ({ position, size, waterNormals, performanceMode, visible }) => {
@@ -51,10 +51,10 @@ const WaterTile: React.FC<{
 
     const segments = performanceMode.isLowEnd ? 16 : 32;
     const textureSize = performanceMode.isLowEnd ? 256 : 512;
-    
+
     // Create smaller tile geometry
     const geo = new PlaneGeometry(size, size, segments, segments);
-    
+
     const waterTile = new Water(geo, {
       textureWidth: textureSize,
       textureHeight: textureSize,
@@ -77,13 +77,13 @@ const WaterTile: React.FC<{
         `#include <color_fragment>;
          // Bioluminescent glow
          gl_FragColor.rgb += vec3(0.4, 0.4, 0.4) * pow(dot(gl_FragColor.rgb, vec3(1.0)), 2.0);
-        `
+        `,
       );
     };
-    
+
     waterTile.rotation.x = -Math.PI / 2;
     waterTile.position.set(position[0], position[1], position[2]);
-    
+
     return waterTile;
   }, [visible, size, waterNormals, performanceMode, scene, position]);
 
@@ -91,7 +91,7 @@ const WaterTile: React.FC<{
     if (water) {
       scene.add(water);
       waterRef.current = water;
-      
+
       return () => {
         scene.remove(water);
         water.geometry.dispose();
@@ -113,13 +113,13 @@ const WaterTile: React.FC<{
 };
 
 // Tiled Ocean Scene with frustum culling
-const OceanScene: React.FC<{ waterNormals: Texture; performanceMode: PerformanceMode }> = ({ 
-  waterNormals, 
-  performanceMode 
-}) => {
+const OceanScene: React.FC<{
+  waterNormals: Texture;
+  performanceMode: PerformanceMode;
+}> = ({ waterNormals, performanceMode }) => {
   const { scene, camera } = useThree();
   const [visibleTiles, setVisibleTiles] = useState<Set<string>>(new Set());
-  
+
   // Create frustum for tile culling
   const frustum = useMemo(() => new THREE.Frustum(), []);
   const cameraMatrix = useMemo(() => new THREE.Matrix4(), []);
@@ -133,55 +133,70 @@ const OceanScene: React.FC<{ waterNormals: Texture; performanceMode: Performance
   const tileConfig = useMemo(() => {
     const tileSize = 1000; // Larger tiles, fewer of them
     const gridExtent = 1000; // Much smaller grid for better performance
-    const tiles: Array<{id: string; position: [number, number, number]; size: number}> = [];
-    
+    const tiles: Array<{
+      id: string;
+      position: [number, number, number];
+      size: number;
+    }> = [];
+
     // Create a grid of tiles
     for (let x = -gridExtent; x <= gridExtent; x += tileSize) {
       for (let z = -gridExtent; z <= gridExtent; z += tileSize) {
         tiles.push({
           id: `tile_${x}_${z}`,
           position: [x, -8.5, z], // Same Y level as posts
-          size: tileSize
+          size: tileSize,
         });
       }
     }
-    
+
     return { tiles, tileSize };
   }, []);
 
   // Update visible tiles based on camera frustum (every few frames for performance)
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
-    
+
     // Check frustum every ~10 frames for better performance
     if (Math.floor(t * 6) % 10 === 0) {
-      cameraMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+      cameraMatrix.multiplyMatrices(
+        camera.projectionMatrix,
+        camera.matrixWorldInverse,
+      );
       frustum.setFromProjectionMatrix(cameraMatrix);
-      
+
       const newVisibleTiles = new Set<string>();
-      
-      tileConfig.tiles.forEach(tile => {
+
+      tileConfig.tiles.forEach((tile) => {
         // Create bounding box for tile
-        const tileCenter = new THREE.Vector3(tile.position[0], tile.position[1], tile.position[2]);
+        const tileCenter = new THREE.Vector3(
+          tile.position[0],
+          tile.position[1],
+          tile.position[2],
+        );
         const boundingBox = new THREE.Box3().setFromCenterAndSize(
           tileCenter,
-          new THREE.Vector3(tile.size, 10, tile.size) // 10 unit height for water
+          new THREE.Vector3(tile.size, 10, tile.size), // 10 unit height for water
         );
-        
+
         // Check if tile intersects camera frustum
         if (frustum.intersectsBox(boundingBox)) {
           newVisibleTiles.add(tile.id);
         }
       });
-      
+
       // Update state only if tiles changed
-      if (newVisibleTiles.size !== visibleTiles.size || 
-          [...newVisibleTiles].some(id => !visibleTiles.has(id))) {
+      if (
+        newVisibleTiles.size !== visibleTiles.size ||
+        [...newVisibleTiles].some((id) => !visibleTiles.has(id))
+      ) {
         setVisibleTiles(newVisibleTiles);
-        
+
         // Debug log in development
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`🌊 Water tiles visible: ${newVisibleTiles.size}/${tileConfig.tiles.length}`);
+        if (process.env.NODE_ENV === "development") {
+          console.log(
+            `🌊 Water tiles visible: ${newVisibleTiles.size}/${tileConfig.tiles.length}`,
+          );
         }
       }
     }
@@ -189,7 +204,7 @@ const OceanScene: React.FC<{ waterNormals: Texture; performanceMode: Performance
 
   return (
     <>
-      {tileConfig.tiles.map(tile => (
+      {tileConfig.tiles.map((tile) => (
         <WaterTile
           key={tile.id}
           position={tile.position}
@@ -218,11 +233,11 @@ interface ResourceCache {
     cloudBackground?: Texture;
   };
   models: {
-    sphere?: import('three/examples/jsm/loaders/GLTFLoader').GLTF;
-    rubiksCube?: import('three/examples/jsm/loaders/GLTFLoader').GLTF;
+    sphere?: import("three/examples/jsm/loaders/GLTFLoader").GLTF;
+    rubiksCube?: import("three/examples/jsm/loaders/GLTFLoader").GLTF;
   };
   fonts: {
-    gentilis?: import('three/examples/jsm/loaders/FontLoader').Font;
+    gentilis?: import("three/examples/jsm/loaders/FontLoader").Font;
   };
 }
 
@@ -252,28 +267,39 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   const postsPerPage = 10;
 
   // Calculate pagination info
-  const totalPosts = visiblePostSlugs ? 
-    (sortedPosts || posts).filter(post => visiblePostSlugs.has(post.slug)).length :
-    (sortedPosts || posts).length;
+  const totalPosts = visiblePostSlugs
+    ? (sortedPosts || posts).filter((post) => visiblePostSlugs.has(post.slug))
+        .length
+    : (sortedPosts || posts).length;
   const totalPages = Math.ceil(totalPosts / postsPerPage);
   const startIndex = (currentPage - 1) * postsPerPage;
   const endIndex = startIndex + postsPerPage;
 
   // Pagination handlers
   const handleLeftClick = () => {
-    console.log('Left click - currentPage:', currentPage, 'totalPages:', totalPages);
+    console.log(
+      "Left click - currentPage:",
+      currentPage,
+      "totalPages:",
+      totalPages,
+    );
     if (currentPage > 1) {
       const newPage = currentPage - 1;
-      console.log('Setting page to:', newPage);
+      console.log("Setting page to:", newPage);
       setCurrentPage(newPage);
     }
   };
 
   const handleRightClick = () => {
-    console.log('Right click - currentPage:', currentPage, 'totalPages:', totalPages);
+    console.log(
+      "Right click - currentPage:",
+      currentPage,
+      "totalPages:",
+      totalPages,
+    );
     if (currentPage < totalPages) {
       const newPage = currentPage + 1;
-      console.log('Setting page to:', newPage);
+      console.log("Setting page to:", newPage);
       setCurrentPage(newPage);
     }
   };
@@ -284,79 +310,88 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   }, [visiblePostSlugs, sortedPosts]);
 
   // Original positions for all posts (used when no search filter)
-  const originalPositions = useMemo(
-    () => {
-      if (!posts || !Array.isArray(posts) || posts.length === 0) return [];
-      return posts
-        .filter(post => post) // Filter out any undefined posts
-        .map((_, i) => new Vector3(i * 50 - (posts.length - 1) * 25, -100, i * 40));
-    },
-    [posts]
-  );
+  const originalPositions = useMemo(() => {
+    if (!posts || !Array.isArray(posts) || posts.length === 0) return [];
+    return posts
+      .filter((post) => post) // Filter out any undefined posts
+      .map(
+        (_, i) => new Vector3(i * 50 - (posts.length - 1) * 25, -100, i * 40),
+      );
+  }, [posts]);
 
   // Compacted positions - use sorted posts for positioning with pagination
   const compactedPositions = useMemo(() => {
     const maxPostsPerPage = postsPerPage; // Always use 10 for consistent positioning
-    
+
     if (!visiblePostSlugs) {
       // No filter - use sorted posts if available, otherwise original posts
       const postsToUse = sortedPosts || posts;
       const paginatedPosts = postsToUse.slice(startIndex, endIndex);
-      return paginatedPosts.map((_, i) => 
-        new Vector3(i * 50 - (maxPostsPerPage - 1) * 25, -8.5, i * 40)
+      return paginatedPosts.map(
+        (_, i) =>
+          new Vector3(i * 50 - (maxPostsPerPage - 1) * 25, -8.5, i * 40),
       );
     }
-    
+
     // Filter applied - use sorted visible posts with pagination
     const postsToUse = sortedPosts || posts;
-    const visiblePosts = postsToUse.filter(post => visiblePostSlugs.has(post.slug));
+    const visiblePosts = postsToUse.filter((post) =>
+      visiblePostSlugs.has(post.slug),
+    );
     const paginatedPosts = visiblePosts.slice(startIndex, endIndex);
     if (paginatedPosts.length === 0) return [];
-    
+
     // Always place visible posts at the first N positions (0, 1, 2, ...)
-    return paginatedPosts.map((_, i) => 
-      new Vector3(i * 50 - (maxPostsPerPage - 1) * 25, -8.5, i * 40)
+    return paginatedPosts.map(
+      (_, i) => new Vector3(i * 50 - (maxPostsPerPage - 1) * 25, -8.5, i * 40),
     );
-  }, [posts, visiblePostSlugs, originalPositions, sortedPosts, startIndex, endIndex, postsPerPage]);
+  }, [
+    posts,
+    visiblePostSlugs,
+    originalPositions,
+    sortedPosts,
+    startIndex,
+    endIndex,
+    postsPerPage,
+  ]);
 
   // Calculate offset positions for camera positioning (only visible posts)
   const offsetPositions = useMemo(() => {
     return compactedPositions
-      .filter(p => p)
+      .filter((p) => p)
       .map((p) => p.clone().add(new Vector3(-100, 20, 100)));
   }, [compactedPositions]);
-  const startPos = useMemo(
-    () => {
-      // Provide default position when no posts are available
-      if (offsetPositions.length === 0) {
-        return new Vector3(-200, 20, 400);
-      }
-      return offsetPositions[0].clone().add(new Vector3(-100, 0, 300));
-    },
-    [offsetPositions]
-  );
+  const startPos = useMemo(() => {
+    // Provide default position when no posts are available
+    if (offsetPositions.length === 0) {
+      return new Vector3(-200, 20, 400);
+    }
+    return offsetPositions[0].clone().add(new Vector3(-100, 0, 300));
+  }, [offsetPositions]);
 
   // Track when scene is fully loaded
   const [sceneLoaded, setSceneLoaded] = useState(false);
   const [postBoxesLoaded, setPostBoxesLoaded] = useState(0);
-  
+
   // Shared map of all post positions for collision detection
   const allPostPositions = useMemo(() => new Map<number, Vector3>(), []);
-  
+
   // Memory optimization
   const performanceMode = useMemo(() => {
     // Detect device capabilities for adaptive quality
-    const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory || 4; // GB
+    const deviceMemory =
+      (navigator as Navigator & { deviceMemory?: number }).deviceMemory || 4; // GB
     const hardwareConcurrency = navigator.hardwareConcurrency || 4;
-    
+
     return {
       isLowEnd: deviceMemory < 6 || hardwareConcurrency < 6,
-      textureQuality: deviceMemory < 4 ? 'low' : deviceMemory < 8 ? 'medium' : 'high',
+      textureQuality:
+        deviceMemory < 4 ? "low" : deviceMemory < 8 ? "medium" : "high",
       particleCount: deviceMemory < 4 ? 25 : 50,
-      enableBloom: deviceMemory >= 8 && hardwareConcurrency >= 6
+      enableBloom: deviceMemory >= 8 && hardwareConcurrency >= 6,
     };
   }, []);
-  
+
   // Call onLoaded when everything is ready
   useEffect(() => {
     if (sceneLoaded && postBoxesLoaded >= posts.length && onLoaded) {
@@ -367,91 +402,106 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
       return () => clearTimeout(timer);
     }
   }, [sceneLoaded, postBoxesLoaded, posts.length, onLoaded]);
-  
+
   // Renderer config with aggressive memory optimization
   const handleCreated = ({ gl }: { gl: WebGLRenderer }) => {
     gl.toneMapping = NO_TONE_MAPPING;
     gl.outputEncoding = LINEAR_ENCODING;
     gl.setClearColor(0x000000, 0);
-    
+
     // Configure renderer for maximum memory efficiency
-    gl.setPixelRatio(Math.min(window.devicePixelRatio, performanceMode.isLowEnd ? 0.8 : 1.2));
-    
+    gl.setPixelRatio(
+      Math.min(window.devicePixelRatio, performanceMode.isLowEnd ? 0.8 : 1.2),
+    );
+
     // Aggressive memory optimization settings
-    gl.capabilities.maxTextures = Math.min(gl.capabilities.maxTextures, performanceMode.isLowEnd ? 4 : 8);
-    gl.capabilities.maxVertexTextures = Math.min(gl.capabilities.maxVertexTextures, 2);
-    gl.capabilities.maxTextureSize = Math.min(gl.capabilities.maxTextureSize, performanceMode.isLowEnd ? 1024 : 2048);
-    
+    gl.capabilities.maxTextures = Math.min(
+      gl.capabilities.maxTextures,
+      performanceMode.isLowEnd ? 4 : 8,
+    );
+    gl.capabilities.maxVertexTextures = Math.min(
+      gl.capabilities.maxVertexTextures,
+      2,
+    );
+    gl.capabilities.maxTextureSize = Math.min(
+      gl.capabilities.maxTextureSize,
+      performanceMode.isLowEnd ? 1024 : 2048,
+    );
+
     // Additional WebGL optimizations for memory
     gl.debug.checkShaderErrors = false; // Disable in production
     gl.shadowMap.enabled = false; // Disable shadows completely
     gl.shadowMap.autoUpdate = false;
-    
+
     // Note: antialias and powerPreference are set during canvas creation, not on renderer
-    
+
     // Renderer state optimization
     gl.sortObjects = true; // Enable object sorting for better batching
     gl.autoClear = true;
     gl.autoClearColor = true;
     gl.autoClearDepth = true;
     gl.autoClearStencil = false; // Disable stencil clearing if not needed
-    
+
     // Context loss handling for memory recovery
     const canvas = gl.domElement;
     const handleContextLost = (event: Event) => {
       event.preventDefault();
-      console.warn('🔄 WebGL context lost, pausing rendering');
-      memoryProfiler.takeSnapshot('OceanCanvas', 'context-lost');
+      console.warn("🔄 WebGL context lost, pausing rendering");
+      memoryProfiler.takeSnapshot("OceanCanvas", "context-lost");
     };
-    
+
     const handleContextRestored = () => {
-      console.log('✅ WebGL context restored');
-      memoryProfiler.takeSnapshot('OceanCanvas', 'context-restored');
+      console.log("✅ WebGL context restored");
+      memoryProfiler.takeSnapshot("OceanCanvas", "context-restored");
     };
-    
-    canvas.addEventListener('webglcontextlost', handleContextLost);
-    canvas.addEventListener('webglcontextrestored', handleContextRestored);
-    
+
+    canvas.addEventListener("webglcontextlost", handleContextLost);
+    canvas.addEventListener("webglcontextrestored", handleContextRestored);
+
     // Force garbage collection hints (Chrome DevTools only)
-    if (process.env.NODE_ENV === 'development' && 'gc' in window) {
+    if (process.env.NODE_ENV === "development" && "gc" in window) {
       const gcInterval = setInterval(() => {
         const globalWindow = window as Window & { gc?: () => void };
-        if (typeof globalWindow.gc === 'function') {
+        if (typeof globalWindow.gc === "function") {
           globalWindow.gc();
         }
       }, 60000); // Every minute in development
-      
+
       // Store interval for cleanup
-      const extendedRenderer = gl as WebGLRenderer & { __gcInterval?: ReturnType<typeof setInterval> };
+      const extendedRenderer = gl as WebGLRenderer & {
+        __gcInterval?: ReturnType<typeof setInterval>;
+      };
       extendedRenderer.__gcInterval = gcInterval;
     }
-    
+
     // Set up memory monitoring
     memoryProfiler.setRenderer(gl);
-    memoryProfiler.takeSnapshot('OceanCanvas', 'renderer-created');
-    
+    memoryProfiler.takeSnapshot("OceanCanvas", "renderer-created");
+
     // Mark scene as loaded after a frame
     const frameId = requestAnimationFrame(() => {
       setSceneLoaded(true);
-      memoryProfiler.takeSnapshot('OceanCanvas', 'scene-loaded');
+      memoryProfiler.takeSnapshot("OceanCanvas", "scene-loaded");
     });
-    
+
     // CRITICAL: Return cleanup function to cancel animation frame and event listeners
     return () => {
       cancelAnimationFrame(frameId);
-      canvas.removeEventListener('webglcontextlost', handleContextLost);
-      canvas.removeEventListener('webglcontextrestored', handleContextRestored);
-      
+      canvas.removeEventListener("webglcontextlost", handleContextLost);
+      canvas.removeEventListener("webglcontextrestored", handleContextRestored);
+
       // Clear development GC interval
-      const extendedRenderer = gl as WebGLRenderer & { __gcInterval?: ReturnType<typeof setInterval> };
+      const extendedRenderer = gl as WebGLRenderer & {
+        __gcInterval?: ReturnType<typeof setInterval>;
+      };
       if (extendedRenderer.__gcInterval) {
         clearInterval(extendedRenderer.__gcInterval);
       }
-      
-      memoryProfiler.takeSnapshot('OceanCanvas', 'cleanup');
+
+      memoryProfiler.takeSnapshot("OceanCanvas", "cleanup");
     };
   };
-  
+
   // Early return if resources aren't ready or posts is invalid
   if (
     !resources.textures.waterNormals ||
@@ -484,8 +534,8 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     >
       {/* Scene content */}
       <CloudBackground texture={resources.textures.cloudBackground!} />
-      <OceanScene 
-        waterNormals={resources.textures.waterNormals!} 
+      <OceanScene
+        waterNormals={resources.textures.waterNormals!}
         performanceMode={performanceMode}
       />
       <PostNavigation
@@ -503,36 +553,44 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         // Get posts for current page
         const postsToUse = sortedPosts || posts;
         let postsToRender;
-        
+
         if (!visiblePostSlugs) {
           // No filter - use pagination
           postsToRender = postsToUse.slice(startIndex, endIndex);
         } else {
           // Filter applied - get visible posts then paginate
-          const visiblePosts = postsToUse.filter(post => visiblePostSlugs.has(post.slug));
+          const visiblePosts = postsToUse.filter((post) =>
+            visiblePostSlugs.has(post.slug),
+          );
           postsToRender = visiblePosts.slice(startIndex, endIndex);
         }
-        
+
         return postsToRender.map((post, renderIndex) => {
           // Use renderIndex for positioning (0, 1, 2, etc.)
           const targetPos = compactedPositions[renderIndex];
-          const originalIndex = posts.findIndex(p => p.slug === post.slug);
-          const originalPos = originalPositions[originalIndex];
-          
+
+          // Use consistent starting position based on renderIndex instead of original index
+          // This ensures consistent lighting regardless of which post is in which position
+          const startPos = new Vector3(
+            renderIndex * 50 - (postsPerPage - 1) * 25,
+            -100,
+            renderIndex * 40,
+          );
+
           // Safety check: ensure positions exist
-          if (!originalPos || !targetPos) return null;
-          
+          if (!targetPos) return null;
+
           return (
             <PostCube
               key={post.slug}
               index={renderIndex} // Use render index instead of original index
               title={post.title}
-              position={[originalPos.x, originalPos.y, originalPos.z]}
+              position={[startPos.x, startPos.y, startPos.z]}
               targetPosition={[targetPos.x, targetPos.y, targetPos.z]}
               onClick={() => onPostClick?.(post.slug)}
               rubiksCubeModel={resources.models.rubiksCube!}
               font={resources.fonts.gentilis!}
-              onReady={() => setPostBoxesLoaded(prev => prev + 1)}
+              onReady={() => setPostBoxesLoaded((prev) => prev + 1)}
               isVisible={true} // Always visible since we're only rendering visible posts
               allPostPositions={allPostPositions}
               sortingActive={isSorting}
@@ -540,11 +598,42 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
           );
         });
       })()}
-      <OceanCamera
-        positions={offsetPositions}
-        lerpFactor={0.08}
-        stepSize={1}
-      />
+
+      {/* Fixed directional lighting for each render position (0-9) */}
+      {Array.from({ length: 10 }, (_, renderIndex) => {
+        const targetPos = [
+          renderIndex * 50 - (postsPerPage - 1) * 25,
+          -8.5,
+          renderIndex * 40,
+        ] as [number, number, number];
+        const lightPos1: [number, number, number] = [
+          targetPos[0] - 1000,
+          targetPos[1] + 800,
+          targetPos[2] + 300,
+        ];
+        const lightPos2: [number, number, number] = [
+          targetPos[0] - 1000,
+          targetPos[1] - 800,
+          targetPos[2] + 300,
+        ];
+
+        return (
+          <group key={`lights-${renderIndex}`}>
+            <directionalLight
+              position={lightPos1}
+              intensity={1.4}
+              color={0xffffff}
+            />
+            <directionalLight
+              position={lightPos2}
+              intensity={0.4}
+              color={0x4488cc}
+            />
+          </group>
+        );
+      })}
+
+      <OceanCamera positions={offsetPositions} lerpFactor={0.08} stepSize={1} />
 
       {performanceMode.enableBloom && (
         <EffectComposer>

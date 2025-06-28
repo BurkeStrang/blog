@@ -156,8 +156,10 @@ export default function FollowerSphere({
     );
     textMeshesToRemove.forEach(mesh => {
       sphereGroup.remove(mesh);
-      if (mesh.geometry) mesh.geometry.dispose();
-      if (mesh.material && !Array.isArray(mesh.material)) mesh.material.dispose();
+      if (mesh instanceof THREE.Mesh) {
+        if (mesh.geometry) mesh.geometry.dispose();
+        if (mesh.material && !Array.isArray(mesh.material)) mesh.material.dispose();
+      }
     });
 
     // helper to add text/arrow meshes
