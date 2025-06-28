@@ -42,7 +42,7 @@ export default function FollowerSphere({
       new TextGeometry("<", {
         font,
         size: 0.78,
-        depth: 2,
+        depth: 0.5,
       }),
     [font],
   );
@@ -51,7 +51,7 @@ export default function FollowerSphere({
       new TextGeometry(">", {
         font,
         size: 0.84,
-        depth: 2,
+        depth: 0.5,
       }),
     [font],
   );
@@ -148,26 +148,26 @@ export default function FollowerSphere({
     };
 
     // label
-    addMesh(labelGeo, neonGlowMat, [-1.8, 0.2, -0.3], [-1.1, -1, -1], 1.1);
-    addMesh(labelGeo, neonSolidMat, [-1.8, 0.2, -0.3], [-1.1, -1, -1], 1);
+    addMesh(labelGeo, neonGlowMat, [-1.5, 0.3, 1], [-1, -1, -0.8], 1.1);
+    addMesh(labelGeo, neonSolidMat, [-1.5, 0.3, 1], [-1, -1, -0.8], 1);
 
     // left arrow + outline
-    addMesh(leftGeo, neonGlowMat, [-1.8, 0, -1.59], [-1.4, -1.32, -1.2], 1.1);
+    // addMesh(leftGeo, neonGlowMat, [-2, 0, -1.59], [-1.9, -1.32, -1.2], 1.1);
     addMesh(
       leftGeo,
       greyOutlineMat,
-      [-1.8, 0, -1.59],
-      [-1.4, -1.32, -1.2],
+      [-1.5, -0.27, -1.59],
+      [-1.41, -1.1, -1.24],
       1.2,
       "leftArrow",
     );
 
     // right arrow + outline
-    addMesh(rightGeo, neonGlowMat, [1.6, 0.1, 1.2], [1.34, 1.35, 1.5], 1.1);
+    // addMesh(rightGeo, neonGlowMat, [1.6, 0.1, 1.2], [1.34, 1.35, 1.5], 1.1);
     addMesh(
       rightGeo,
       greyOutlineMat,
-      [1.9, 0.1, 1.2],
+      [1.9, 0.1, 0.5],
       [1.34, 1.35, 1.5],
       1.2,
       "rightArrow",

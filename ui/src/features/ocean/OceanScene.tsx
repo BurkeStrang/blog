@@ -14,8 +14,7 @@ import OceanCamera from "./OceanCamera";
 import { PostCube } from "../posts";
 import { PostNavigation } from "../posts";
 import type { Post } from "../../app/AppContent";
-// Post-processing imports removed for performance optimization
-// import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { memoryProfiler } from "../../engine/memory";
 // import { GeometryPool, lodManager } from "../../engine/rendering";
 
@@ -520,7 +519,16 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         stepSize={1}
       />
 
-      {/* Bloom effects disabled for performance */}
+      {performanceMode.enableBloom && (
+        <EffectComposer>
+          <Bloom
+            intensity={0.1}
+            kernelSize={3}
+            luminanceThreshold={0.6}
+            luminanceSmoothing={0.025}
+          />
+        </EffectComposer>
+      )}
     </Canvas>
   );
 };

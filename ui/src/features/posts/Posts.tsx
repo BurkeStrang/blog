@@ -39,9 +39,9 @@ const FilterDropdownComponent = React.memo(function FilterDropdownComponent() {
         <FilterListIcon
           sx={{
             fontSize: {
-              "@media (max-height: 800px)": "1rem",
-              "@media (max-height: 600px)": "0.9rem",
-              "@media (max-height: 450px)": "0.8rem",
+              "@media (maxHeight: 800px)": "1rem",
+              "@media (maxHeight: 600px)": "0.9rem",
+              "@media (maxHeight: 450px)": "0.8rem",
             },
           }}
         />

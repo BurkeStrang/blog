@@ -543,8 +543,8 @@ function PostBoxCore(props: PostBoxProps) {
             );
           })}
     
-          <directionalLight position={[-500, 200, 200]} intensity={0.8} color={0xffffff} />
-          <directionalLight position={[25, -300, 200]} intensity={0.2} color={0x4488cc} />
+          <directionalLight position={[-1000, 800, 300]} intensity={1.4} color={0xffffff} />
+          <directionalLight position={[-1000, -800, 300]} intensity={1.4} color={0x4488cc} />
         </>
       )}
     </group>

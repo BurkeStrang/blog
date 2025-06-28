@@ -79,27 +79,26 @@ export const Header = styled.header`
     height: 3rem;
 
     /* sharp cyan stroke */
-    -webkit-text-stroke: 1px rgba(0, 255, 255, 0.8);
+    -webkit-text-stroke: 1px rgba(0, 250, 255, 0.8);
 
     /* neon glow layers: cyan close in, then purple further out */
     text-shadow:
       /* cyan glows */
-      0 0 3px rgba(0, 255, 255, 0.8),
-      0 0 5px rgba(0, 255, 255, 0.6),
-      0 0 10px rgba(0, 255, 255, 0.4),
-      0 0 20px rgba(0, 255, 255, 0.2),
+      0 0 3px rgba(0, 255, 128, 0.8),
+      0 0 5px rgba(0, 255, 128, 0.6),
+      0 0 10px rgba(0, 255, 128, 0.4),
+      0 0 20px rgba(0, 255, 128, 0.2),
       /* purple outer glow */ 0 0 20px rgba(0, 0, 255, 0.8),
-      0 0 30px rgba(0, 0, 255, 0.3),
-      0 0 40px rgba(0, 0, 255, 0.2);
+      0 0 30px rgba(0, 255, 128, 0.3),
+      0 0 40px rgba(0, 255, 128, 0.2);
   }
 
-  @media (max-height: 800px) {
-    padding-top: 1rem;
+  @media (max-height: 1200px) {
+    padding-top: 3rem;
     
     h1 {
       font-size: clamp(1.8rem, 5.5vw, 2.5rem);
-      height: 2.5rem;
-      margin: 0.75rem 0;
+      margin-top: 0.75rem;
     }
   }
 
@@ -108,7 +107,6 @@ export const Header = styled.header`
     
     h1 {
       font-size: clamp(1.4rem, 4.5vw, 1.8rem);
-      height: 1.8rem;
       margin: 0.5rem 0;
     }
   }
@@ -118,7 +116,6 @@ export const Header = styled.header`
     
     h1 {
       font-size: clamp(1rem, 3.5vw, 1.2rem);
-      height: 1.2rem;
       margin: 0.25rem 0;
     }
   }
@@ -144,23 +141,23 @@ export const Cloud = styled.img`
   transform: translateX(-50%);
   height: auto;
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
   animation: ${drift} 40s ease-in-out infinite;
 
   @media (max-height: 1600px) {
     width: 130%;
-    top: -100vh;
+    top: -70vh;
     left: 50%;
   }
   @media (max-height: 1024px) {
     width: 130%;
-    top: -100vh;
+    top: -80vh;
     left: 50%;
   }
 
   @media (max-height: 600px) {
     width: 110%;
-    top: -100vh;
+    top: -90vh;
     left: 60%;
   }
 `;
@@ -212,7 +209,7 @@ export const FilterButton = styled.button`
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  top: 3rem;
+  top: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -295,7 +292,7 @@ export const SearchBar = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 2rem 0;
+  padding: 1rem 0;
 
   @media (max-height: 800px) {
     padding: 1.5rem 0;

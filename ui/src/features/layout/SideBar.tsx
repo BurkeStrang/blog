@@ -50,24 +50,24 @@ const HamburgerBtn = styled.button`
   }
 
   @media (max-height: 800px) {
-    top: 0.9rem;
-    left: 0.9rem;
-    padding: 0.4rem;
-    font-size: 1.8rem;
-  }
-
-  @media (max-height: 600px) {
-    top: 0.7rem;
-    left: 0.7rem;
-    padding: 0.3rem;
+    top: 0.6rem;
+    left: 0.6rem;
+    padding: 0.2rem;
     font-size: 1.6rem;
   }
 
-  @media (max-height: 450px) {
-    top: 0.5rem;
-    left: 0.5rem;
-    padding: 0.2rem;
+  @media (max-height: 600px) {
+    top: 0.4rem;
+    left: 0.4rem;
+    padding: 0.15rem;
     font-size: 1.4rem;
+  }
+
+  @media (max-height: 450px) {
+    top: 0.25rem;
+    left: 0.25rem;
+    padding: 0.1rem;
+    font-size: 1.2rem;
   }
 `;
 
