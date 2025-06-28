@@ -141,7 +141,7 @@ const LazyOceanCanvas: React.FC<LazyOceanCanvasProps> = ({
         userSelect: 'none'
       }}
       onClick={handleUserInteraction}
-      onKeyPress={(e) => {
+      onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           handleUserInteraction();
         }

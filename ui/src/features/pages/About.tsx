@@ -20,12 +20,7 @@ const About: React.FC = () => (
           maxHeight: '85vh',
           overflowY: 'auto',
           boxShadow: '0 8px 32px rgba(0, 255, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-          border: '1px solid rgba(0, 255, 255, 0.3)',
-          '@media (max-width: 768px)': {
-            padding: '1rem',
-            margin: '0.5rem',
-            borderRadius: '12px'
-          }
+          border: '1px solid rgba(0, 255, 255, 0.3)'
         }}>
           <section style={{ maxWidth: '100%', lineHeight: '1.5' }}>
             <h2 style={{ 
