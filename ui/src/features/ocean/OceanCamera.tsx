@@ -18,8 +18,8 @@ function ScrollCamera({
   positions,
   lerpFactor,
   stepSize,
-  aboutModePosition = new THREE.Vector3(-800, 400, 900),
-  aboutModeRotation = new THREE.Euler(-Math.PI / 3, 0, 0),
+  aboutModePosition = new THREE.Vector3(-350, -5, 400),
+  aboutModeRotation = new THREE.Euler(0, -0.9, 0),
 }: ScrollCameraProps) {
   const { camera, gl } = useThree();
   const location = useLocation();
@@ -90,7 +90,7 @@ function ScrollCamera({
   useFrame(() => {
     // If on About route, move to about position and rotation
     if (isAboutRoute) {
-      camera.position.lerp(aboutModePosition, 0.001);
+      camera.position.lerp(aboutModePosition, 0.009);
       camera.rotation.x = THREE.MathUtils.lerp(
         camera.rotation.x,
         aboutModeRotation.x,

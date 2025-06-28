@@ -50,34 +50,60 @@ const WaterTile: React.FC<{
   const water = useMemo(() => {
     if (!visible) return null;
 
-    const segments = performanceMode.isLowEnd ? 16 : 32;
-    const textureSize = performanceMode.isLowEnd ? 256 : 512;
+    const segments = performanceMode.isLowEnd ? 64 : 128;
+    const textureSize = performanceMode.isLowEnd ? 512 : 1024;
 
-    // Create smaller tile geometry
+    // Create high-density geometry for seamless water
     const geo = new PlaneGeometry(size, size, segments, segments);
 
     const waterTile = new Water(geo, {
       textureWidth: textureSize,
       textureHeight: textureSize,
       waterNormals,
-      sunColor: 0x00000f,
-      waterColor: 0x111111,
+      sunColor: 0x66ccaa,
+      waterColor: 0x224455,
       distortionScale: performanceMode.isLowEnd ? 1.5 : 3.7,
       fog: Boolean(scene.fog),
     });
 
     // Material setup
     waterTile.material.transparent = true;
-    waterTile.material.uniforms.alpha.value = 0.99;
-    waterTile.material.opacity = 0.99;
-    waterTile.material.uniforms.waterColor.value.set(0x00000f);
-    waterTile.material.uniforms.distortionScale.value = 0.5;
+    waterTile.material.uniforms.alpha.value = 0.95;
+    waterTile.material.opacity = 0.95;
+    waterTile.material.uniforms.waterColor.value.set(0x224455);
+    waterTile.material.uniforms.sunColor.value.set(0x66ccaa);
+    waterTile.material.uniforms.distortionScale.value = 5.0;
     waterTile.material.onBeforeCompile = (shader) => {
       shader.fragmentShader = shader.fragmentShader.replace(
         `#include <color_fragment>`,
         `#include <color_fragment>;
-         // Bioluminescent glow
-         gl_FragColor.rgb += vec3(0.8, 0.8, 0.8) * pow(dot(gl_FragColor.rgb, vec3(1.0)), 2.0);
+         // Realistic water surface effects
+         float fresnel = dot(normalize(vWorldPosition.xyz - cameraPosition), vNormal);
+         fresnel = pow(1.0 - abs(fresnel), 1.5);
+         
+         // Multiple wave layers for realistic surface
+         float wave1 = sin(vWorldPosition.x * 0.02 + time * 0.8) * sin(vWorldPosition.z * 0.015 + time * 0.6);
+         float wave2 = sin(vWorldPosition.x * 0.05 + time * 1.2) * sin(vWorldPosition.z * 0.04 + time * 1.1);
+         float wave3 = sin(vWorldPosition.x * 0.08 + time * 1.8) * sin(vWorldPosition.z * 0.07 + time * 1.4);
+         float wave4 = sin(vWorldPosition.x * 0.12 + time * 2.1) * sin(vWorldPosition.z * 0.11 + time * 1.8);
+         float wave5 = sin(vWorldPosition.x * 0.15 + time * 2.5) * sin(vWorldPosition.z * 0.14 + time * 2.2);
+         float wave6 = sin(vWorldPosition.x * 0.18 + time * 2.8) * sin(vWorldPosition.z * 0.17 + time * 2.6);
+         
+         // Combine waves with different amplitudes for natural variation
+         float waves = (wave1 * 0.4 + wave2 * 0.25 + wave3 * 0.15 + wave4 * 0.1 + wave5 * 0.06 + wave6 * 0.04);
+         float sparkle = pow(max(0.0, waves), 12.0) * 0.4;
+         
+         // Natural water coloring with subtle variation
+         vec3 deepColor = vec3(0.15, 0.25, 0.22);
+         vec3 shallowColor = vec3(0.3, 0.5, 0.45);
+         vec3 waveColor = mix(deepColor, shallowColor, fresnel * 0.6);
+         
+         gl_FragColor.rgb = mix(gl_FragColor.rgb, waveColor, 0.8);
+         gl_FragColor.rgb += vec3(0.4, 0.6, 0.5) * sparkle * fresnel;
+         
+         // Add subtle depth variation to hide seams
+         float depth = sin(vWorldPosition.x * 0.001) * sin(vWorldPosition.z * 0.001);
+         gl_FragColor.rgb *= (1.0 + depth * 0.1);
         `,
       );
     };
@@ -132,8 +158,8 @@ const OceanScene: React.FC<{
 
   // Generate tile grid based on camera position and posts
   const tileConfig = useMemo(() => {
-    const tileSize = 1000; // Larger tiles, fewer of them
-    const gridExtent = 1000; // Much smaller grid for better performance
+    const tileSize = 2000; // Much larger tiles for seamless appearance
+    const gridExtent = 2000; // Larger grid extent
     const tiles: Array<{
       id: string;
       position: [number, number, number];
