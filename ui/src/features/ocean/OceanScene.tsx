@@ -296,12 +296,14 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
 
   // Compacted positions - use sorted posts for positioning with pagination
   const compactedPositions = useMemo(() => {
+    const maxPostsPerPage = postsPerPage; // Always use 10 for consistent positioning
+    
     if (!visiblePostSlugs) {
       // No filter - use sorted posts if available, otherwise original posts
       const postsToUse = sortedPosts || posts;
       const paginatedPosts = postsToUse.slice(startIndex, endIndex);
       return paginatedPosts.map((_, i) => 
-        new Vector3(i * 50 - (paginatedPosts.length - 1) * 25, -8.5, i * 40)
+        new Vector3(i * 50 - (maxPostsPerPage - 1) * 25, -8.5, i * 40)
       );
     }
     
@@ -313,55 +315,9 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     
     // Always place visible posts at the first N positions (0, 1, 2, ...)
     return paginatedPosts.map((_, i) => 
-      new Vector3(i * 50 - (paginatedPosts.length - 1) * 25, -8.5, i * 40)
+      new Vector3(i * 50 - (maxPostsPerPage - 1) * 25, -8.5, i * 40)
     );
-  }, [posts, visiblePostSlugs, originalPositions, sortedPosts, startIndex, endIndex]);
-  // Create a mapping of post slug to target position based on sorted order with pagination
-  const postTargetPositions = useMemo(() => {
-    const targetMap = new Map<string, Vector3>();
-    const postsToUse = sortedPosts || posts;
-    
-    if (!visiblePostSlugs) {
-      // No search filter - assign positions based on sorted order with pagination
-      const paginatedPosts = postsToUse.slice(startIndex, endIndex);
-      paginatedPosts.forEach((post, index) => {
-        if (index < compactedPositions.length) {
-          targetMap.set(post.slug, compactedPositions[index]);
-        }
-      });
-      
-      // Non-paginated posts go underwater
-      postsToUse.forEach((post, originalIndex) => {
-        const isInCurrentPage = originalIndex >= startIndex && originalIndex < endIndex;
-        if (!isInCurrentPage && originalIndex < originalPositions.length) {
-          targetMap.set(post.slug, originalPositions[originalIndex]);
-        }
-      });
-    } else {
-      // Search filter active - map visible posts to compacted positions with pagination
-      const visibleSortedPosts = postsToUse.filter(post => visiblePostSlugs.has(post.slug));
-      const paginatedVisiblePosts = visibleSortedPosts.slice(startIndex, endIndex);
-      
-      paginatedVisiblePosts.forEach((post, index) => {
-        if (index < compactedPositions.length) {
-          targetMap.set(post.slug, compactedPositions[index]);
-        }
-      });
-      
-      // Non-paginated visible posts and hidden posts go underwater
-      postsToUse.forEach((post, originalIndex) => {
-        const isVisible = visiblePostSlugs.has(post.slug);
-        const visibleIndex = visibleSortedPosts.findIndex(p => p.slug === post.slug);
-        const isInCurrentPage = isVisible && visibleIndex >= startIndex && visibleIndex < endIndex;
-        
-        if (!isInCurrentPage && originalIndex < originalPositions.length) {
-          targetMap.set(post.slug, originalPositions[originalIndex]);
-        }
-      });
-    }
-    
-    return targetMap;
-  }, [posts, originalPositions, compactedPositions, visiblePostSlugs, sortedPosts, startIndex, endIndex, currentPage]);
+  }, [posts, visiblePostSlugs, originalPositions, sortedPosts, startIndex, endIndex, postsPerPage]);
 
   // Calculate offset positions for camera positioning (only visible posts)
   const offsetPositions = useMemo(() => {
@@ -543,33 +499,47 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         showLeftArrow={currentPage > 1}
         showRightArrow={currentPage < totalPages}
       />
-      {posts.map((post, i) => {
-        const originalPos = originalPositions[i];
-        const targetPos = postTargetPositions.get(post.slug);
+      {(() => {
+        // Get posts for current page
+        const postsToUse = sortedPosts || posts;
+        let postsToRender;
         
-        // Safety check: ensure positions exist
-        if (!originalPos || !targetPos) return null;
+        if (!visiblePostSlugs) {
+          // No filter - use pagination
+          postsToRender = postsToUse.slice(startIndex, endIndex);
+        } else {
+          // Filter applied - get visible posts then paginate
+          const visiblePosts = postsToUse.filter(post => visiblePostSlugs.has(post.slug));
+          postsToRender = visiblePosts.slice(startIndex, endIndex);
+        }
         
-        // Determine if this post should be visible
-        const isVisible = !visiblePostSlugs || visiblePostSlugs.has(post.slug);
-        
-        return (
-          <PostCube
-            key={post.slug}
-            index={i}
-            title={post.title}
-            position={[originalPos.x, originalPos.y, originalPos.z]}
-            targetPosition={[targetPos.x, targetPos.y, targetPos.z]}
-            onClick={() => onPostClick?.(post.slug)}
-            rubiksCubeModel={resources.models.rubiksCube!}
-            font={resources.fonts.gentilis!}
-            onReady={() => setPostBoxesLoaded(prev => prev + 1)}
-            isVisible={isVisible}
-            allPostPositions={allPostPositions}
-            sortingActive={isSorting}
-          />
-        );
-      })}
+        return postsToRender.map((post, renderIndex) => {
+          // Use renderIndex for positioning (0, 1, 2, etc.)
+          const targetPos = compactedPositions[renderIndex];
+          const originalIndex = posts.findIndex(p => p.slug === post.slug);
+          const originalPos = originalPositions[originalIndex];
+          
+          // Safety check: ensure positions exist
+          if (!originalPos || !targetPos) return null;
+          
+          return (
+            <PostCube
+              key={post.slug}
+              index={renderIndex} // Use render index instead of original index
+              title={post.title}
+              position={[originalPos.x, originalPos.y, originalPos.z]}
+              targetPosition={[targetPos.x, targetPos.y, targetPos.z]}
+              onClick={() => onPostClick?.(post.slug)}
+              rubiksCubeModel={resources.models.rubiksCube!}
+              font={resources.fonts.gentilis!}
+              onReady={() => setPostBoxesLoaded(prev => prev + 1)}
+              isVisible={true} // Always visible since we're only rendering visible posts
+              allPostPositions={allPostPositions}
+              sortingActive={isSorting}
+            />
+          );
+        });
+      })()}
       <OceanCamera
         positions={offsetPositions}
         lerpFactor={0.08}
