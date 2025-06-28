@@ -19,7 +19,7 @@ function ScrollCamera({
   lerpFactor,
   stepSize,
   aboutModePosition = new THREE.Vector3(-800, 400, 900),
-  aboutModeRotation = new THREE.Euler(-Math.PI / 3, 0, 0), // Look down 30 degrees
+  aboutModeRotation = new THREE.Euler(-Math.PI / 3, 0, 0),
 }: ScrollCameraProps) {
   const { camera, gl } = useThree();
   const location = useLocation();
@@ -91,16 +91,40 @@ function ScrollCamera({
     // If on About route, move to about position and rotation
     if (isAboutRoute) {
       camera.position.lerp(aboutModePosition, 0.001);
-      camera.rotation.x = THREE.MathUtils.lerp(camera.rotation.x, aboutModeRotation.x, lerpFactor);
-      camera.rotation.y = THREE.MathUtils.lerp(camera.rotation.y, aboutModeRotation.y, lerpFactor);
-      camera.rotation.z = THREE.MathUtils.lerp(camera.rotation.z, aboutModeRotation.z, lerpFactor);
+      camera.rotation.x = THREE.MathUtils.lerp(
+        camera.rotation.x,
+        aboutModeRotation.x,
+        lerpFactor,
+      );
+      camera.rotation.y = THREE.MathUtils.lerp(
+        camera.rotation.y,
+        aboutModeRotation.y,
+        lerpFactor,
+      );
+      camera.rotation.z = THREE.MathUtils.lerp(
+        camera.rotation.z,
+        aboutModeRotation.z,
+        lerpFactor,
+      );
       return;
     }
 
     // Restore original rotation when not in about mode
-    camera.rotation.x = THREE.MathUtils.lerp(camera.rotation.x, originalRotation.x, lerpFactor);
-    camera.rotation.y = THREE.MathUtils.lerp(camera.rotation.y, originalRotation.y, lerpFactor);
-    camera.rotation.z = THREE.MathUtils.lerp(camera.rotation.z, originalRotation.z, lerpFactor);
+    camera.rotation.x = THREE.MathUtils.lerp(
+      camera.rotation.x,
+      originalRotation.x,
+      lerpFactor,
+    );
+    camera.rotation.y = THREE.MathUtils.lerp(
+      camera.rotation.y,
+      originalRotation.y,
+      lerpFactor,
+    );
+    camera.rotation.z = THREE.MathUtils.lerp(
+      camera.rotation.z,
+      originalRotation.z,
+      lerpFactor,
+    );
 
     // Guard against empty positions array
     if (positions.length === 0) return;
