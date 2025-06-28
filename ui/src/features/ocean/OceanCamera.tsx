@@ -10,17 +10,21 @@ interface ScrollCameraProps {
   stepSize: number;
   /** Position to move to when About route is active */
   aboutModePosition?: THREE.Vector3;
+  /** Rotation to apply when About route is active */
+  aboutModeRotation?: THREE.Euler;
 }
 
 function ScrollCamera({
   positions,
   lerpFactor,
   stepSize,
-  aboutModePosition = new THREE.Vector3(-400, 30, -400),
+  aboutModePosition = new THREE.Vector3(-800, 400, 900),
+  aboutModeRotation = new THREE.Euler(-Math.PI / 3, 0, 0), // Look down 30 degrees
 }: ScrollCameraProps) {
   const { camera, gl } = useThree();
   const location = useLocation();
   const [scrollY, setScrollY] = useState(0);
+  const [originalRotation] = useState(() => camera.rotation.clone());
 
   // Check if we're on the About route
   const isAboutRoute = location.pathname === "/about";
@@ -84,11 +88,19 @@ function ScrollCamera({
   }, [gl.domElement, positions.length, stepSize]);
 
   useFrame(() => {
-    // If on About route, move to about position
+    // If on About route, move to about position and rotation
     if (isAboutRoute) {
-      camera.position.lerp(aboutModePosition, lerpFactor);
+      camera.position.lerp(aboutModePosition, 0.001);
+      camera.rotation.x = THREE.MathUtils.lerp(camera.rotation.x, aboutModeRotation.x, lerpFactor);
+      camera.rotation.y = THREE.MathUtils.lerp(camera.rotation.y, aboutModeRotation.y, lerpFactor);
+      camera.rotation.z = THREE.MathUtils.lerp(camera.rotation.z, aboutModeRotation.z, lerpFactor);
       return;
     }
+
+    // Restore original rotation when not in about mode
+    camera.rotation.x = THREE.MathUtils.lerp(camera.rotation.x, originalRotation.x, lerpFactor);
+    camera.rotation.y = THREE.MathUtils.lerp(camera.rotation.y, originalRotation.y, lerpFactor);
+    camera.rotation.z = THREE.MathUtils.lerp(camera.rotation.z, originalRotation.z, lerpFactor);
 
     // Guard against empty positions array
     if (positions.length === 0) return;
