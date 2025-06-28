@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useMemo, useState } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
+import { useLocation } from "react-router-dom";
 import * as THREE from "three";
 import {
   PlaneGeometry,
@@ -262,9 +263,13 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   sortedPosts,
   isSorting = false,
 }) => {
+  const location = useLocation();
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 10;
+  
+  // Check if we're on the About route
+  const isAboutRoute = location.pathname === '/about';
 
   // Calculate pagination info
   const totalPosts = visiblePostSlugs
@@ -538,17 +543,19 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         waterNormals={resources.textures.waterNormals!}
         performanceMode={performanceMode}
       />
-      <PostNavigation
-        offset={[30, -16, -30]}
-        onLeftClick={handleLeftClick}
-        onRightClick={handleRightClick}
-        sphereModel={resources.models.sphere!}
-        font={resources.fonts.gentilis!}
-        currentPage={currentPage}
-        totalPosts={totalPosts}
-        showLeftArrow={currentPage > 1}
-        showRightArrow={currentPage < totalPages}
-      />
+      {!isAboutRoute && (
+        <PostNavigation
+          offset={[30, -16, -30]}
+          onLeftClick={handleLeftClick}
+          onRightClick={handleRightClick}
+          sphereModel={resources.models.sphere!}
+          font={resources.fonts.gentilis!}
+          currentPage={currentPage}
+          totalPosts={totalPosts}
+          showLeftArrow={currentPage > 1}
+          showRightArrow={currentPage < totalPages}
+        />
+      )}
       {(() => {
         // Get posts for current page
         const postsToUse = sortedPosts || posts;

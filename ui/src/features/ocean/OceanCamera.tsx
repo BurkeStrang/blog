@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
+import { useLocation } from "react-router-dom";
 import * as THREE from "three";
 
 interface ScrollCameraProps {
@@ -7,11 +8,22 @@ interface ScrollCameraProps {
   lerpFactor: number;
   /** how many “units” one wheel‐notch or arrow press moves you */
   stepSize: number;
+  /** Position to move to when About route is active */
+  aboutModePosition?: THREE.Vector3;
 }
 
-function ScrollCamera({ positions, lerpFactor, stepSize }: ScrollCameraProps) {
+function ScrollCamera({
+  positions,
+  lerpFactor,
+  stepSize,
+  aboutModePosition = new THREE.Vector3(-400, 30, -400),
+}: ScrollCameraProps) {
   const { camera, gl } = useThree();
+  const location = useLocation();
   const [scrollY, setScrollY] = useState(0);
+
+  // Check if we're on the About route
+  const isAboutRoute = location.pathname === "/about";
 
   const clamp = (v: number, min: number, max: number) =>
     v < min ? min : v > max ? max : v;
@@ -21,7 +33,7 @@ function ScrollCamera({ positions, lerpFactor, stepSize }: ScrollCameraProps) {
     const canvas = gl.domElement;
     // Guard against empty positions array
     if (positions.length === 0) return;
-    
+
     const maxScroll = ((positions.length - 1) * stepSize) / 1.5;
 
     // WHEEL
@@ -72,13 +84,19 @@ function ScrollCamera({ positions, lerpFactor, stepSize }: ScrollCameraProps) {
   }, [gl.domElement, positions.length, stepSize]);
 
   useFrame(() => {
+    // If on About route, move to about position
+    if (isAboutRoute) {
+      camera.position.lerp(aboutModePosition, lerpFactor);
+      return;
+    }
+
     // Guard against empty positions array
     if (positions.length === 0) return;
-    
+
     const max = ((positions.length - 1) * stepSize) / 1.5;
     const t = clamp(scrollY / max, 0, 1);
     const idx = Math.round(t * (positions.length - 1));
-    
+
     // Ensure idx is within bounds and the position exists
     if (idx >= 0 && idx < positions.length && positions[idx]) {
       const target = positions[idx].clone();
