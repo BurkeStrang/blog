@@ -85,6 +85,7 @@ const textMargin = 0.8;
 
 function PostBoxCore(props: PostBoxProps) {
   const { title, index, position, onClick, rubiksCubeModel, font, onReady, isVisible = true, targetPosition, allPostPositions, sortingActive = false } = props;
+  const { gl } = useThree();
   const { camera } = useThree();
   const groupRef = useRef<THREE.Group>(null!);
   const [hovered, setHovered] = useState(false);
@@ -476,11 +477,11 @@ function PostBoxCore(props: PostBoxProps) {
   const handlePointerOver = () => {
     if (!isVisible || sortingPhase !== 'none') return; // Don't allow hover when underwater or sorting
     setHovered(true);
-    document.body.style.cursor = "pointer";
+    gl.domElement.style.cursor = "pointer";
   };
   const handlePointerOut = () => {
     setHovered(false);
-    document.body.style.cursor = "auto";
+    gl.domElement.style.cursor = "auto";
   };
   
   const handleClick = () => {

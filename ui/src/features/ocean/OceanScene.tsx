@@ -247,6 +247,42 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   sortedPosts,
   isSorting = false,
 }) => {
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 10;
+
+  // Calculate pagination info
+  const totalPosts = visiblePostSlugs ? 
+    (sortedPosts || posts).filter(post => visiblePostSlugs.has(post.slug)).length :
+    (sortedPosts || posts).length;
+  const totalPages = Math.ceil(totalPosts / postsPerPage);
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const endIndex = startIndex + postsPerPage;
+
+  // Pagination handlers
+  const handleLeftClick = () => {
+    console.log('Left click - currentPage:', currentPage, 'totalPages:', totalPages);
+    if (currentPage > 1) {
+      const newPage = currentPage - 1;
+      console.log('Setting page to:', newPage);
+      setCurrentPage(newPage);
+    }
+  };
+
+  const handleRightClick = () => {
+    console.log('Right click - currentPage:', currentPage, 'totalPages:', totalPages);
+    if (currentPage < totalPages) {
+      const newPage = currentPage + 1;
+      console.log('Setting page to:', newPage);
+      setCurrentPage(newPage);
+    }
+  };
+
+  // Reset to page 1 when search filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [visiblePostSlugs, sortedPosts]);
+
   // Original positions for all posts (used when no search filter)
   const originalPositions = useMemo(
     () => {
@@ -258,57 +294,74 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     [posts]
   );
 
-  // Compacted positions - use sorted posts for positioning
+  // Compacted positions - use sorted posts for positioning with pagination
   const compactedPositions = useMemo(() => {
     if (!visiblePostSlugs) {
       // No filter - use sorted posts if available, otherwise original posts
       const postsToUse = sortedPosts || posts;
-      return postsToUse.map((_, i) => 
-        new Vector3(i * 50 - (postsToUse.length - 1) * 25, -100, i * 40)
+      const paginatedPosts = postsToUse.slice(startIndex, endIndex);
+      return paginatedPosts.map((_, i) => 
+        new Vector3(i * 50 - (paginatedPosts.length - 1) * 25, -8.5, i * 40)
       );
     }
     
-    // Filter applied - use sorted visible posts
+    // Filter applied - use sorted visible posts with pagination
     const postsToUse = sortedPosts || posts;
     const visiblePosts = postsToUse.filter(post => visiblePostSlugs.has(post.slug));
-    if (visiblePosts.length === 0) return [];
+    const paginatedPosts = visiblePosts.slice(startIndex, endIndex);
+    if (paginatedPosts.length === 0) return [];
     
     // Always place visible posts at the first N positions (0, 1, 2, ...)
-    return visiblePosts.map((_, i) => 
-      new Vector3(i * 50 - (posts.length - 1) * 25, -8.5, i * 40)
+    return paginatedPosts.map((_, i) => 
+      new Vector3(i * 50 - (paginatedPosts.length - 1) * 25, -8.5, i * 40)
     );
-  }, [posts, visiblePostSlugs, originalPositions, sortedPosts]);
-  // Create a mapping of post slug to target position based on sorted order
+  }, [posts, visiblePostSlugs, originalPositions, sortedPosts, startIndex, endIndex]);
+  // Create a mapping of post slug to target position based on sorted order with pagination
   const postTargetPositions = useMemo(() => {
     const targetMap = new Map<string, Vector3>();
     const postsToUse = sortedPosts || posts;
     
     if (!visiblePostSlugs) {
-      // No search filter - assign positions based on sorted order
-      postsToUse.forEach((post, sortedIndex) => {
-        if (sortedIndex < compactedPositions.length) {
-          targetMap.set(post.slug, compactedPositions[sortedIndex]);
-        }
-      });
-    } else {
-      // Search filter active - map visible posts to compacted positions in sorted order
-      const visibleSortedPosts = postsToUse.filter(post => visiblePostSlugs.has(post.slug));
-      visibleSortedPosts.forEach((post, compactIndex) => {
-        if (compactIndex < compactedPositions.length) {
-          targetMap.set(post.slug, compactedPositions[compactIndex]);
+      // No search filter - assign positions based on sorted order with pagination
+      const paginatedPosts = postsToUse.slice(startIndex, endIndex);
+      paginatedPosts.forEach((post, index) => {
+        if (index < compactedPositions.length) {
+          targetMap.set(post.slug, compactedPositions[index]);
         }
       });
       
-      // Hidden posts go underwater at their original relative position
+      // Non-paginated posts go underwater
       postsToUse.forEach((post, originalIndex) => {
-        if (!visiblePostSlugs.has(post.slug) && originalIndex < originalPositions.length) {
+        const isInCurrentPage = originalIndex >= startIndex && originalIndex < endIndex;
+        if (!isInCurrentPage && originalIndex < originalPositions.length) {
+          targetMap.set(post.slug, originalPositions[originalIndex]);
+        }
+      });
+    } else {
+      // Search filter active - map visible posts to compacted positions with pagination
+      const visibleSortedPosts = postsToUse.filter(post => visiblePostSlugs.has(post.slug));
+      const paginatedVisiblePosts = visibleSortedPosts.slice(startIndex, endIndex);
+      
+      paginatedVisiblePosts.forEach((post, index) => {
+        if (index < compactedPositions.length) {
+          targetMap.set(post.slug, compactedPositions[index]);
+        }
+      });
+      
+      // Non-paginated visible posts and hidden posts go underwater
+      postsToUse.forEach((post, originalIndex) => {
+        const isVisible = visiblePostSlugs.has(post.slug);
+        const visibleIndex = visibleSortedPosts.findIndex(p => p.slug === post.slug);
+        const isInCurrentPage = isVisible && visibleIndex >= startIndex && visibleIndex < endIndex;
+        
+        if (!isInCurrentPage && originalIndex < originalPositions.length) {
           targetMap.set(post.slug, originalPositions[originalIndex]);
         }
       });
     }
     
     return targetMap;
-  }, [posts, originalPositions, compactedPositions, visiblePostSlugs, sortedPosts]);
+  }, [posts, originalPositions, compactedPositions, visiblePostSlugs, sortedPosts, startIndex, endIndex, currentPage]);
 
   // Calculate offset positions for camera positioning (only visible posts)
   const offsetPositions = useMemo(() => {
@@ -481,10 +534,14 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
       />
       <PostNavigation
         offset={[30, -16, -30]}
-        onLeftClick={() => console.log("Left click")}
-        onRightClick={() => console.log("Right click")}
+        onLeftClick={handleLeftClick}
+        onRightClick={handleRightClick}
         sphereModel={resources.models.sphere!}
         font={resources.fonts.gentilis!}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        showLeftArrow={currentPage > 1}
+        showRightArrow={currentPage < totalPages}
       />
       {posts.map((post, i) => {
         const originalPos = originalPositions[i];

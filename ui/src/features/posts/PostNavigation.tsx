@@ -15,6 +15,10 @@ interface FollowerSphereProps {
   onRightClick?: () => void;
   sphereModel: GLTF;
   font: Font;
+  currentPage?: number;
+  totalPages?: number;
+  showLeftArrow?: boolean;
+  showRightArrow?: boolean;
 }
 
 export default function FollowerSphere({
@@ -23,19 +27,29 @@ export default function FollowerSphere({
   onRightClick,
   sphereModel,
   font,
+  currentPage = 1,
+  totalPages = 1,
+  showLeftArrow = true,
+  showRightArrow = true,
 }: FollowerSphereProps) {
   const groupRef = useRef<THREE.Group>(null);
   const { camera, gl } = useThree();
 
   // 1) Pre-build TextGeometries
+  const labelText = useMemo(() => {
+    const startPost = (currentPage - 1) * 10 + 1;
+    const endPost = Math.min(currentPage * 10, totalPages * 10);
+    return `${startPost}-${endPost}`;
+  }, [currentPage, totalPages]);
+
   const labelGeo = useMemo(
     () =>
-      new TextGeometry("1-10", {
+      new TextGeometry(labelText, {
         font,
         size: 0.25,
         depth: 0.08, // use `depth` not `height`
       }),
-    [font],
+    [font, labelText],
   );
   const leftGeo = useMemo(
     () =>
@@ -106,7 +120,7 @@ export default function FollowerSphere({
     return [geo, mat] as const;
   }, [sphereModel]);
 
-  // 4) Build scene group
+  // 4) Create stable sphere group (only sphere and glow shell)
   const sphereGroup = useMemo(() => {
     const group = new THREE.Group();
 
@@ -130,6 +144,22 @@ export default function FollowerSphere({
     sphereClone.rotation.set(1, -1, 0);
     group.add(sphereClone);
 
+    return group;
+  }, [sphereModel, glowShellGeo, glowShellMat]);
+
+  // 5) Update text elements dynamically
+  useEffect(() => {
+    // Remove existing text meshes
+    const textMeshesToRemove = sphereGroup.children.filter(child => 
+      child instanceof THREE.Mesh && 
+      (child.geometry instanceof TextGeometry || child.name?.includes('Arrow') || child.name?.includes('label'))
+    );
+    textMeshesToRemove.forEach(mesh => {
+      sphereGroup.remove(mesh);
+      if (mesh.geometry) mesh.geometry.dispose();
+      if (mesh.material && !Array.isArray(mesh.material)) mesh.material.dispose();
+    });
+
     // helper to add text/arrow meshes
     const addMesh = (
       geo: TextGeometry,
@@ -144,46 +174,46 @@ export default function FollowerSphere({
       mesh.position.set(...pos);
       mesh.rotation.set(...rot);
       mesh.scale.set(scale, scale, scale);
-      group.add(mesh);
+      sphereGroup.add(mesh);
     };
 
     // label
-    addMesh(labelGeo, neonGlowMat, [-1.5, 0.3, 1], [-1, -1, -0.8], 1.1);
-    addMesh(labelGeo, neonSolidMat, [-1.5, 0.3, 1], [-1, -1, -0.8], 1);
+    addMesh(labelGeo, neonGlowMat, [-1.5, 0.3, 1], [-1, -1, -0.8], 1.1, 'label-glow');
+    addMesh(labelGeo, neonSolidMat, [-1.5, 0.3, 1], [-1, -1, -0.8], 1, 'label-solid');
 
-    // left arrow + outline
-    // addMesh(leftGeo, neonGlowMat, [-2, 0, -1.59], [-1.9, -1.32, -1.2], 1.1);
-    addMesh(
-      leftGeo,
-      greyOutlineMat,
-      [-1.5, -0.27, -1.59],
-      [-1.41, -1.1, -1.24],
-      1.2,
-      "leftArrow",
-    );
+    // left arrow + outline (conditional)
+    if (showLeftArrow) {
+      addMesh(
+        leftGeo,
+        greyOutlineMat,
+        [-1.5, -0.27, -1.59],
+        [-1.41, -1.1, -1.24],
+        1.2,
+        "leftArrow",
+      );
+    }
 
-    // right arrow + outline
-    // addMesh(rightGeo, neonGlowMat, [1.6, 0.1, 1.2], [1.34, 1.35, 1.5], 1.1);
-    addMesh(
-      rightGeo,
-      greyOutlineMat,
-      [1.9, 0.1, 0.5],
-      [1.34, 1.35, 1.5],
-      1.2,
-      "rightArrow",
-    );
-
-    return group;
+    // right arrow + outline (conditional)
+    if (showRightArrow) {
+      addMesh(
+        rightGeo,
+        greyOutlineMat,
+        [1.9, 0.1, 0.5],
+        [1.34, 1.35, 1.5],
+        1.2,
+        "rightArrow",
+      );
+    }
   }, [
-    sphereModel,
+    sphereGroup,
     labelGeo,
     leftGeo,
     rightGeo,
     neonGlowMat,
     neonSolidMat,
     greyOutlineMat,
-    glowShellGeo,
-    glowShellMat,
+    showLeftArrow,
+    showRightArrow,
   ]);
 
   // follow camera
@@ -198,8 +228,12 @@ export default function FollowerSphere({
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     const name = e.object.name;
-    if (name === "leftArrow") onLeftClick?.();
-    if (name === "rightArrow") onRightClick?.();
+    if (name === "leftArrow") {
+      onLeftClick?.();
+    }
+    if (name === "rightArrow") {
+      onRightClick?.();
+    }
   };
   const handlePointerOver = (e: ThreeEvent<PointerEvent>) => {
     if (e.object.name.endsWith("Arrow"))
@@ -238,13 +272,13 @@ export default function FollowerSphere({
   ]);
 
   return (
-    <primitive
-      ref={groupRef}
-      object={sphereGroup}
-      scale={[3, 3, 3]}
-      onPointerDown={handlePointerDown}
-      onPointerOver={handlePointerOver}
-      onPointerOut={handlePointerOut}
-    />
+    <group ref={groupRef} scale={[3, 3, 3]}>
+      <primitive 
+        object={sphereGroup}
+        onPointerDown={handlePointerDown}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
+      />
+    </group>
   );
 }
