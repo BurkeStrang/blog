@@ -89,6 +89,7 @@ const AppContent: React.FC = memo(() => {
     }
   }, [location.pathname]);
 
+
   // Memory tracking (async to avoid blocking)
   useEffect(() => {
     if (canvasReady) {
@@ -197,7 +198,7 @@ const AppContent: React.FC = memo(() => {
 
       {showUI && (
         <>
-          <SideBar />
+          <SideBar onPostsClick={() => setSelectedPost(null)} />
           <Routes>
             <Route path="/about" element={<About />} />
             <Route

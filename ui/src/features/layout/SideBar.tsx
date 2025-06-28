@@ -153,8 +153,12 @@ const SidebarLink = styled(NavLink)`
   ${sidebarLinkBase}
 `;
 
+interface SidebarNavProps {
+  onPostsClick?: () => void;
+}
+
 // Main sidebar component
-const SidebarNav: React.FC = () => {
+const SidebarNav: React.FC<SidebarNavProps> = ({ onPostsClick }) => {
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
@@ -177,7 +181,13 @@ const SidebarNav: React.FC = () => {
             </SidebarLink>
           </SidebarItem>
           <SidebarItem>
-            <SidebarLink to="/posts" onClick={() => setOpen(false)}>
+            <SidebarLink 
+              to="/posts" 
+              onClick={() => {
+                setOpen(false);
+                onPostsClick?.();
+              }}
+            >
               POSTS
             </SidebarLink>
           </SidebarItem>
