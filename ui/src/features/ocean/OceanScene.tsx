@@ -545,7 +545,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         sphereModel={resources.models.sphere!}
         font={resources.fonts.gentilis!}
         currentPage={currentPage}
-        totalPages={totalPages}
+        totalPosts={totalPosts}
         showLeftArrow={currentPage > 1}
         showRightArrow={currentPage < totalPages}
       />
@@ -621,12 +621,12 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
           <group key={`lights-${renderIndex}`}>
             <directionalLight
               position={lightPos1}
-              intensity={1.4}
+              intensity={1}
               color={0xffffff}
             />
             <directionalLight
               position={lightPos2}
-              intensity={0.4}
+              intensity={0.1}
               color={0x4488cc}
             />
           </group>

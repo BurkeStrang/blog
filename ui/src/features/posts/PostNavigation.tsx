@@ -5,9 +5,9 @@ import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 import type { Font } from "three/examples/jsm/loaders/FontLoader";
 
-// Neon color constant
-const neonHex = 0x8c8e88;
-const neonColor = new THREE.Color(neonHex);
+// Primary color constant for pagination text
+const primaryHex = 0x00ffff; // #0ff
+const primaryColor = new THREE.Color(primaryHex);
 
 interface FollowerSphereProps {
   offset: [number, number, number];
@@ -16,7 +16,7 @@ interface FollowerSphereProps {
   sphereModel: GLTF;
   font: Font;
   currentPage?: number;
-  totalPages?: number;
+  totalPosts?: number;
   showLeftArrow?: boolean;
   showRightArrow?: boolean;
 }
@@ -28,7 +28,7 @@ export default function FollowerSphere({
   sphereModel,
   font,
   currentPage = 1,
-  totalPages = 1,
+  totalPosts = 10,
   showLeftArrow = true,
   showRightArrow = true,
 }: FollowerSphereProps) {
@@ -37,10 +37,16 @@ export default function FollowerSphere({
 
   // 1) Pre-build TextGeometries
   const labelText = useMemo(() => {
-    const startPost = (currentPage - 1) * 10 + 1;
-    const endPost = Math.min(currentPage * 10, totalPages * 10);
-    return `${startPost}-${endPost}`;
-  }, [currentPage, totalPages]);
+    if (totalPosts <= 10) {
+      // If 10 or fewer posts total, just show the count (1-5, 1-8, etc.)
+      return `1-${totalPosts}`;
+    } else {
+      // More than 10 posts, show pagination ranges (1-10, 11-20, etc.)
+      const startPost = (currentPage - 1) * 10 + 1;
+      const endPost = Math.min(currentPage * 10, totalPosts);
+      return `${startPost}-${endPost}`;
+    }
+  }, [currentPage, totalPosts]);
 
   const labelGeo = useMemo(
     () =>
@@ -71,10 +77,10 @@ export default function FollowerSphere({
   );
 
   // 2) Pre-build Materials
-  const neonGlowMat = useMemo(
+  const primaryGlowMat = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
-        color: neonColor,
+        color: primaryColor,
         blending: THREE.AdditiveBlending,
         transparent: true,
         opacity: 0.3,
@@ -82,8 +88,8 @@ export default function FollowerSphere({
       }),
     [],
   );
-  const neonSolidMat = useMemo(
-    () => new THREE.MeshBasicMaterial({ color: neonColor, toneMapped: false }),
+  const primarySolidMat = useMemo(
+    () => new THREE.MeshBasicMaterial({ color: primaryColor, toneMapped: false }),
     [],
   );
   const greyOutlineMat = useMemo(
@@ -98,7 +104,7 @@ export default function FollowerSphere({
     [],
   );
 
-  // 3) Compute glow-shell geometry & material
+  // 3) Compute glow-shell geometry & material  
   const [glowShellGeo, glowShellMat] = useMemo(() => {
     let maxRadius = 0;
     sphereModel.scene.traverse((child) => {
@@ -110,7 +116,7 @@ export default function FollowerSphere({
     });
     const geo = new THREE.SphereGeometry(maxRadius * 0.7, 12, 12);
     const mat = new THREE.MeshBasicMaterial({
-      color: neonColor,
+      color: 0x8c8e88, // Keep neutral color for sphere glow
       side: THREE.BackSide,
       transparent: true,
       opacity: 0.25,
@@ -179,9 +185,8 @@ export default function FollowerSphere({
       sphereGroup.add(mesh);
     };
 
-    // label
-    addMesh(labelGeo, neonGlowMat, [-1.5, 0.3, 1], [-1, -1, -0.8], 1.1, 'label-glow');
-    addMesh(labelGeo, neonSolidMat, [-1.5, 0.3, 1], [-1, -1, -0.8], 1, 'label-solid');
+    // label (no glow effect)
+    addMesh(labelGeo, primarySolidMat, [-1.5, 0.3, 1], [-1, -1, -0.8], 1, 'label-solid');
 
     // left arrow + outline (conditional)
     if (showLeftArrow) {
@@ -211,8 +216,7 @@ export default function FollowerSphere({
     labelGeo,
     leftGeo,
     rightGeo,
-    neonGlowMat,
-    neonSolidMat,
+    primarySolidMat,
     greyOutlineMat,
     showLeftArrow,
     showRightArrow,
@@ -253,8 +257,8 @@ export default function FollowerSphere({
       leftGeo.dispose();
       rightGeo.dispose();
       glowShellGeo.dispose();
-      neonGlowMat.dispose();
-      neonSolidMat.dispose();
+      primaryGlowMat.dispose();
+      primarySolidMat.dispose();
       greyOutlineMat.dispose();
       glowShellMat.dispose();
       
@@ -266,8 +270,8 @@ export default function FollowerSphere({
     leftGeo,
     rightGeo,
     glowShellGeo,
-    neonGlowMat,
-    neonSolidMat,
+    primaryGlowMat,
+    primarySolidMat,
     greyOutlineMat,
     glowShellMat,
     gl.domElement,
