@@ -76,7 +76,7 @@ const WaterTile: React.FC<{
         `#include <color_fragment>`,
         `#include <color_fragment>;
          // Bioluminescent glow
-         gl_FragColor.rgb += vec3(0.4, 0.4, 0.4) * pow(dot(gl_FragColor.rgb, vec3(1.0)), 2.0);
+         gl_FragColor.rgb += vec3(0.8, 0.8, 0.8) * pow(dot(gl_FragColor.rgb, vec3(1.0)), 2.0);
         `,
       );
     };
