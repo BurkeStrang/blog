@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { Post } from "../../app/AppContent";
 import styled from "styled-components";
 import { backgroundColor, lightgrey, accent } from "../../shared/theme/colors";
+import { useSearch } from "../../shared/contexts/SearchContext";
 
 const Article = styled.article`
   max-width: 800px;
@@ -159,7 +160,15 @@ interface PostDetailProps {
 
 const PostDetail = React.memo(function PostDetail({ allPosts, handleClose }: PostDetailProps) {
   const { slug } = useParams<{ slug: string }>();
+  const { trackPostView } = useSearch();
   const post = allPosts.find((p) => p.slug === slug);
+
+  // Track post view when component mounts
+  useEffect(() => {
+    if (slug) {
+      trackPostView(slug);
+    }
+  }, [slug, trackPostView]);
 
   if (!post) {
     return <Navigate to="/posts" replace />;

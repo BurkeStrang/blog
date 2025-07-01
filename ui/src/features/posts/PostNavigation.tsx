@@ -6,7 +6,7 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 import type { Font } from "three/examples/jsm/loaders/FontLoader";
 
 // Primary color constant for pagination text
-const primaryHex = 0x00ffff; // #0ff
+const primaryHex = 0x00ccccc; // #0ff
 const primaryColor = new THREE.Color(primaryHex);
 
 interface FollowerSphereProps {

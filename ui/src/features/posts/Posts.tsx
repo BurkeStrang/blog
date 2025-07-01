@@ -48,7 +48,7 @@ const FilterDropdownComponent = React.memo(function FilterDropdownComponent() {
       </FilterButton>
       <FilterDropdown $isOpen={isOpen}>
         <FilterOption onClick={() => handleOptionClick(cycleSortCriteria)}>
-          Sort by {sortBy === "pageViews" ? "DATE" : "VIEWS"}
+          Sort by {sortBy === "pageViews" ? "DATE" : sortBy === "date" ? "TRENDING" : "VIEWS"}
         </FilterOption>
         <FilterOption onClick={() => handleOptionClick(toggleSortDirection)}>
           Order: {sortDirection === "asc" ? "Ascending" : "Descending"}

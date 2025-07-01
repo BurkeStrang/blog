@@ -22,6 +22,8 @@ export interface Post {
   position?: THREE.Vector3;
   date?: Date;
   pageViews?: number;
+  recentViews?: number; // Views in the last 7 days
+  lastViewed?: Date; // Last time this post was viewed
 }
 
 const LoaderOverlay = styled.div`
@@ -76,14 +78,13 @@ const AppContent: React.FC = memo(() => {
   // Canvas is fully ready when 3D scene has finished rendering
   const canvasReady = resourceState.resourcesReady && canvasLoaded && shouldLoadCanvas;
 
-  // Load canvas on first visit to any route and keep it loaded
+  // Only load canvas for posts list route and home route
   useEffect(() => {
-    const isPostRoute = location.pathname.startsWith('/posts/');
     const isPostsRoute = location.pathname === '/posts';
     const isHomeRoute = location.pathname === '/';
     
-    // Load canvas once for any relevant route and keep it loaded
-    if (isHomeRoute || isPostsRoute || isPostRoute) {
+    // Only load canvas for posts list and home routes
+    if (isHomeRoute || isPostsRoute) {
       setHasVisitedHome(true);
       setShouldLoadCanvas(true);
     }
@@ -127,7 +128,7 @@ const AppContent: React.FC = memo(() => {
   const handleClose = useCallback(() => {
     // Immediate state updates for instant response
     setSelectedPost(null);
-    // Ensure canvas loads when navigating back to posts
+    // Ensure canvas loads when navigating back to posts from post detail
     setHasVisitedHome(true);
     setShouldLoadCanvas(true);
     navigate("/posts");
