@@ -294,6 +294,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   // Get pagination state from SearchContext
   const { currentPage, setCurrentPage } = useSearch();
   const postsPerPage = 10;
+  const [scrollToIndex, setScrollToIndex] = useState<number | undefined>(undefined);
   
   // Check if we're on the About route
   const isAboutRoute = location.pathname === '/about';
@@ -319,6 +320,8 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
       const newPage = currentPage - 1;
       console.log("Setting page to:", newPage);
       setCurrentPage(newPage);
+      // Scroll to first post of the new page
+      setScrollToIndex(0);
     }
   };
 
@@ -333,8 +336,20 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
       const newPage = currentPage + 1;
       console.log("Setting page to:", newPage);
       setCurrentPage(newPage);
+      // Scroll to first post of the new page
+      setScrollToIndex(0);
     }
   };
+
+  // Reset scroll target after scrolling
+  useEffect(() => {
+    if (scrollToIndex !== undefined) {
+      const timer = setTimeout(() => {
+        setScrollToIndex(undefined);
+      }, 1000); // Clear after 1 second to allow smooth scroll
+      return () => clearTimeout(timer);
+    }
+  }, [scrollToIndex]);
 
   // Pagination reset is now handled in SearchContext
 
@@ -664,7 +679,12 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         );
       })}
 
-      <OceanCamera positions={offsetPositions} lerpFactor={0.08} stepSize={1} />
+      <OceanCamera 
+        positions={offsetPositions} 
+        lerpFactor={0.08} 
+        stepSize={1} 
+        scrollToIndex={scrollToIndex}
+      />
 
       {performanceMode.enableBloom && (
         <EffectComposer>

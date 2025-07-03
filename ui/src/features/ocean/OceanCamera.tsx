@@ -12,6 +12,8 @@ interface ScrollCameraProps {
   aboutModePosition?: THREE.Vector3;
   /** Rotation to apply when About route is active */
   aboutModeRotation?: THREE.Euler;
+  /** Programmatically set scroll to specific post index */
+  scrollToIndex?: number;
 }
 
 function ScrollCamera({
@@ -20,6 +22,7 @@ function ScrollCamera({
   stepSize,
   aboutModePosition = new THREE.Vector3(-350, -5, 400),
   aboutModeRotation = new THREE.Euler(0, -0.9, 0),
+  scrollToIndex,
 }: ScrollCameraProps) {
   const { camera, gl } = useThree();
   const location = useLocation();
@@ -86,6 +89,16 @@ function ScrollCamera({
       canvas.removeEventListener("touchmove", onTouchMove);
     };
   }, [gl.domElement, positions.length, stepSize]);
+
+  // Handle programmatic scroll to specific index
+  useEffect(() => {
+    if (scrollToIndex !== undefined && positions.length > 0) {
+      const maxScroll = ((positions.length - 1) * stepSize) / 1.5;
+      const targetScrollY = (scrollToIndex * stepSize) / 1.5;
+      const clampedScrollY = clamp(targetScrollY, 0, maxScroll);
+      setScrollY(clampedScrollY);
+    }
+  }, [scrollToIndex, positions.length, stepSize]);
 
   useFrame(() => {
     // If on About route, move to about position and rotation

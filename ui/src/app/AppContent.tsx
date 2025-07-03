@@ -78,14 +78,14 @@ const AppContent: React.FC = memo(() => {
   // Canvas is fully ready when 3D scene has finished rendering
   const canvasReady = resourceState.resourcesReady && canvasLoaded && shouldLoadCanvas;
 
-  // Only load canvas for posts routes and home route
+  // Only load canvas for posts list and home route (not for direct post detail navigation)
   useEffect(() => {
     const isPostsRoute = location.pathname === '/posts';
-    const isPostDetailRoute = location.pathname.startsWith('/posts/');
     const isHomeRoute = location.pathname === '/';
     
-    // Load canvas for posts list, post detail, and home routes
-    if (isHomeRoute || isPostsRoute || isPostDetailRoute) {
+    // Load canvas only for posts list and home routes
+    // Do NOT load for direct post detail navigation (/posts/:slug)
+    if (isHomeRoute || isPostsRoute) {
       setHasVisitedHome(true);
       setShouldLoadCanvas(true);
     }
@@ -128,6 +128,9 @@ const AppContent: React.FC = memo(() => {
 
   const handleClose = useCallback(() => {
     setSelectedPost(null);
+    // Ensure canvas loads when navigating back to posts from post detail
+    setHasVisitedHome(true);
+    setShouldLoadCanvas(true);
     navigate("/posts");
   }, [navigate]);
 
