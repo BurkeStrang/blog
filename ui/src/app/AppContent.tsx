@@ -78,13 +78,14 @@ const AppContent: React.FC = memo(() => {
   // Canvas is fully ready when 3D scene has finished rendering
   const canvasReady = resourceState.resourcesReady && canvasLoaded && shouldLoadCanvas;
 
-  // Only load canvas for posts list route and home route
+  // Only load canvas for posts routes and home route
   useEffect(() => {
     const isPostsRoute = location.pathname === '/posts';
+    const isPostDetailRoute = location.pathname.startsWith('/posts/');
     const isHomeRoute = location.pathname === '/';
     
-    // Only load canvas for posts list and home routes
-    if (isHomeRoute || isPostsRoute) {
+    // Load canvas for posts list, post detail, and home routes
+    if (isHomeRoute || isPostsRoute || isPostDetailRoute) {
       setHasVisitedHome(true);
       setShouldLoadCanvas(true);
     }
@@ -126,11 +127,7 @@ const AppContent: React.FC = memo(() => {
   );
 
   const handleClose = useCallback(() => {
-    // Immediate state updates for instant response
     setSelectedPost(null);
-    // Ensure canvas loads when navigating back to posts from post detail
-    setHasVisitedHome(true);
-    setShouldLoadCanvas(true);
     navigate("/posts");
   }, [navigate]);
 

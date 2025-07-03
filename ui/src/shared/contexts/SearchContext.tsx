@@ -25,6 +25,8 @@ interface SearchContextType {
   cycleSortCriteria: () => void;
   isSorting: boolean;
   trackPostView: (slug: string) => void;
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
@@ -62,22 +64,8 @@ const searchPosts = (posts: Post[], query: string): Post[] => {
 // Calculate trending score based on recent views and recency
 const calculateTrendingScore = (post: Post): number => {
   const recentViews = post.recentViews || 0;
-  const lastViewed = post.lastViewed ? new Date(post.lastViewed) : null;
-  const now = new Date();
-  
   // Base score from recent views
-  let score = recentViews;
-  
-  // Boost score based on how recently it was viewed (within last 24 hours gets extra boost)
-  if (lastViewed) {
-    const hoursSinceViewed = (now.getTime() - lastViewed.getTime()) / (1000 * 60 * 60);
-    if (hoursSinceViewed <= 24) {
-      score += recentViews * 2; // Double boost for views in last 24 hours
-    } else if (hoursSinceViewed <= 168) { // 7 days
-      score += recentViews * 0.5; // Half boost for views in last 7 days
-    }
-  }
-  
+  const score = recentViews;
   return score;
 };
 
@@ -117,6 +105,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
   const [sortBy, setSortBy] = useState<SortCriteria>("trending");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [isSorting, setIsSorting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Track timeouts for proper cleanup
   const timeoutRefs = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
@@ -190,6 +179,11 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     return sortPosts(searched, sortBy, sortDirection);
   }, [allPosts, debouncedQuery, sortBy, sortDirection]);
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedQuery, sortBy, sortDirection]);
+
   const value = useMemo(
     () => ({
       query,
@@ -204,8 +198,10 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
       cycleSortCriteria,
       isSorting,
       trackPostView,
+      currentPage,
+      setCurrentPage,
     }),
-    [query, filteredPosts, sortBy, sortDirection, isSorting, trackPostView],
+    [query, filteredPosts, sortBy, sortDirection, isSorting, trackPostView, currentPage],
   );
 
   return (

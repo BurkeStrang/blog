@@ -17,6 +17,7 @@ import { PostNavigation } from "../posts";
 import type { Post } from "../../app/AppContent";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { memoryProfiler } from "../../engine/memory";
+import { useSearch } from "../../shared/contexts/SearchContext";
 // import { GeometryPool, lodManager } from "../../engine/rendering";
 
 // TypeScript augmentation for outputEncoding
@@ -290,8 +291,8 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   isSorting = false,
 }) => {
   const location = useLocation();
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
+  // Get pagination state from SearchContext
+  const { currentPage, setCurrentPage } = useSearch();
   const postsPerPage = 10;
   
   // Check if we're on the About route
@@ -335,10 +336,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     }
   };
 
-  // Reset to page 1 when search filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [visiblePostSlugs, sortedPosts]);
+  // Pagination reset is now handled in SearchContext
 
   // Original positions for all posts (used when no search filter)
   const originalPositions = useMemo(() => {
