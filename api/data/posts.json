@@ -3,261 +3,174 @@
     "slug": "mastering-vim-motions-and-text-objects",
     "title": "MASTERING VIM MOTIONS AND TEXT OBJECTS",
     "body": "<p><em>Posted on May 7, 2025 by Burke</em></p><h2>What Are Motions?</h2><p>Motions in Vim are commands that move the cursor. They're used to tell other commands (like <code>d</code> for delete or <code>y</code> for yank) how much text to act on. For example, <code>d$</code> means \"delete to the end of the line\".</p><ul><li><code>w</code> – next word</li><li><code>e</code> – end of word</li><li><code>0</code> – beginning of line</li><li><code>$</code> – end of line</li><li><code>gg</code> – beginning of file</li><li><code>G</code> – end of file</li></ul><h2>What Are Text Objects?</h2><p>Text objects are more semantic than motions. They represent structured selections like \"a word\", \"a sentence\", \"a paragraph\", or \"a block inside quotes\".</p><p>Text objects usually follow the pattern <code>operator + a/i + object</code>.</p><ul><li><code>diw</code> – delete inner word (just the word)</li><li><code>daw</code> – delete a word (including whitespace)</li><li><code>ci\"</code> – change inner quotes</li><li><code>ca(</code> – change a parenthesis block (includes parens)</li><li><code>yi]</code> – yank inside square brackets</li></ul><p>Think of <code>i</code> as \"inner\" and <code>a</code> as \"around\".</p><h2>Combining Motions and Operators</h2><p>You can combine motions and text objects with operators like:</p><ul><li><code>d</code> – delete</li><li><code>y</code> – yank (copy)</li><li><code>c</code> – change</li><li><code>v</code> – visual select</li></ul><p>Examples:</p><pre><code>d3w    \"delete three words\"\ny$     \"yank to end of line\"\ncaw    \"change a word including whitespace\"\nvi\"    \"select inner quotes\"</code></pre><p>Need a printable Vim cheatsheet? <a href=\"https://vim.rtorr.com/\">Check this out</a>.</p>",
-    "date": "2025-05-07T00:00:00Z",
-    "pageViews": 1250,
-    "recentViews": 1905,
-    "lastViewed": "2025-06-28T10:30:00Z"
+    "date": "2025-05-07T00:00:00Z"
   },
   {
     "slug": "scott-hanselmans-2021-ultimate-developer-and-power-users-tool-list-for-windows",
     "title": "Scott Hanselman's 2021 Ultimate Developer and Power Users Tool List for Windows",
     "body": "<p><em>Posted on May 6, 2025 by Burke</em></p><h2>What Is CSS Grid?</h2><p>CSS Grid Layout is a two-dimensional system that lets you design grid-based layouts with rows and columns. It’s perfect for complex, responsive designs.</p><ul><li><code>display: grid;</code> – defines a grid container</li><li><code>grid-template-columns</code> – defines column sizes</li><li><code>grid-template-rows</code> – defines row sizes</li><li><code>gap</code> – spacing between grid items</li></ul><h2>Basic Example</h2><pre><code>.container {\n  display: grid;\n  grid-template-columns: repeat(3, 1fr);\n  gap: 16px;\n}\n.item {\n  background: #eee;\n  padding: 8px;\n}\n</code></pre><p>For a deep dive, check out <a href=\"https://css-tricks.com/snippets/css/complete-guide-grid/\">The Complete Guide to CSS Grid</a>.</p>",
-    "date": "2025-04-07T00:00:00Z",
-    "pageViews": 8250,
-    "recentViews": 15,
-    "lastViewed": "2025-06-28T10:30:00Z"
+    "date": "2025-04-07T00:00:00Z"
   },
   {
     "slug": "flexbox-in-css",
     "title": "Flexbox in CSS",
     "body": "<p><em>Posted on May 5, 2025 by Burke</em></p><h2>Why Flexbox?</h2><p>Flexbox is a one-dimensional layout model for distributing space along a row or column. It’s ideal for toolbars, menus, and even responsive card layouts.</p><ul><li><code>display: flex;</code> – creates a flex container</li><li><code>justify-content</code> – horizontal alignment</li><li><code>align-items</code> – vertical alignment</li><li><code>flex-grow</code> – how items expand</li></ul><h2>Simple Flex Container</h2><pre><code>.container {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n.item {\n  flex: 1;\n  margin: 4px;\n}\n</code></pre><p>Learn more at <a href=\"https://css-tricks.com/snippets/css/a-guide-to-flexbox/\">A Guide to Flexbox</a>.</p>",
-    "date": "2025-03-07T00:00:00Z",
-    "pageViews": 11250,
-    "recentViews": 95,
-    "lastViewed": "2025-06-28T10:30:00Z"
+    "date": "2025-03-07T00:00:00Z"
   },
   {
     "slug": "responsive-web-design",
     "title": "Responsive Web Design",
     "body": "<p><em>Posted on May 4, 2025 by Burke</em></p><h2>Fluid Layouts & Media Queries</h2><p>Responsive design ensures your site looks great on all devices. Combine fluid grids with media queries to adapt layouts.</p><ul><li>Use percentage or <code>fr</code> units for widths</li><li>Media queries: <code>@media (max-width: 600px) { … }</code></li><li>Mobile-first: write styles for small screens first</li></ul><h2>Example</h2><pre><code>@media (max-width: 768px) {\n  .sidebar {\n    display: none;\n  }\n  .content {\n    width: 100%;\n  }\n}\n</code></pre><p>Read Ethan Marcotte’s original article on <a href=\"https://alistapart.com/article/responsive-web-design/\">Responsive Web Design</a>.</p>",
-    "date": "2025-07-07T00:00:00Z",
-    "pageViews": 1100,
-    "recentViews": 78,
-    "lastViewed": "2025-06-28T08:15:00Z"
+    "date": "2025-07-07T00:00:00Z"
   },
   {
     "slug": "javascript-promises",
     "title": "JavaScript Promises",
     "body": "<p><em>Posted on May 3, 2025 by Burke</em></p><h2>Promise States</h2><p>A Promise represents an asynchronous operation. It can be in one of three states:</p><ul><li>Pending</li><li>Fulfilled</li><li>Rejected</li></ul><h2>Creating a Promise</h2><pre><code>const wait = ms => new Promise((resolve) => {\n  setTimeout(resolve, ms);\n});\n\nwait(1000)\n  .then(() => console.log('Done!'))\n  .catch(err => console.error(err));\n</code></pre><p>For more, see <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises\">MDN: Using Promises</a>.</p>",
-    "date": "2025-05-03T00:00:00Z",
-    "pageViews": 850,
-    "recentViews": 328,
-    "lastViewed": "2025-06-27T14:20:00Z"
+    "date": "2025-05-03T00:00:00Z"
   },
   {
     "slug": "async-await-in-javascript",
     "title": "Async/Await in JavaScript",
     "body": "<p><em>Posted on May 2, 2025 by Burke</em></p><h2>Syntactic Sugar over Promises</h2><p><code>async</code> functions return Promises. Use <code>await</code> inside to pause execution until the Promise resolves.</p><h2>Example</h2><pre><code>async function fetchData() {\n  try {\n    const response = await fetch('/api/data');\n    const json = await response.json();\n    console.log(json);\n  } catch (err) {\n    console.error('Error:', err);\n  }\n}\n\nfetchData();\n</code></pre><p>Dive deeper in the <a href=\"https://javascript.info/async-await\">JavaScript Info Async/Await</a> guide.</p>",
-    "date": "2025-05-02T00:00:00Z",
-    "pageViews": 920,
-    "recentViews": 328,
-    "lastViewed": "2025-06-27T14:20:00Z"
+    "date": "2025-05-02T00:00:00Z"
   },
   {
     "slug": "typescript-generics",
     "title": "TypeScript Generics",
     "body": "<p><em>Posted on May 1, 2025 by Burke</em></p><h2>What Are Generics?</h2><p>Generics allow you to write reusable, type-safe functions and classes by parameterizing types.</p><h2>Generic Function Example</h2><pre><code>function identity<T>(arg: T): T {\n  return arg;\n}\n\nconst str = identity<string>('hello');\nconst num = identity<number>(42);\n</code></pre><p>Check out the official <a href=\"https://www.typescriptlang.org/docs/handbook/generics.html\">TypeScript Generics Handbook</a>.</p>",
-    "date": "2025-05-01T00:00:00Z",
-    "pageViews": 780,
-    "recentViews": 3290,
-    "lastViewed": "2025-06-27T14:20:00Z"
+    "date": "2025-05-01T00:00:00Z"
   },
   {
     "slug": "node-js-streams",
     "title": "Node.js Streams",
     "body": "<p><em>Posted on April 30, 2025 by Burke</em></p><h2>Stream Types</h2><ul><li>Readable</li><li>Writable</li><li>Duplex</li><li>Transform</li></ul><h2>Read a File Stream</h2><pre><code>const fs = require('fs');\nconst readStream = fs.createReadStream('./large-file.txt', 'utf8');\n\nreadStream.on('data', chunk => {\n  console.log('Received chunk:', chunk);\n});\n</code></pre><p>Learn more about <a href=\"https://nodejs.org/api/stream.html\">Node.js Streams</a>.</p>",
-    "date": "2025-04-30T00:00:00Z",
-    "pageViews": 770,
-    "recentViews": 329,
-    "lastViewed": "2025-06-27T14:20:00Z"
+    "date": "2025-04-30T00:00:00Z"
   },
   {
     "slug": "setting-up-eslint-prettier",
     "title": "Setting Up ESLint & Prettier",
     "body": "<p><em>Posted on April 29, 2025 by Burke</em></p><h2>Configuration</h2><pre><code>{\n  \"env\": {\n    \"browser\": true,\n    \"es2021\": true\n  },\n  \"extends\": [\n    \"eslint:recommended\",\n    \"plugin:@typescript-eslint/recommended\",\n    \"prettier\"\n  ],\n  \"parser\": \"@typescript-eslint/parser\",\n  \"plugins\": [\"@typescript-eslint\"]\n   }\n   </code></pre><h2>Scripts</h2><p>Add to <code>package.json</code>:</p><pre><code>\"scripts\": {\n  \"lint\": \"eslint 'src/**/*.{js,ts,tsx}'\",\n  \"format\": \"prettier --write 'src/**/*.{js,ts,tsx,css,md}'\"\n   }\n   </code></pre><p>See the <a href=\"https://eslint.org/docs\">ESLint docs</a> and <a href=\"https://prettier.io/docs\">Prettier docs</a>.</p>",
-    "date": "2025-04-29T00:00:00Z",
-    "pageViews": 650,
-    "recentViews": 328090,
-    "lastViewed": "2025-06-27T14:20:00Z"
+    "date": "2025-04-29T00:00:00Z"
   },
   {
     "slug": "webpack-configuration-basics",
     "title": "Webpack Configuration Basics",
     "body": "<p><em>Posted on April 28, 2025 by Burke</em></p><h2>Core Concepts</h2><ul><li><code>entry</code> – starting point</li><li><code>output</code> – bundled file location</li><li><code>loaders</code> – transform files</li><li><code>plugins</code> – extend functionality</li></ul><h2>Minimal Config</h2><pre><code>const path = require('path');\n\n   module.exports = {\n  entry: './src/index.js',\n  output: {\n    filename: 'bundle.js',\n    path: path.resolve(__dirname, 'dist'),\n  },\n  module: {\n    rules: [\n      { test: /\\.css$/, use: ['style-loader', 'css-loader'] }\n    ],\n  },\n   };\n   </code></pre><p>For detailed options, see <a href=\"https://webpack.js.org/concepts/configuration/\">Webpack Docs</a>.</p>",
-    "date": "2025-04-28T00:00:00Z",
-    "pageViews": 320,
-    "recentViews": 3212,
-    "lastViewed": "2025-06-26T14:20:00Z"
+    "date": "2025-04-28T00:00:00Z"
   },
   {
     "slug": "webpack-configuration-basics-2",
     "title": "Webpack Configuration Basics 2",
     "body": "<p><em>Posted on April 28, 2025 by Burke</em></p><h2>Core Concepts</h2><ul><li><code>entry</code> – starting point</li><li><code>output</code> – bundled file location</li><li><code>loaders</code> – transform files</li><li><code>plugins</code> – extend functionality</li></ul><h2>Minimal Config</h2><pre><code>const path = require('path');\n\n   module.exports = {\n  entry: './src/index.js',\n  output: {\n    filename: 'bundle.js',\n    path: path.resolve(__dirname, 'dist'),\n  },\n  module: {\n    rules: [\n      { test: /\\.css$/, use: ['style-loader', 'css-loader'] }\n    ],\n  },\n   };\n   </code></pre><p>For detailed options, see <a href=\"https://webpack.js.org/concepts/configuration/\">Webpack Docs</a>.</p>",
-    "date": "2025-04-28T00:00:00Z",
-    "pageViews": 320,
-    "recentViews": 3890,
-    "lastViewed": "2025-06-27T14:20:00Z"
+    "date": "2025-04-28T00:00:00Z"
   },
   {
     "slug": "react-hooks-useeffect",
     "title": "React Hooks: useEffect",
     "body": "<p><em>Posted on April 27, 2025 by Burke</em></p><h2>What is useEffect?</h2><p>useEffect lets you perform side effects in function components. It serves the same purpose as componentDidMount, componentDidUpdate, and componentWillUnmount combined.</p><h2>Basic Usage</h2><pre><code>import React, { useState, useEffect } from 'react';\n\nfunction Example() {\n  const [count, setCount] = useState(0);\n\n  useEffect(() => {\n    document.title = `You clicked ${count} times`;\n  });\n\n  return (\n    <div>\n      <p>You clicked {count} times</p>\n      <button onClick={() => setCount(count + 1)}>\n        Click me\n      </button>\n    </div>\n  );\n}\n</code></pre><p>Learn more about <a href=\"https://reactjs.org/docs/hooks-effect.html\">useEffect Hook</a>.</p>",
-    "date": "2025-04-27T00:00:00Z",
-    "pageViews": 890,
-    "recentViews": 25,
-    "lastViewed": "2025-06-28T16:45:00Z"
+    "date": "2025-04-27T00:00:00Z"
   },
   {
     "slug": "docker-basics-for-developers",
     "title": "Docker Basics for Developers",
     "body": "<p><em>Posted on April 26, 2025 by Burke</em></p><h2>What is Docker?</h2><p>Docker is a platform that uses containerization to make it easier to create, deploy, and run applications. Containers allow developers to package an application with all dependencies.</p><h2>Basic Commands</h2><ul><li><code>docker build -t myapp .</code> – build image</li><li><code>docker run -p 3000:3000 myapp</code> – run container</li><li><code>docker ps</code> – list running containers</li><li><code>docker stop container_id</code> – stop container</li></ul><h2>Simple Dockerfile</h2><pre><code>FROM node:16\nWORKDIR /app\nCOPY package*.json ./\nRUN npm install\nCOPY . .\nEXPOSE 3000\nCMD [\"npm\", \"start\"]\n</code></pre><p>Get started with <a href=\"https://docs.docker.com/get-started/\">Docker Documentation</a>.</p>",
-    "date": "2025-04-26T00:00:00Z",
-    "pageViews": 1150,
-    "recentViews": 67,
-    "lastViewed": "2025-06-29T09:30:00Z"
+    "date": "2025-04-26T00:00:00Z"
   },
   {
     "slug": "git-branching-strategies",
     "title": "Git Branching Strategies",
     "body": "<p><em>Posted on April 25, 2025 by Burke</em></p><h2>Popular Strategies</h2><ul><li><strong>Git Flow</strong> – feature, develop, release, hotfix branches</li><li><strong>GitHub Flow</strong> – simple feature branch workflow</li><li><strong>GitLab Flow</strong> – combines feature-driven development with issue tracking</li></ul><h2>Feature Branch Workflow</h2><pre><code>git checkout -b feature/new-feature\n# Make changes\ngit add .\ngit commit -m \"Add new feature\"\ngit push origin feature/new-feature\n# Create pull request\n</code></pre><h2>Best Practices</h2><ul><li>Keep branches focused and short-lived</li><li>Use descriptive branch names</li><li>Regularly sync with main branch</li><li>Delete merged branches</li></ul><p>Read more about <a href=\"https://www.atlassian.com/git/tutorials/comparing-workflows\">Git workflows</a>.</p>",
-    "date": "2025-04-25T00:00:00Z",
-    "pageViews": 750,
-    "recentViews": 15,
-    "lastViewed": "2025-06-26T12:15:00Z"
+    "date": "2025-04-25T00:00:00Z"
   },
   {
     "slug": "sql-join-types-explained",
     "title": "SQL JOIN Types Explained",
     "body": "<p><em>Posted on April 24, 2025 by Burke</em></p><h2>Types of JOINs</h2><ul><li><strong>INNER JOIN</strong> – returns matching records from both tables</li><li><strong>LEFT JOIN</strong> – returns all records from left table + matching from right</li><li><strong>RIGHT JOIN</strong> – returns all records from right table + matching from left</li><li><strong>FULL OUTER JOIN</strong> – returns all records when there's a match in either table</li></ul><h2>Examples</h2><pre><code>-- INNER JOIN\nSELECT users.name, orders.total\nFROM users\nINNER JOIN orders ON users.id = orders.user_id;\n\n-- LEFT JOIN\nSELECT users.name, orders.total\nFROM users\nLEFT JOIN orders ON users.id = orders.user_id;\n</code></pre><p>Practice SQL joins at <a href=\"https://www.w3schools.com/sql/sql_join.asp\">W3Schools</a>.</p>",
-    "date": "2025-04-24T00:00:00Z",
-    "pageViews": 680,
-    "recentViews": 42,
-    "lastViewed": "2025-06-28T11:20:00Z"
+    "date": "2025-04-24T00:00:00Z"
   },
   {
     "slug": "python-list-comprehensions",
     "title": "Python List Comprehensions",
     "body": "<p><em>Posted on April 23, 2025 by Burke</em></p><h2>What are List Comprehensions?</h2><p>List comprehensions provide a concise way to create lists. They consist of brackets containing an expression followed by a for clause, then optional for or if clauses.</p><h2>Basic Syntax</h2><pre><code># Basic list comprehension\nsquares = [x**2 for x in range(10)]\nprint(squares)  # [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]\n\n# With condition\neven_squares = [x**2 for x in range(10) if x % 2 == 0]\nprint(even_squares)  # [0, 4, 16, 36, 64]\n\n# Nested loops\nmatrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]\nflattened = [num for row in matrix for num in row]\nprint(flattened)  # [1, 2, 3, 4, 5, 6, 7, 8, 9]\n</code></pre><p>Learn more about <a href=\"https://docs.python.org/3/tutorial/datastructures.html#list-comprehensions\">Python list comprehensions</a>.</p>",
-    "date": "2025-04-23T00:00:00Z",
-    "pageViews": 540,
-    "recentViews": 28,
-    "lastViewed": "2025-06-27T15:30:00Z"
+    "date": "2025-04-23T00:00:00Z"
   },
   {
     "slug": "understanding-rest-apis",
     "title": "Understanding REST APIs",
     "body": "<p><em>Posted on April 22, 2025 by Burke</em></p><h2>What is REST?</h2><p>REST (Representational State Transfer) is an architectural style for designing networked applications. RESTful APIs use HTTP requests to GET, PUT, POST and DELETE data.</p><h2>HTTP Methods</h2><ul><li><strong>GET</strong> – retrieve data</li><li><strong>POST</strong> – create new data</li><li><strong>PUT</strong> – update existing data</li><li><strong>DELETE</strong> – remove data</li></ul><h2>Example Endpoints</h2><pre><code>GET    /api/users          # Get all users\nGET    /api/users/123      # Get user with ID 123\nPOST   /api/users          # Create new user\nPUT    /api/users/123      # Update user 123\nDELETE /api/users/123      # Delete user 123\n</code></pre><h2>Status Codes</h2><ul><li><code>200</code> – OK</li><li><code>201</code> – Created</li><li><code>400</code> – Bad Request</li><li><code>404</code> – Not Found</li><li><code>500</code> – Server Error</li></ul><p>Read the <a href=\"https://restfulapi.net/\">REST API Tutorial</a>.</p>",
-    "date": "2025-04-22T00:00:00Z",
-    "pageViews": 1200,
-    "recentViews": 89,
-    "lastViewed": "2025-06-29T13:45:00Z"
+    "date": "2025-04-22T00:00:00Z"
   },
   {
     "slug": "mongodb-aggregation-pipeline",
     "title": "MongoDB Aggregation Pipeline",
     "body": "<p><em>Posted on April 21, 2025 by Burke</em></p><h2>What is Aggregation?</h2><p>The aggregation pipeline is a framework for data aggregation modeled on the concept of data processing pipelines. Documents enter a multi-stage pipeline that transforms them into aggregated results.</p><h2>Common Stages</h2><ul><li><code>$match</code> – filters documents</li><li><code>$group</code> – groups documents by expression</li><li><code>$sort</code> – sorts documents</li><li><code>$project</code> – selects/transforms fields</li><li><code>$limit</code> – limits number of documents</li></ul><h2>Example</h2><pre><code>db.orders.aggregate([\n  { $match: { status: \"completed\" } },\n  { $group: {\n      _id: \"$customerId\",\n      totalAmount: { $sum: \"$amount\" },\n      orderCount: { $sum: 1 }\n    }\n  },\n  { $sort: { totalAmount: -1 } },\n  { $limit: 10 }\n]);\n</code></pre><p>Learn more about <a href=\"https://docs.mongodb.com/manual/aggregation/\">MongoDB Aggregation</a>.</p>",
-    "date": "2025-04-21T00:00:00Z",
-    "pageViews": 420,
-    "recentViews": 18,
-    "lastViewed": "2025-06-25T10:00:00Z"
+    "date": "2025-04-21T00:00:00Z"
   },
   {
     "slug": "css-animations-and-transitions",
     "title": "CSS Animations and Transitions",
     "body": "<p><em>Posted on April 20, 2025 by Burke</em></p><h2>CSS Transitions</h2><p>Transitions allow you to change property values smoothly over a given duration.</p><pre><code>.button {\n  background-color: blue;\n  transition: background-color 0.3s ease;\n}\n\n.button:hover {\n  background-color: red;\n}\n</code></pre><h2>CSS Animations</h2><p>Animations allow you to animate transitions from one CSS style configuration to another.</p><pre><code>@keyframes fadeIn {\n  from { opacity: 0; }\n  to { opacity: 1; }\n}\n\n.fade-in {\n  animation: fadeIn 1s ease-in-out;\n}\n</code></pre><h2>Animation Properties</h2><ul><li><code>animation-name</code> – keyframe name</li><li><code>animation-duration</code> – how long</li><li><code>animation-timing-function</code> – speed curve</li><li><code>animation-iteration-count</code> – how many times</li></ul><p>Explore <a href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations\">CSS Animations on MDN</a>.</p>",
-    "date": "2025-04-20T00:00:00Z",
-    "pageViews": 830,
-    "recentViews": 55,
-    "lastViewed": "2025-06-28T14:20:00Z"
+    "date": "2025-04-20T00:00:00Z"
   },
   {
     "slug": "nodejs-express-middleware",
     "title": "Node.js Express Middleware",
     "body": "<p><em>Posted on April 19, 2025 by Burke</em></p><h2>What is Middleware?</h2><p>Middleware functions are functions that have access to the request object, response object, and the next middleware function in the application's request-response cycle.</p><h2>Types of Middleware</h2><ul><li><strong>Application-level</strong> – bound to app instance</li><li><strong>Router-level</strong> – bound to router instance</li><li><strong>Error-handling</strong> – handles errors</li><li><strong>Built-in</strong> – provided by Express</li><li><strong>Third-party</strong> – from npm packages</li></ul><h2>Example</h2><pre><code>const express = require('express');\nconst app = express();\n\n// Custom middleware\nconst logger = (req, res, next) => {\n  console.log(`${req.method} ${req.url}`);\n  next();\n};\n\napp.use(logger);\napp.use(express.json());\n\napp.get('/', (req, res) => {\n  res.send('Hello World!');\n});\n</code></pre><p>Read about <a href=\"https://expressjs.com/en/guide/using-middleware.html\">Express middleware</a>.</p>",
-    "date": "2025-04-19T00:00:00Z",
-    "pageViews": 690,
-    "recentViews": 31,
-    "lastViewed": "2025-06-27T09:45:00Z"
+    "date": "2025-04-19T00:00:00Z"
   },
   {
     "slug": "javascript-closures-explained",
     "title": "JavaScript Closures Explained",
     "body": "<p><em>Posted on April 18, 2025 by Burke</em></p><h2>What is a Closure?</h2><p>A closure is the combination of a function bundled together with references to its surrounding state (the lexical environment). Closures give you access to an outer function's scope from an inner function.</p><h2>Example</h2><pre><code>function outerFunction(x) {\n  // This is the lexical environment\n  return function innerFunction(y) {\n    return x + y; // x is accessible here\n  };\n}\n\nconst add5 = outerFunction(5);\nconsole.log(add5(3)); // 8\n</code></pre><h2>Practical Use Cases</h2><ul><li>Data privacy</li><li>Function factories</li><li>Callbacks</li><li>Module pattern</li></ul><h2>Module Pattern</h2><pre><code>const module = (function() {\n  let privateVar = 0;\n  \n  return {\n    increment: function() {\n      privateVar++;\n    },\n    getCount: function() {\n      return privateVar;\n    }\n  };\n})();\n</code></pre><p>Learn more about <a href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures\">JavaScript closures</a>.</p>",
-    "date": "2025-04-18T00:00:00Z",
-    "pageViews": 950,
-    "recentViews": 47,
-    "lastViewed": "2025-06-28T17:30:00Z"
+    "date": "2025-04-18T00:00:00Z"
   },
   {
     "slug": "react-context-api-guide",
     "title": "React Context API Guide",
     "body": "<p><em>Posted on April 17, 2025 by Burke</em></p><h2>What is Context?</h2><p>Context provides a way to pass data through the component tree without having to pass props down manually at every level. It's designed to share data that can be considered \"global\" for a tree of React components.</p><h2>Creating Context</h2><pre><code>import React, { createContext, useContext, useState } from 'react';\n\nconst ThemeContext = createContext();\n\nexport function ThemeProvider({ children }) {\n  const [theme, setTheme] = useState('light');\n  \n  return (\n    <ThemeContext.Provider value={{ theme, setTheme }}>\n      {children}\n    </ThemeContext.Provider>\n  );\n}\n\nexport function useTheme() {\n  return useContext(ThemeContext);\n}\n</code></pre><h2>Using Context</h2><pre><code>function App() {\n  return (\n    <ThemeProvider>\n      <Header />\n      <Main />\n    </ThemeProvider>\n  );\n}\n\nfunction Header() {\n  const { theme, setTheme } = useTheme();\n  \n  return (\n    <header className={theme}>\n      <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>\n        Toggle Theme\n      </button>\n    </header>\n  );\n}\n</code></pre><p>Read the <a href=\"https://reactjs.org/docs/context.html\">React Context documentation</a>.</p>",
-    "date": "2025-04-17T00:00:00Z",
-    "pageViews": 720,
-    "recentViews": 38,
-    "lastViewed": "2025-06-28T12:10:00Z"
+    "date": "2025-04-17T00:00:00Z"
   },
   {
     "slug": "web-accessibility-basics",
     "title": "Web Accessibility Basics",
     "body": "<p><em>Posted on April 16, 2025 by Burke</em></p><h2>What is Web Accessibility?</h2><p>Web accessibility means that websites, tools, and technologies are designed and developed so that people with disabilities can use them. This includes visual, auditory, physical, speech, cognitive, and neurological disabilities.</p><h2>WCAG Principles</h2><ul><li><strong>Perceivable</strong> – Information must be presentable in ways users can perceive</li><li><strong>Operable</strong> – Interface components must be operable</li><li><strong>Understandable</strong> – Information and UI operation must be understandable</li><li><strong>Robust</strong> – Content must be robust enough for various assistive technologies</li></ul><h2>Quick Wins</h2><ul><li>Use semantic HTML elements</li><li>Add alt text to images</li><li>Ensure proper color contrast</li><li>Make sure all interactive elements are keyboard accessible</li><li>Use descriptive link text</li></ul><h2>Example</h2><pre><code><!-- Good -->\n<button type=\"button\" aria-label=\"Close dialog\">\n  <span aria-hidden=\"true\">×</span>\n</button>\n\n<img src=\"chart.png\" alt=\"Sales increased 20% from Q1 to Q2\" />\n\n<!-- Bad -->\n<div onclick=\"closeDialog()\">×</div>\n<img src=\"chart.png\" alt=\"chart\" />\n</code></pre><p>Learn more about <a href=\"https://www.w3.org/WAI/WCAG21/quickref/\">WCAG guidelines</a>.</p>",
-    "date": "2025-04-16T00:00:00Z",
-    "pageViews": 580,
-    "recentViews": 22,
-    "lastViewed": "2025-06-26T16:40:00Z"
+    "date": "2025-04-16T00:00:00Z"
   },
   {
     "slug": "testing-react-components-jest",
     "title": "Testing React Components with Jest",
     "body": "<p><em>Posted on April 15, 2025 by Burke</em></p><h2>Setup</h2><p>Create React App comes with Jest and React Testing Library configured. For custom setups, install the necessary packages:</p><pre><code>npm install --save-dev @testing-library/react @testing-library/jest-dom jest\n</code></pre><h2>Basic Component Test</h2><pre><code>import React from 'react';\nimport { render, screen } from '@testing-library/react';\nimport '@testing-library/jest-dom';\nimport Button from './Button';\n\ntest('renders button with text', () => {\n  render(<Button>Click me</Button>);\n  const buttonElement = screen.getByText(/click me/i);\n  expect(buttonElement).toBeInTheDocument();\n});\n</code></pre><h2>Testing User Interactions</h2><pre><code>import { render, screen, fireEvent } from '@testing-library/react';\n\ntest('calls onClick when button is clicked', () => {\n  const handleClick = jest.fn();\n  render(<Button onClick={handleClick}>Click me</Button>);\n  \n  fireEvent.click(screen.getByText(/click me/i));\n  expect(handleClick).toHaveBeenCalledTimes(1);\n});\n</code></pre><p>Learn more about <a href=\"https://testing-library.com/docs/react-testing-library/intro/\">React Testing Library</a>.</p>",
-    "date": "2025-04-15T00:00:00Z",
-    "pageViews": 640,
-    "recentViews": 35,
-    "lastViewed": "2025-06-27T18:20:00Z"
+    "date": "2025-04-15T00:00:00Z"
   },
   {
     "slug": "redux-toolkit-modern-redux",
     "title": "Redux Toolkit: Modern Redux",
     "body": "<p><em>Posted on April 14, 2025 by Burke</em></p><h2>What is Redux Toolkit?</h2><p>Redux Toolkit (RTK) is the official, opinionated, batteries-included toolset for efficient Redux development. It simplifies store setup, reduces boilerplate, and includes utilities for common use cases.</p><h2>Key Features</h2><ul><li><strong>configureStore()</strong> – simplified store setup</li><li><strong>createSlice()</strong> – generates action creators and reducers</li><li><strong>createAsyncThunk()</strong> – handles async logic</li><li><strong>RTK Query</strong> – data fetching and caching</li></ul><h2>Creating a Slice</h2><pre><code>import { createSlice } from '@reduxjs/toolkit';\n\nconst counterSlice = createSlice({\n  name: 'counter',\n  initialState: { value: 0 },\n  reducers: {\n    increment: (state) => {\n      state.value += 1;\n    },\n    decrement: (state) => {\n      state.value -= 1;\n    },\n    incrementByAmount: (state, action) => {\n      state.value += action.payload;\n    },\n  },\n});\n\nexport const { increment, decrement, incrementByAmount } = counterSlice.actions;\nexport default counterSlice.reducer;\n</code></pre><h2>Store Configuration</h2><pre><code>import { configureStore } from '@reduxjs/toolkit';\nimport counterReducer from './counterSlice';\n\nconst store = configureStore({\n  reducer: {\n    counter: counterReducer,\n  },\n});\n</code></pre><p>Get started with <a href=\"https://redux-toolkit.js.org/tutorials/quick-start\">Redux Toolkit</a>.</p>",
-    "date": "2025-04-14T00:00:00Z",
-    "pageViews": 490,
-    "recentViews": 19,
-    "lastViewed": "2025-06-25T14:15:00Z"
+    "date": "2025-04-14T00:00:00Z"
   },
   {
     "slug": "graphql-vs-rest-comparison",
     "title": "GraphQL vs REST: A Comparison",
     "body": "<p><em>Posted on April 13, 2025 by Burke</em></p><h2>What is GraphQL?</h2><p>GraphQL is a query language for APIs and a runtime for fulfilling those queries with your existing data. It provides a complete description of the data in your API.</p><h2>Key Differences</h2><table><tr><th>Feature</th><th>REST</th><th>GraphQL</th></tr><tr><td>Data Fetching</td><td>Multiple endpoints</td><td>Single endpoint</td></tr><tr><td>Over-fetching</td><td>Common</td><td>Avoided</td></tr><tr><td>Under-fetching</td><td>Common (N+1 problem)</td><td>Avoided</td></tr><tr><td>Caching</td><td>Simple HTTP caching</td><td>More complex</td></tr><tr><td>Learning Curve</td><td>Lower</td><td>Higher</td></tr></table><h2>GraphQL Example</h2><pre><code>query GetUser($id: ID!) {\n  user(id: $id) {\n    name\n    email\n    posts {\n      title\n      createdAt\n    }\n  }\n}\n</code></pre><h2>When to Use Each</h2><p><strong>Use REST when:</strong></p><ul><li>Simple CRUD operations</li><li>Caching is important</li><li>Team is familiar with REST</li></ul><p><strong>Use GraphQL when:</strong></p><ul><li>Complex data relationships</li><li>Mobile applications (bandwidth concerns)</li><li>Rapid prototyping</li></ul><p>Learn more about <a href=\"https://graphql.org/learn/\">GraphQL</a>.</p>",
-    "date": "2025-04-13T00:00:00Z",
-    "pageViews": 860,
-    "recentViews": 51,
-    "lastViewed": "2025-06-28T19:00:00Z"
+    "date": "2025-04-13T00:00:00Z"
   },
   {
     "slug": "performance-optimization-react",
     "title": "Performance Optimization in React",
     "body": "<p><em>Posted on April 12, 2025 by Burke</em></p><h2>Common Performance Issues</h2><ul><li>Unnecessary re-renders</li><li>Heavy computations on every render</li><li>Large bundle sizes</li><li>Unoptimized images</li><li>Memory leaks</li></ul><h2>Optimization Techniques</h2><h3>1. React.memo</h3><pre><code>const ExpensiveComponent = React.memo(({ data }) => {\n  return <div>{data.map(item => <Item key={item.id} item={item} />)}</div>;\n});\n</code></pre><h3>2. useMemo and useCallback</h3><pre><code>function Component({ items, filter }) {\n  const filteredItems = useMemo(() => {\n    return items.filter(item => item.category === filter);\n  }, [items, filter]);\n  \n  const handleClick = useCallback((id) => {\n    // Handle click logic\n  }, []);\n  \n  return (\n    <div>\n      {filteredItems.map(item => \n        <Item key={item.id} item={item} onClick={handleClick} />\n      )}\n    </div>\n  );\n}\n</code></pre><h3>3. Code Splitting</h3><pre><code>const LazyComponent = React.lazy(() => import('./LazyComponent'));\n\nfunction App() {\n  return (\n    <Suspense fallback={<div>Loading...</div>}>\n      <LazyComponent />\n    </Suspense>\n  );\n}\n</code></pre><h2>Measuring Performance</h2><ul><li>React DevTools Profiler</li><li>Chrome DevTools Performance tab</li><li>Web Vitals</li></ul><p>Read about <a href=\"https://reactjs.org/docs/optimizing-performance.html\">React performance optimization</a>.</p>",
-    "date": "2025-04-12T00:00:00Z",
-    "pageViews": 1050,
-    "recentViews": 73,
-    "lastViewed": "2025-06-29T11:25:00Z"
+    "date": "2025-04-12T00:00:00Z"
   },
   {
     "slug": "serverless-functions-introduction",
     "title": "Serverless Functions Introduction",
     "body": "<p><em>Posted on April 11, 2025 by Burke</em></p><h2>What are Serverless Functions?</h2><p>Serverless functions are small, single-purpose functions that run in the cloud without managing servers. They execute in response to events and automatically scale based on demand.</p><h2>Benefits</h2><ul><li>No server management</li><li>Automatic scaling</li><li>Pay per execution</li><li>Fast deployment</li><li>Built-in monitoring</li></ul><h2>Popular Providers</h2><ul><li><strong>AWS Lambda</strong> – Amazon's serverless platform</li><li><strong>Vercel Functions</strong> – Integrated with frontend deployments</li><li><strong>Netlify Functions</strong> – Git-based workflow</li><li><strong>Google Cloud Functions</strong> – Google's serverless solution</li></ul><h2>Example (Vercel)</h2><pre><code>// api/hello.js\nexport default function handler(req, res) {\n  const { name = 'World' } = req.query;\n  \n  res.status(200).json({\n    message: `Hello ${name}!`,\n    timestamp: new Date().toISOString()\n  });\n}\n</code></pre><h2>Use Cases</h2><ul><li>API endpoints</li><li>Image processing</li><li>Database operations</li><li>Authentication</li><li>Webhooks</li></ul><p>Get started with <a href=\"https://vercel.com/docs/concepts/functions/serverless-functions\">Vercel Functions</a>.</p>",
-    "date": "2025-04-11T00:00:00Z",
-    "pageViews": 390,
-    "recentViews": 14,
-    "lastViewed": "2025-06-24T20:30:00Z"
+    "date": "2025-04-11T00:00:00Z"
   },
   {
     "slug": "modern-css-features-2025",
     "title": "Modern CSS Features in 2025",
     "body": "<p><em>Posted on April 10, 2025 by Burke</em></p><h2>Container Queries</h2><p>Container queries allow you to apply styles based on the size of a containing element rather than the viewport.</p><pre><code>.card-container {\n  container-type: inline-size;\n}\n\n@container (min-width: 300px) {\n  .card {\n    display: flex;\n    flex-direction: row;\n  }\n}\n</code></pre><h2>CSS Cascade Layers</h2><p>Cascade layers provide more control over the cascade, allowing you to organize your CSS into layers.</p><pre><code>@layer reset, base, theme, utilities;\n\n@layer base {\n  body {\n    font-family: system-ui;\n  }\n}\n\n@layer theme {\n  .dark-theme {\n    color-scheme: dark;\n  }\n}\n</code></pre><h2>:has() Pseudo-class</h2><p>The :has() pseudo-class represents an element if any of the selectors passed as parameters match at least one element.</p><pre><code>/* Style a form that has an invalid input */\nform:has(input:invalid) {\n  border: 2px solid red;\n}\n\n/* Style a card that has an image */\n.card:has(img) {\n  padding-top: 0;\n}\n</code></pre><h2>CSS Nesting</h2><p>Native CSS nesting is now supported in modern browsers.</p><pre><code>.card {\n  padding: 1rem;\n  \n  &:hover {\n    transform: scale(1.05);\n  }\n  \n  .title {\n    font-size: 1.5rem;\n    \n    &::before {\n      content: '→ ';\n    }\n  }\n}\n</code></pre><p>Stay updated with <a href=\"https://web.dev/\">web.dev</a> for the latest CSS features.</p>",
-    "date": "2025-04-10T00:00:00Z",
-    "pageViews": 780,
-    "recentViews": 44,
-    "lastViewed": "2025-06-28T08:45:00Z"
+    "date": "2025-04-10T00:00:00Z"
   }
 ]

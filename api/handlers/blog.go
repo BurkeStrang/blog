@@ -4,10 +4,11 @@ import (
     "net/http"
     "strconv"
     "encoding/json"
-    "io/ioutil"
+    "os"
     "log"
     "blogapi/models"
     "blogapi/middleware"
+    "blogapi/services"
     "github.com/gin-gonic/gin"
 )
 
@@ -18,7 +19,7 @@ func init() {
 }
 
 func loadPosts() {
-    data, err := ioutil.ReadFile("data/posts.json")
+    data, err := os.ReadFile("data/posts.json")
     if err != nil {
         log.Printf("Error reading posts.json: %v", err)
         return
@@ -40,15 +41,37 @@ func loadPosts() {
 }
 
 func GetPosts(c *gin.Context) {
-    c.JSON(http.StatusOK, posts)
+    // Merge posts with analytics data
+    analyticsService := services.GetAnalyticsService()
+    allAnalytics := analyticsService.GetAllAnalytics()
+    
+    // Create response posts with current analytics
+    responsePosts := make([]models.BlogPost, len(posts))
+    for i, post := range posts {
+        responsePosts[i] = post
+        if analytics, exists := allAnalytics[post.Slug]; exists {
+            responsePosts[i].PageViews = analytics.PageViews
+            responsePosts[i].RecentViews = analytics.RecentViews
+            responsePosts[i].LastViewed = analytics.LastViewed
+        }
+    }
+    
+    c.JSON(http.StatusOK, responsePosts)
 }
 
 func GetPostByID(c *gin.Context) {
     idParam := c.Param("id")
+    analyticsService := services.GetAnalyticsService()
     
     // Try to find by slug first
     for _, post := range posts {
         if post.Slug == idParam {
+            // Merge with analytics data
+            analytics := analyticsService.GetAnalytics(post.Slug)
+            post.PageViews = analytics.PageViews
+            post.RecentViews = analytics.RecentViews
+            post.LastViewed = analytics.LastViewed
+            
             c.JSON(http.StatusOK, post)
             return
         }
@@ -63,12 +86,51 @@ func GetPostByID(c *gin.Context) {
     
     for _, post := range posts {
         if post.ID == id {
+            // Merge with analytics data
+            analytics := analyticsService.GetAnalytics(post.Slug)
+            post.PageViews = analytics.PageViews
+            post.RecentViews = analytics.RecentViews
+            post.LastViewed = analytics.LastViewed
+            
             c.JSON(http.StatusOK, post)
             return
         }
     }
     
     c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
+}
+
+func TrackPostView(c *gin.Context) {
+    slug := c.Param("id")
+    
+    // First verify the post exists
+    postExists := false
+    for _, post := range posts {
+        if post.Slug == slug {
+            postExists = true
+            break
+        }
+    }
+    
+    if !postExists {
+        c.JSON(http.StatusNotFound, gin.H{"error": "post not found"})
+        return
+    }
+    
+    // Track view using analytics service
+    analyticsService := services.GetAnalyticsService()
+    analytics, err := analyticsService.TrackView(slug)
+    if err != nil {
+        log.Printf("Error tracking view: %v", err)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to track view"})
+        return
+    }
+    
+    c.JSON(http.StatusOK, gin.H{
+        "message": "view tracked", 
+        "views": analytics.PageViews,
+        "lastViewed": analytics.LastViewed,
+    })
 }
 
 func CreatePost(c *gin.Context) {

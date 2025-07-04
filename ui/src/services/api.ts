@@ -18,7 +18,14 @@ class ApiService {
   }
 
   // Generic fetch method with error handling
-  private async fetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  private async fetch<T>(
+    endpoint: string, 
+    options?: {
+      method?: string;
+      headers?: Record<string, string>;
+      body?: string;
+    }
+  ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
     try {

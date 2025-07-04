@@ -34,6 +34,7 @@ func main() {
         // Blog post endpoints
         api.GET("/posts", handlers.GetPosts)
         api.GET("/posts/:id", handlers.GetPostByID)
+        api.POST("/posts/:id/view", handlers.TrackPostView)
         api.POST("/posts", middleware.AuthMiddleware(), middleware.RequireRole("admin"), handlers.CreatePost)
 
         // Comment endpoints
