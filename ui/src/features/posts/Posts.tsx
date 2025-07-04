@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useMemo } from "react";
+import styled from "styled-components";
 import {
   Page,
   Header,
@@ -15,10 +16,18 @@ import { Post } from "../../app/AppContent";
 import cloudImg from "../../assets/textures/darkcloud.avif";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { useSearch } from "../../shared/contexts/SearchContext";
+import { useFontLoaded } from "../../shared/hooks";
 
 interface PostsProps {
   selectedPost: Post | null;
 }
+
+const StableContainer = styled.div<{ $isVisible: boolean; $fontLoaded: boolean }>`
+  opacity: ${({ $isVisible, $fontLoaded }) => ($isVisible && $fontLoaded ? 1 : 0)};
+  visibility: ${({ $isVisible, $fontLoaded }) => ($isVisible && $fontLoaded ? 'visible' : 'hidden')};
+  transition: opacity 0.15s ease-out, visibility 0.15s ease-out;
+  pointer-events: ${({ $isVisible }) => ($isVisible ? 'auto' : 'none')};
+`;
 
 const FilterDropdownComponent = React.memo(function FilterDropdownComponent() {
   const { sortBy, sortDirection, toggleSortDirection, cycleSortCriteria } =
@@ -83,16 +92,24 @@ const SearchBarMemo = React.memo(function SearchBarMemo() {
 });
 
 const Posts: React.FC<PostsProps> = ({ selectedPost }) => {
+  // Memoize visibility to prevent unnecessary re-renders
+  const isVisible = useMemo(() => !selectedPost, [selectedPost]);
+  
+  // Wait for the mega font to load before showing the title
+  const isFontLoaded = useFontLoaded('mega');
+  
   return (
     <Page>
-      <Header style={{ display: selectedPost ? "none" : "block" }}>
-        <Cloud src={cloudImg} alt="" />
-        <h1>BRXSTNG BLG</h1>
-      </Header>
-      <div style={{ display: selectedPost ? "none" : "block" }}>
-        <SearchBarMemo />
-        <FilterDropdownComponent />
-      </div>
+      <StableContainer $isVisible={isVisible} $fontLoaded={isFontLoaded}>
+        <Header>
+          <Cloud src={cloudImg} alt="" />
+          <h1>BRXSTNG BLG</h1>
+        </Header>
+        <div>
+          <SearchBarMemo />
+          <FilterDropdownComponent />
+        </div>
+      </StableContainer>
     </Page>
   );
 };

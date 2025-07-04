@@ -14,7 +14,9 @@ export const GlobalStyle = createGlobalStyle`
   @font-face {
     font-family: 'mega';
     src: url(${mega}) format('opentype');
-    font-display: swap;
+    font-display: block;
+    font-weight: normal;
+    font-style: normal;
   }
 
   html {
@@ -73,6 +75,8 @@ export const Header = styled.header`
     position: relative;
     color: ${primary}; /* e.g. #0ff */
     font-size: clamp(2rem, 6vw, 3rem);
+    font-family: 'mega', 'Arial Black', sans-serif;
+    font-weight: normal;
     letter-spacing: 0.1em;
     height: clamp(2rem, 6vw, 3rem);
     margin: 1rem 0;
