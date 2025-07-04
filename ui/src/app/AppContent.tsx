@@ -9,7 +9,7 @@ import styled from "styled-components";
 import { LoadingCubes } from "../shared/components";
 import * as THREE from "three";
 import { backgroundColor } from "../shared/theme/colors";
-import { useAssetLoader } from "../shared/hooks";
+import { useAssetLoader, usePostsApi } from "../shared/hooks";
 import { memoryTracker } from "../engine/memory/MemoryTracker";
 import { memoryMonitor } from "../engine/memory/MemoryProfiler";
 import { cleanupResourcePoolIntervals } from "../engine/memory/ResourcePool";
@@ -47,9 +47,11 @@ const PersistentCanvasWrapper = styled.div<{ hidden: boolean }>`
 
 const AppContent: React.FC = memo(() => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Fetch posts from API
+  const { posts, loading: postsLoading, error: postsError } = usePostsApi();
   
   // Use search context
   const { filteredPosts, setAllPosts, isSorting } = useSearch();
@@ -65,15 +67,15 @@ const AppContent: React.FC = memo(() => {
   
   // Preload all assets once
   const { isLoading, error, resources } = useAssetLoader();
-  const [postsLoaded, setPostsLoaded] = useState(false);
   const [canvasLoaded, setCanvasLoaded] = useState(false);
 
   // Memoize resource loading state to prevent unnecessary re-renders
   const resourceState = useMemo(() => ({
-    isLoading,
-    postsLoaded,
-    resourcesReady: !isLoading && postsLoaded && posts.length > 0,
-  }), [isLoading, postsLoaded, posts.length]);
+    isLoading: isLoading || postsLoading,
+    postsLoaded: !postsLoading,
+    resourcesReady: !isLoading && !postsLoading && posts.length > 0,
+    postsError,
+  }), [isLoading, postsLoading, posts.length, postsError]);
   
   // Canvas is fully ready when 3D scene has finished rendering
   const canvasReady = resourceState.resourcesReady && canvasLoaded && shouldLoadCanvas;
@@ -134,25 +136,12 @@ const AppContent: React.FC = memo(() => {
     navigate("/posts");
   }, [navigate]);
 
+  // Update search context when posts are loaded from API
   useEffect(() => {
-    // Only load posts once
-    if (posts.length === 0 && !postsLoaded) {
-      fetch("/posts.json")
-        .then((res) => {
-          if (!res.ok) throw new Error("Network error");
-          return res.json();
-        })
-        .then((data) => {
-          setPosts(data);
-          setAllPosts(data); // Update search context with all posts
-          setPostsLoaded(true);
-        })
-        .catch((err) => {
-          console.error("Failed to load posts:", err);
-          setPostsLoaded(true); // Still mark as loaded to prevent infinite retries
-        });
+    if (posts.length > 0) {
+      setAllPosts(posts);
     }
-  }, [posts.length, postsLoaded]);
+  }, [posts, setAllPosts]);
 
   // Simplest possible detail detection for maximum speed
   const isDetail = selectedPost !== null;
@@ -183,10 +172,12 @@ const AppContent: React.FC = memo(() => {
 
       {!showUI && (
         <LoaderOverlay>
-          {error ? (
+          {error || postsError ? (
             <div style={{ color: '#ff4444', textAlign: 'center' }}>
-              <div>Loading failed: {error}</div>
-              <div style={{ marginTop: '10px', fontSize: '0.8em' }}>Refresh to try again</div>
+              <div>Loading failed: {error || postsError}</div>
+              <div style={{ marginTop: '10px', fontSize: '0.8em' }}>
+                {postsError ? 'Check if the Go API is running and accessible' : 'Refresh to try again'}
+              </div>
             </div>
           ) : (
             <LoadingCubes

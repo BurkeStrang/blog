@@ -8,6 +8,7 @@ import React, {
   useCallback,
 } from "react";
 import type { Post } from "../../app/AppContent";
+import { apiService } from "../../services/api";
 
 export type SortCriteria = "pageViews" | "date" | "trending";
 export type SortDirection = "asc" | "desc";
@@ -151,6 +152,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
 
   // Track post views and update trending data
   const trackPostView = useCallback((slug: string) => {
+    // Update local state
     setAllPosts((prevPosts) => {
       return prevPosts.map((post) => {
         if (post.slug === slug) {
@@ -170,6 +172,11 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
         }
         return post;
       });
+    });
+    
+    // Also track the view in the API
+    apiService.trackPostView(slug).catch((error) => {
+      console.warn('Failed to track post view in API:', error);
     });
   }, []);
 
