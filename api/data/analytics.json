@@ -2,9 +2,9 @@
   "posts": {
     "async-await-in-javascript": {
       "slug": "async-await-in-javascript",
-      "pageViews": 6,
-      "recentViews": 6,
-      "lastViewed": "2025-07-05T11:19:49.237368688-04:00",
+      "pageViews": 8,
+      "recentViews": 8,
+      "lastViewed": "2025-07-05T11:46:03.907332248-04:00",
       "firstViewed": "2025-07-04T10:04:10.701153282-04:00"
     },
     "css-animations-and-transitions": {
@@ -16,9 +16,9 @@
     },
     "docker-basics-for-developers": {
       "slug": "docker-basics-for-developers",
-      "pageViews": 6,
-      "recentViews": 6,
-      "lastViewed": "2025-07-05T11:31:17.984271827-04:00",
+      "pageViews": 10,
+      "recentViews": 10,
+      "lastViewed": "2025-07-05T11:49:41.479601497-04:00",
       "firstViewed": "2025-07-05T11:20:24.773902426-04:00"
     },
     "flexbox-in-css": {
@@ -44,16 +44,16 @@
     },
     "javascript-promises": {
       "slug": "javascript-promises",
-      "pageViews": 10,
-      "recentViews": 10,
-      "lastViewed": "2025-07-05T11:20:42.279370108-04:00",
+      "pageViews": 12,
+      "recentViews": 12,
+      "lastViewed": "2025-07-05T11:46:27.129923717-04:00",
       "firstViewed": "2025-07-04T10:03:51.190278637-04:00"
     },
     "mastering-vim-motions-and-text-objects": {
       "slug": "mastering-vim-motions-and-text-objects",
-      "pageViews": 10,
-      "recentViews": 10,
-      "lastViewed": "2025-07-05T11:31:36.548522619-04:00",
+      "pageViews": 14,
+      "recentViews": 14,
+      "lastViewed": "2025-07-05T11:47:39.421661735-04:00",
       "firstViewed": "2025-07-04T09:00:54.420337972-04:00"
     },
     "modern-css-features-2025": {
@@ -62,6 +62,13 @@
       "recentViews": 4,
       "lastViewed": "2025-07-04T09:41:50.999919801-04:00",
       "firstViewed": "2025-07-04T09:41:46.981218552-04:00"
+    },
+    "node-js-streams": {
+      "slug": "node-js-streams",
+      "pageViews": 4,
+      "recentViews": 4,
+      "lastViewed": "2025-07-05T11:50:28.140972183-04:00",
+      "firstViewed": "2025-07-05T11:49:54.687826164-04:00"
     },
     "nodejs-express-middleware": {
       "slug": "nodejs-express-middleware",
@@ -72,30 +79,30 @@
     },
     "performance-optimization-react": {
       "slug": "performance-optimization-react",
-      "pageViews": 56,
-      "recentViews": 56,
-      "lastViewed": "2025-07-05T11:35:02.523209231-04:00",
+      "pageViews": 62,
+      "recentViews": 62,
+      "lastViewed": "2025-07-05T11:49:31.654782594-04:00",
       "firstViewed": "2025-07-04T09:41:35.983229713-04:00"
     },
     "python-list-comprehensions": {
       "slug": "python-list-comprehensions",
-      "pageViews": 22,
-      "recentViews": 22,
-      "lastViewed": "2025-07-05T11:32:13.185943508-04:00",
+      "pageViews": 26,
+      "recentViews": 26,
+      "lastViewed": "2025-07-05T11:46:18.197417423-04:00",
       "firstViewed": "2025-07-04T09:42:07.313038363-04:00"
     },
     "responsive-web-design": {
       "slug": "responsive-web-design",
-      "pageViews": 6,
-      "recentViews": 6,
-      "lastViewed": "2025-07-05T11:36:44.742989794-04:00",
+      "pageViews": 8,
+      "recentViews": 8,
+      "lastViewed": "2025-07-05T11:45:48.619219818-04:00",
       "firstViewed": "2025-07-04T10:03:55.175986719-04:00"
     },
     "scott-hanselmans-2021-ultimate-developer-and-power-users-tool-list-for-windows": {
       "slug": "scott-hanselmans-2021-ultimate-developer-and-power-users-tool-list-for-windows",
-      "pageViews": 6,
-      "recentViews": 6,
-      "lastViewed": "2025-07-05T11:37:28.76000331-04:00",
+      "pageViews": 8,
+      "recentViews": 8,
+      "lastViewed": "2025-07-05T11:46:32.193032425-04:00",
       "firstViewed": "2025-07-04T10:04:00.46223075-04:00"
     },
     "serverless-functions-introduction": {
@@ -126,6 +133,13 @@
       "lastViewed": "2025-07-05T11:30:18.344719356-04:00",
       "firstViewed": "2025-07-05T11:30:18.342664007-04:00"
     },
+    "typescript-generics": {
+      "slug": "typescript-generics",
+      "pageViews": 2,
+      "recentViews": 2,
+      "lastViewed": "2025-07-05T11:50:09.050058396-04:00",
+      "firstViewed": "2025-07-05T11:50:09.048633243-04:00"
+    },
     "understanding-rest-apis": {
       "slug": "understanding-rest-apis",
       "pageViews": 4,
@@ -139,6 +153,13 @@
       "recentViews": 4,
       "lastViewed": "2025-07-04T10:03:05.059603144-04:00",
       "firstViewed": "2025-07-04T09:42:12.331858771-04:00"
+    },
+    "webpack-configuration-basics": {
+      "slug": "webpack-configuration-basics",
+      "pageViews": 6,
+      "recentViews": 6,
+      "lastViewed": "2025-07-05T11:50:32.499509789-04:00",
+      "firstViewed": "2025-07-05T11:49:50.695063176-04:00"
     }
   }
 }

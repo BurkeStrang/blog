@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useRef,
   useCallback,
+  useDeferredValue,
 } from "react";
 import type { Post } from "../../app/AppContent";
 import { apiService } from "../../services/api";
@@ -180,11 +181,15 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     });
   }, []);
 
+  // Use deferred values for expensive operations to prevent blocking UI
+  const deferredSortBy = useDeferredValue(sortBy);
+  const deferredSortDirection = useDeferredValue(sortDirection);
+
   // Memoize filtered and sorted posts to avoid unnecessary recalculations
   const filteredPosts = useMemo(() => {
     const searched = searchPosts(allPosts, debouncedQuery);
-    return sortPosts(searched, sortBy, sortDirection);
-  }, [allPosts, debouncedQuery, sortBy, sortDirection]);
+    return sortPosts(searched, deferredSortBy, deferredSortDirection);
+  }, [allPosts, debouncedQuery, deferredSortBy, deferredSortDirection]);
 
   // Reset pagination when filters change
   useEffect(() => {

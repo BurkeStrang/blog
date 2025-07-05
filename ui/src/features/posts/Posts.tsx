@@ -114,4 +114,4 @@ const Posts: React.FC<PostsProps> = ({ selectedPost }) => {
   );
 };
 
-export default Posts;
+export default React.memo(Posts);

@@ -72,13 +72,19 @@ const AppContent: React.FC = memo(() => {
   const { isLoading, error, resources } = useAssetLoader();
   const [canvasLoaded, setCanvasLoaded] = useState(false);
 
-  // Memoize resource loading state to prevent unnecessary re-renders
-  const resourceState = useMemo(() => ({
-    isLoading: isLoading || postsLoading,
-    postsLoaded: !postsLoading,
-    resourcesReady: !isLoading && !postsLoading && posts.length > 0,
-    postsError,
-  }), [isLoading, postsLoading, posts.length, postsError]);
+  // Memoize resource loading state to prevent unnecessary re-renders  
+  const resourceState = useMemo(() => {
+    const loadingState = isLoading || postsLoading;
+    const postsLoadedState = !postsLoading;
+    const resourcesReadyState = !loadingState && posts.length > 0;
+    
+    return {
+      isLoading: loadingState,
+      postsLoaded: postsLoadedState,
+      resourcesReady: resourcesReadyState,
+      postsError,
+    };
+  }, [isLoading, postsLoading, posts.length, postsError]);
   
   // Canvas is fully ready when 3D scene has finished rendering
   const canvasReady = resourceState.resourcesReady && canvasLoaded && shouldLoadCanvas;

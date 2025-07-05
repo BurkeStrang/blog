@@ -10,24 +10,36 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 //   error?: string;
 // }
 
-// API service class
+// API service class with caching
 class ApiService {
   private baseUrl: string;
+  private cache = new Map<string, { data: unknown; timestamp: number }>();
+  private cacheTimeout = 5 * 60 * 1000; // 5 minutes
 
   constructor(baseUrl: string = API_BASE_URL) {
     this.baseUrl = baseUrl;
   }
 
-  // Generic fetch method with error handling
+  // Generic fetch method with error handling and caching
   private async fetch<T>(
     endpoint: string, 
     options?: {
       method?: string;
       headers?: Record<string, string>;
       body?: string;
+      cache?: boolean; // Allow disabling cache for specific requests
     }
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
+    const cacheKey = `${endpoint}-${JSON.stringify(options?.headers || {})}-${options?.body || ''}`;
+    
+    // Check cache for GET requests (unless cache is explicitly disabled)
+    if ((!options?.method || options.method === 'GET') && options?.cache !== false) {
+      const cached = this.cache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+        return cached.data as T;
+      }
+    }
     
     try {
       const response = await fetch(url, {
@@ -43,11 +55,22 @@ class ApiService {
       }
 
       const data = await response.json();
+      
+      // Cache successful GET requests
+      if ((!options?.method || options.method === 'GET') && options?.cache !== false) {
+        this.cache.set(cacheKey, { data, timestamp: Date.now() });
+      }
+      
       return data;
     } catch (error) {
       console.error(`API request failed for ${endpoint}:`, error);
       throw error;
     }
+  }
+
+  // Method to clear cache
+  clearCache(): void {
+    this.cache.clear();
   }
 
   // Get all posts
