@@ -180,6 +180,27 @@ const AppContent: React.FC = memo(() => {
     };
   }, []);
 
+  // Filter out browser extension errors to reduce console noise
+  useEffect(() => {
+    const originalError = console.error;
+    console.error = (...args) => {
+      const message = args[0]?.toString() || '';
+      // Filter out browser extension communication errors
+      if (
+        message.includes('message channel closed before a response was received') ||
+        message.includes('Extension context invalidated') ||
+        message.includes('message port closed')
+      ) {
+        return; // Suppress these errors
+      }
+      originalError.apply(console, args);
+    };
+
+    return () => {
+      console.error = originalError;
+    };
+  }, []);
+
   // Update search context when posts are loaded from API
   useEffect(() => {
     if (posts.length > 0) {
