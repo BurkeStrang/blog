@@ -3,12 +3,16 @@ package main
 import (
     "blogapi/handlers"
     "blogapi/middleware"
+    "blogapi/config"
     "net/http"
     "github.com/gin-gonic/gin"
     "github.com/gin-contrib/cors"
 )
 
 func main() {
+    // Initialize OAuth configuration
+    config.InitOAuth()
+    
     r := gin.Default()
 
     // Configure CORS
@@ -27,6 +31,8 @@ func main() {
 
     // Auth endpoints
     r.POST("/login", handlers.Login)
+    r.GET("/auth/google", handlers.GoogleLogin)
+    r.GET("/auth/google/callback", handlers.GoogleCallback)
 
     // API group with /api prefix
     api := r.Group("/api")

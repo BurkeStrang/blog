@@ -1,4 +1,5 @@
 import type { Post } from '../app/AppContent';
+import type { User } from '../shared/types/user';
 
 // API configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -74,6 +75,15 @@ class ApiService {
   // Health check endpoint
   async healthCheck(): Promise<{ status: string }> {
     return this.fetch<{ status: string }>('/health');
+  }
+
+  // Authentication endpoints
+  async getGoogleAuthUrl(): Promise<{ url: string }> {
+    return this.fetch<{ url: string }>('/auth/google');
+  }
+
+  async loginWithGoogle(code: string, state: string): Promise<{ token: string; user: User }> {
+    return this.fetch<{ token: string; user: User }>(`/auth/google/callback?code=${code}&state=${state}`);
   }
 }
 

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { NavLink, useLocation, Navigate } from "react-router-dom";
 import styled, { css } from "styled-components";
 import { darkgrey, primary } from "../../shared/theme/colors";
+import { User } from "../../shared/types/user";
+import { apiService } from "../../services/api";
 import MenuIcon from "@mui/icons-material/Menu";
 
 // Sidebar container
@@ -153,14 +155,138 @@ const SidebarLink = styled(NavLink)`
   ${sidebarLinkBase}
 `;
 
+const SidebarButton = styled.button`
+  ${sidebarLinkBase}
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+`;
+
+const ProfileSection = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+`;
+
+const ProfileInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const ProfilePicture = styled.img`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid ${primary};
+  object-fit: cover;
+`;
+
+const UserName = styled.span`
+  font-weight: 500;
+  color: ${primary};
+  font-size: 0.9rem;
+`;
+
+const LogoutButton = styled(SidebarButton)`
+  color: #ff6b6b;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 6px;
+  
+  &:hover {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff5252;
+    border-color: #ff5252;
+    text-shadow:
+      0 0 2px #ff5252,
+      0 0 5px #ff5252;
+  }
+`;
+
 interface SidebarNavProps {
   onPostsClick?: () => void;
+  user?: User | null;
+  onLogout?: () => void;
+  onLogin?: (user: User, token: string) => void;
 }
 
 // Main sidebar component
-const SidebarNav: React.FC<SidebarNavProps> = ({ onPostsClick }) => {
+const SidebarNav: React.FC<SidebarNavProps> = ({ onPostsClick, user, onLogout, onLogin }) => {
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  // Detect mobile devices
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  // Handle Google OAuth login (popup for desktop, redirect for mobile)
+  const handleGoogleLogin = async () => {
+    if (!onLogin || loginLoading) return;
+    
+    try {
+      setLoginLoading(true);
+      setOpen(false);
+
+      // Get the Google OAuth URL from our API
+      const response = await apiService.getGoogleAuthUrl();
+      
+      if (isMobile) {
+        // Mobile: Use redirect flow
+        localStorage.setItem('returnTo', location.pathname);
+        window.location.href = response.url;
+      } else {
+        // Desktop: Use popup flow to preserve app state
+        const popup = window.open(
+          response.url,
+          'google-oauth',
+          'width=500,height=600,scrollbars=yes,resizable=yes'
+        );
+
+        if (!popup) {
+          // Fallback to redirect if popup is blocked
+          localStorage.setItem('returnTo', location.pathname);
+          window.location.href = response.url;
+          return;
+        }
+
+        // Listen for popup to close
+        const checkClosed = setInterval(() => {
+          try {
+            if (popup.closed) {
+              clearInterval(checkClosed);
+              setLoginLoading(false);
+              // Check if authentication was successful by checking localStorage
+              const token = localStorage.getItem('authToken');
+              const savedUser = localStorage.getItem('user');
+              if (token && savedUser) {
+                onLogin(JSON.parse(savedUser), token);
+              }
+            }
+          } catch {
+            // Popup closed or cross-origin error
+            clearInterval(checkClosed);
+            setLoginLoading(false);
+          }
+        }, 1000);
+      }
+
+    } catch (error) {
+      console.error('Failed to initiate Google login:', error);
+      setLoginLoading(false);
+    }
+  };
 
   // Redirect if at root
   if (location.pathname === "/") {
@@ -192,10 +318,44 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ onPostsClick }) => {
             </SidebarLink>
           </SidebarItem>
           <SidebarItem>
-            <SidebarLink to="/profile" onClick={() => setOpen(false)}>
-              LOGIN
-            </SidebarLink>
+            {user ? (
+              <div style={{ padding: '0.75rem 1.25rem', margin: '0.2rem auto', width: '90%' }}>
+                <ProfileSection>
+                  <ProfileInfo>
+                    <ProfilePicture 
+                      src={user.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0ff&color=000`}
+                      alt={user.name}
+                      onError={(e) => {
+                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0ff&color=000`;
+                      }}
+                    />
+                    <UserName>{user.name}</UserName>
+                  </ProfileInfo>
+                </ProfileSection>
+              </div>
+            ) : (
+              <SidebarButton
+                onClick={() => {
+                  // Save current location for return after login
+                  localStorage.setItem('returnTo', location.pathname);
+                  handleGoogleLogin();
+                }}
+                disabled={loginLoading}
+              >
+                {loginLoading ? 'LOGGING IN...' : 'LOGIN'}
+              </SidebarButton>
+            )}
           </SidebarItem>
+          {user && onLogout && (
+            <SidebarItem>
+              <LogoutButton onClick={() => {
+                setOpen(false);
+                onLogout();
+              }}>
+                LOGOUT
+              </LogoutButton>
+            </SidebarItem>
+          )}
         </SidebarLinks>
       </Sidebar>
     </>

@@ -2,7 +2,8 @@ import React, { useEffect, useState, useCallback, useMemo, memo } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { SideBar } from "../features/layout";
 import { Posts, PostDetail } from "../features/posts";
-import { About, Profile } from "../features/pages";
+import { About, NotFound } from "../features/pages";
+// Removed Login import - no longer needed
 import { CanvasBackground, GlobalStyle } from "../shared/theme/GlobalStyles";
 import { LazyOceanCanvas } from "../features/ocean";
 import styled from "styled-components";
@@ -11,6 +12,7 @@ import * as THREE from "three";
 import { backgroundColor } from "../shared/theme/colors";
 import { useAssetLoader, usePostsApi } from "../shared/hooks";
 import { memoryTracker } from "../engine/memory/MemoryTracker";
+import { User } from "../shared/types/user";
 import { memoryMonitor } from "../engine/memory/MemoryProfiler";
 import { cleanupResourcePoolIntervals } from "../engine/memory/ResourcePool";
 import { useSearch } from "../shared/contexts/SearchContext";
@@ -47,6 +49,7 @@ const PersistentCanvasWrapper = styled.div<{ hidden: boolean }>`
 
 const AppContent: React.FC = memo(() => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -136,6 +139,47 @@ const AppContent: React.FC = memo(() => {
     navigate("/posts");
   }, [navigate]);
 
+  // Authentication handlers
+  const handleLogin = useCallback((userData: User, token: string) => {
+    setUser(userData);
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    // Go back to previous page or default to posts
+    const returnTo = localStorage.getItem('returnTo') || '/posts';
+    localStorage.removeItem('returnTo');
+    navigate(returnTo);
+  }, [navigate]);
+
+  const handleLogout = useCallback(() => {
+    setUser(null);
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    // Stay on current page after logout - no redirect needed
+  }, []);
+
+  // Check for existing authentication on mount
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const savedUser = localStorage.getItem('user');
+    if (token && savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  // Listen for OAuth success events to update user state without page reload
+  useEffect(() => {
+    const handleOAuthSuccess = (event: CustomEvent) => {
+      console.log('OAuth success event received:', event.detail);
+      setUser(event.detail.user);
+    };
+
+    window.addEventListener('oauth-success', handleOAuthSuccess as EventListener);
+    
+    return () => {
+      window.removeEventListener('oauth-success', handleOAuthSuccess as EventListener);
+    };
+  }, []);
+
   // Update search context when posts are loaded from API
   useEffect(() => {
     if (posts.length > 0) {
@@ -146,6 +190,9 @@ const AppContent: React.FC = memo(() => {
   // Simplest possible detail detection for maximum speed
   const isDetail = selectedPost !== null;
   
+  // Detect OAuth callback route to hide ocean scene
+  const isOAuthCallback = location.pathname === '/auth/callback';
+  
   // Show UI immediately for direct post navigation, with loading state for canvas routes
   const showUI = resourceState.resourcesReady && (shouldLoadCanvas ? canvasLoaded : true);
 
@@ -153,14 +200,14 @@ const AppContent: React.FC = memo(() => {
     <>
       <GlobalStyle />
       {resourceState.resourcesReady && shouldLoadCanvas && (
-        <PersistentCanvasWrapper hidden={isDetail}>
+        <PersistentCanvasWrapper hidden={isDetail || isOAuthCallback}>
           <CanvasBackground>
             <LazyOceanCanvas
               posts={posts}
               onPostClick={handlePostClick}
               resources={resources}
               onLoaded={() => setCanvasLoaded(true)}
-              isPaused={isDetail}
+              isPaused={isDetail || isOAuthCallback}
               loadTrigger="viewport"
               visiblePostSlugs={visiblePostSlugs}
               sortedPosts={filteredPosts}
@@ -190,7 +237,7 @@ const AppContent: React.FC = memo(() => {
 
       {showUI && (
         <>
-          <SideBar onPostsClick={() => setSelectedPost(null)} />
+          <SideBar onPostsClick={() => setSelectedPost(null)} user={user} onLogout={handleLogout} onLogin={handleLogin} />
           <Routes>
             <Route path="/about" element={<About />} />
             <Route
@@ -203,26 +250,7 @@ const AppContent: React.FC = memo(() => {
                 <PostDetail allPosts={posts} handleClose={handleClose} />
               }
             />
-            <Route
-              path="/profile"
-              element={
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    padding: "1.5rem 2.5rem 1.5rem 1.5rem",
-                  }}
-                >
-                  <Profile
-                    avatarUrl="https://i.pinimg.com/236x/14/67/d2/1467d25dddb40deda97737c62b375d9a.jpg"
-                    name="Jane Doe"
-                    title="Full-Stack Developer"
-                    bio="Passionate about building performant web apps and scalable APIs."
-                  />
-                </div>
-              }
-            />
-            <Route path="/*" element={<div>Page not found</div>} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </>
       )}
