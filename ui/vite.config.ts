@@ -5,7 +5,16 @@ import eslint from "vite-plugin-eslint";
 
 export default defineConfig({
   plugins: [
-    react(),
+    react({
+      babel: {
+        plugins: [
+          // Enable React Compiler for automatic memoization
+          ["babel-plugin-react-compiler", {
+            compilationMode: "annotation", // Start with annotation mode for safer adoption
+          }]
+        ]
+      }
+    }),
     eslint({
       include: ['src/**/*.{ts,tsx,js,jsx}'],
       exclude: ['node_modules', 'dist'],

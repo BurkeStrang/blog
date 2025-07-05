@@ -1,6 +1,7 @@
 import globals from "globals";
 import tseslint from "typescript-eslint";
 import pluginReact from "eslint-plugin-react";
+import reactCompiler from "eslint-plugin-react-compiler";
 import { defineConfig } from "eslint/config";
 
 export default defineConfig([
@@ -56,13 +57,17 @@ export default defineConfig([
   // TypeScript files - disable prop-types (use TypeScript types instead)
   {
     files: ["**/*.{ts,mts,cts,tsx}"],
-    plugins: { react: pluginReact },
+    plugins: { 
+      react: pluginReact,
+      "react-compiler": reactCompiler,
+    },
     settings: {
       react: { version: "detect" },
     },
     rules: {
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off", // TypeScript provides type checking
+      "react-compiler/react-compiler": "error",
       "react/no-unknown-property": [
         "error",
         {

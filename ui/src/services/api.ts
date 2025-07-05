@@ -42,12 +42,14 @@ class ApiService {
     }
     
     try {
+      const { cache, ...fetchOptions } = options || {};
+      void cache; // Explicitly void the cache variable to avoid unused variable warning
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
           ...options?.headers,
         },
-        ...options,
+        ...fetchOptions,
       });
 
       if (!response.ok) {

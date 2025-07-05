@@ -2,9 +2,9 @@
   "posts": {
     "async-await-in-javascript": {
       "slug": "async-await-in-javascript",
-      "pageViews": 8,
-      "recentViews": 8,
-      "lastViewed": "2025-07-05T11:46:03.907332248-04:00",
+      "pageViews": 10,
+      "recentViews": 10,
+      "lastViewed": "2025-07-05T11:59:22.372518078-04:00",
       "firstViewed": "2025-07-04T10:04:10.701153282-04:00"
     },
     "css-animations-and-transitions": {
@@ -23,9 +23,9 @@
     },
     "flexbox-in-css": {
       "slug": "flexbox-in-css",
-      "pageViews": 6,
-      "recentViews": 6,
-      "lastViewed": "2025-07-05T11:36:50.482406591-04:00",
+      "pageViews": 8,
+      "recentViews": 8,
+      "lastViewed": "2025-07-05T11:59:11.429436017-04:00",
       "firstViewed": "2025-07-04T10:03:42.843494719-04:00"
     },
     "git-branching-strategies": {
@@ -51,9 +51,9 @@
     },
     "mastering-vim-motions-and-text-objects": {
       "slug": "mastering-vim-motions-and-text-objects",
-      "pageViews": 14,
-      "recentViews": 14,
-      "lastViewed": "2025-07-05T11:47:39.421661735-04:00",
+      "pageViews": 16,
+      "recentViews": 16,
+      "lastViewed": "2025-07-05T11:59:00.733024386-04:00",
       "firstViewed": "2025-07-04T09:00:54.420337972-04:00"
     },
     "modern-css-features-2025": {
@@ -72,16 +72,16 @@
     },
     "nodejs-express-middleware": {
       "slug": "nodejs-express-middleware",
-      "pageViews": 8,
-      "recentViews": 8,
-      "lastViewed": "2025-07-05T11:31:12.649650594-04:00",
+      "pageViews": 10,
+      "recentViews": 10,
+      "lastViewed": "2025-07-05T11:59:17.644926599-04:00",
       "firstViewed": "2025-07-05T11:30:10.46956655-04:00"
     },
     "performance-optimization-react": {
       "slug": "performance-optimization-react",
-      "pageViews": 62,
-      "recentViews": 62,
-      "lastViewed": "2025-07-05T11:49:31.654782594-04:00",
+      "pageViews": 66,
+      "recentViews": 66,
+      "lastViewed": "2025-07-05T11:58:49.224028336-04:00",
       "firstViewed": "2025-07-04T09:41:35.983229713-04:00"
     },
     "python-list-comprehensions": {
@@ -93,9 +93,9 @@
     },
     "responsive-web-design": {
       "slug": "responsive-web-design",
-      "pageViews": 8,
-      "recentViews": 8,
-      "lastViewed": "2025-07-05T11:45:48.619219818-04:00",
+      "pageViews": 10,
+      "recentViews": 10,
+      "lastViewed": "2025-07-05T11:59:27.025977735-04:00",
       "firstViewed": "2025-07-04T10:03:55.175986719-04:00"
     },
     "scott-hanselmans-2021-ultimate-developer-and-power-users-tool-list-for-windows": {
@@ -107,16 +107,16 @@
     },
     "serverless-functions-introduction": {
       "slug": "serverless-functions-introduction",
-      "pageViews": 23,
-      "recentViews": 23,
-      "lastViewed": "2025-07-05T11:36:07.867474768-04:00",
+      "pageViews": 29,
+      "recentViews": 29,
+      "lastViewed": "2025-07-05T11:59:42.020100438-04:00",
       "firstViewed": "2025-07-04T09:00:02.9783464-04:00"
     },
     "setting-up-eslint-prettier": {
       "slug": "setting-up-eslint-prettier",
-      "pageViews": 14,
-      "recentViews": 14,
-      "lastViewed": "2025-07-05T11:36:11.313181756-04:00",
+      "pageViews": 16,
+      "recentViews": 16,
+      "lastViewed": "2025-07-05T11:59:03.648031726-04:00",
       "firstViewed": "2025-07-04T09:41:25.837193622-04:00"
     },
     "sql-join-types-explained": {
@@ -156,9 +156,9 @@
     },
     "webpack-configuration-basics": {
       "slug": "webpack-configuration-basics",
-      "pageViews": 6,
-      "recentViews": 6,
-      "lastViewed": "2025-07-05T11:50:32.499509789-04:00",
+      "pageViews": 8,
+      "recentViews": 8,
+      "lastViewed": "2025-07-05T11:59:14.490455504-04:00",
       "firstViewed": "2025-07-05T11:49:50.695063176-04:00"
     }
   }
