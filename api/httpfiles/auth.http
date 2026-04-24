@@ -1,0 +1,5 @@
+### Google OAuth Login
+GET http://localhost:8080/auth/google
+
+###
+# This will redirect to Google OAuth and then back to the frontend callback

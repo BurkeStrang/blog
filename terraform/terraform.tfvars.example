@@ -1,0 +1,24 @@
+# Copy this file to terraform.tfvars and update with your values
+
+# Resource Group and Location
+resource_group_name = "rg-blog-prod"
+location           = "East US"
+environment        = "prod"
+
+# Cosmos DB Account Name (must be globally unique)
+# Use your initials or company name to make it unique
+cosmosdb_account_name = "cosmos-blog-brxstng-prod"
+
+# Azure Container Registry Name (must be globally unique, alphanumeric only)
+# No hyphens allowed in ACR names
+acr_name = "acrblogbrxstngprod"
+acr_sku  = "Basic"  # Options: Basic, Standard, Premium
+
+# OAuth Configuration (optional, but required for authentication features)
+# Get these from Google Cloud Console: https://console.cloud.google.com/apis/credentials
+google_client_id     = ""  # Your Google OAuth Client ID
+google_client_secret = ""  # Your Google OAuth Client Secret
+
+# JWT Secret (generate a random string for production)
+# Example: openssl rand -base64 32
+jwt_secret = ""  # Your JWT secret for token generation

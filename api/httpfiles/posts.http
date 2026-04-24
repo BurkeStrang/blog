@@ -1,0 +1,18 @@
+### Get all blog posts (public)
+GET http://localhost:8080/posts
+
+###
+# Get a blog post by ID (public)
+GET http://localhost:8080/posts/1
+
+###
+# Create a new blog post (admin only)
+# (Paste your admin token below after "Bearer ")
+POST http://localhost:8080/posts
+Content-Type: application/json
+Authorization: Bearer <ADMIN_JWT_TOKEN_HERE>
+
+{
+  "title": "My First Blog Post",
+  "content": "This is the content of the first post"
+}

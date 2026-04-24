@@ -1,0 +1,68 @@
+[
+  {
+    "id": "comment-1674648000000",
+    "type": "comment",
+    "postId": "post-1",
+    "content": "Great introduction to Cosmos DB! I've been looking for a comprehensive overview like this. The code examples are particularly helpful.",
+    "author": "John Developer",
+    "createdAt": "2025-01-15T12:30:00Z",
+    "updatedAt": "2025-01-15T12:30:00Z",
+    "parentId": null,
+    "likeCount": 2
+  },
+  {
+    "id": "comment-1674651600000",
+    "type": "comment", 
+    "postId": "post-1",
+    "content": "Thanks! I'm planning to write more about Cosmos DB performance optimization and scaling strategies in upcoming posts.",
+    "author": "Admin",
+    "createdAt": "2025-01-15T13:30:00Z",
+    "updatedAt": "2025-01-15T13:30:00Z",
+    "parentId": "comment-1674648000000",
+    "likeCount": 1
+  },
+  {
+    "id": "comment-1674655200000",
+    "type": "comment",
+    "postId": "post-1", 
+    "content": "How does Cosmos DB compare to MongoDB in terms of pricing? We're considering migrating our existing MongoDB setup.",
+    "author": "Sarah Johnson",
+    "createdAt": "2025-01-15T14:30:00Z",
+    "updatedAt": "2025-01-15T14:30:00Z",
+    "parentId": null,
+    "likeCount": 0
+  },
+  {
+    "id": "comment-1674820200000",
+    "type": "comment",
+    "postId": "post-2",
+    "content": "These performance tips are gold! The frustum culling example saved my app from major frame drops. Do you have any tips for optimizing texture loading?",
+    "author": "Sarah Johnson", 
+    "createdAt": "2025-01-20T16:15:00Z",
+    "updatedAt": "2025-01-20T16:15:00Z",
+    "parentId": null,
+    "likeCount": 3
+  },
+  {
+    "id": "comment-1674823800000",
+    "type": "comment",
+    "postId": "post-2",
+    "content": "For texture optimization, try using compressed formats like DXT/S3TC for desktop and ASTC for mobile. Also consider texture atlasing to reduce draw calls.",
+    "author": "John Developer",
+    "createdAt": "2025-01-20T17:15:00Z", 
+    "updatedAt": "2025-01-20T17:15:00Z",
+    "parentId": "comment-1674820200000",
+    "likeCount": 1
+  },
+  {
+    "id": "comment-1675252500000",
+    "type": "comment",
+    "postId": "post-3",
+    "content": "Gin is such a clean framework! Coming from Node.js, I was surprised how simple it is to get a robust API running. The middleware system is elegant.",
+    "author": "Admin",
+    "createdAt": "2025-01-25T13:45:00Z",
+    "updatedAt": "2025-01-25T13:45:00Z", 
+    "parentId": null,
+    "likeCount": 2
+  }
+]

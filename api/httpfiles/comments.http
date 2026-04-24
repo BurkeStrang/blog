@@ -1,0 +1,18 @@
+### Get all comments (public)
+GET http://localhost:8080/comments
+
+###
+# Get comments for a post (public)
+GET http://localhost:8080/comments?post_id=1
+
+###
+# Create a comment on post 1 (any user or admin)
+# (Paste your token below after "Bearer ")
+POST http://localhost:8080/comments
+Content-Type: application/json
+Authorization: Bearer
+
+{
+  "post_id": 1,
+  "content": "Nice post! Looking forward to more."
+}

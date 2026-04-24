@@ -1,0 +1,8 @@
+export const neon = "var(--color-neon)";
+export const darkgrey = "var(--color-darkgrey)";
+export const lightgrey = "var(--color-lightgrey)";
+export const backgroundColor = "var(--color-bg)";
+export const primary = "var(--color-primary)";
+export const accent = "var(--color-accent)";
+export const secondary = "var(--color-secondary)";
+export const bluish = "var(--color-bluish)";

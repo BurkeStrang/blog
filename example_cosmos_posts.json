@@ -1,0 +1,47 @@
+[
+  {
+    "id": "post-1",
+    "type": "post",
+    "slug": "getting-started-with-cosmos-db",
+    "title": "Getting Started with Azure Cosmos DB",
+    "body": "<p><em>Posted on January 15, 2025 by Admin</em></p><h2>What is Cosmos DB?</h2><p>Azure Cosmos DB is a globally distributed, multi-model database service designed for mission-critical applications. It offers turnkey global distribution, elastic scaling, and comprehensive SLAs.</p><h2>Key Features</h2><ul><li>Global distribution with multi-master replication</li><li>Elastic scaling of throughput and storage</li><li>Multiple data models (document, key-value, graph, column-family)</li><li>Multiple consistency levels</li><li>99.999% availability SLA</li></ul><h2>Getting Started</h2><pre><code>// Connect to Cosmos DB\nconst { CosmosClient } = require('@azure/cosmos');\n\nconst client = new CosmosClient({\n  endpoint: process.env.COSMOS_DB_ENDPOINT,\n  key: process.env.COSMOS_DB_KEY\n});\n\nconst database = client.database('blog');\nconst container = database.container('posts');</code></pre><p>Learn more at <a href=\"https://docs.microsoft.com/en-us/azure/cosmos-db/\">Azure Cosmos DB Documentation</a>.</p>",
+    "author": "Admin",
+    "createdAt": "2025-01-15T10:00:00Z",
+    "updatedAt": "2025-01-15T10:00:00Z",
+    "pageViews": 150,
+    "recentViews": 25,
+    "lastViewed": "2025-01-20T15:30:00Z",
+    "firstViewed": "2025-01-15T10:05:00Z",
+    "commentCount": 3
+  },
+  {
+    "id": "post-2", 
+    "type": "post",
+    "slug": "react-three-fiber-performance-tips",
+    "title": "React Three Fiber Performance Optimization",
+    "body": "<p><em>Posted on January 20, 2025 by John Developer</em></p><h2>Performance Best Practices</h2><p>When building 3D web applications with React Three Fiber, performance is crucial. Here are key optimization techniques.</p><h2>Memory Management</h2><ul><li>Dispose of geometries and materials when unmounting</li><li>Use object pooling for frequently created/destroyed objects</li><li>Implement LOD (Level of Detail) systems</li><li>Monitor memory usage with performance tools</li></ul><h2>Rendering Optimization</h2><pre><code>// Use React.memo for expensive components\nconst OptimizedMesh = React.memo(({ position, geometry, material }) => {\n  return (\n    <mesh position={position}>\n      <primitive object={geometry} />\n      <primitive object={material} />\n    </mesh>\n  );\n});\n\n// Implement frustum culling\nfunction CulledObject({ children }) {\n  const meshRef = useRef();\n  \n  useFrame((state) => {\n    if (meshRef.current) {\n      meshRef.current.visible = isInView(meshRef.current, state.camera);\n    }\n  });\n  \n  return <group ref={meshRef}>{children}</group>;\n}</code></pre><p>Check out the <a href=\"https://docs.pmnd.rs/react-three-fiber/advanced/scaling-performance\">React Three Fiber performance guide</a>.</p>",
+    "author": "John Developer",
+    "createdAt": "2025-01-20T14:30:00Z",
+    "updatedAt": "2025-01-20T14:30:00Z",
+    "pageViews": 89,
+    "recentViews": 15,
+    "lastViewed": "2025-01-22T09:15:00Z",
+    "firstViewed": "2025-01-20T14:35:00Z",
+    "commentCount": 2
+  },
+  {
+    "id": "post-3",
+    "type": "post", 
+    "slug": "modern-go-web-development",
+    "title": "Modern Go Web Development with Gin",
+    "body": "<p><em>Posted on January 25, 2025 by Sarah Johnson</em></p><h2>Why Go for Web Development?</h2><p>Go (Golang) has become increasingly popular for web development due to its simplicity, performance, and strong concurrency support.</p><h2>Setting Up Gin Framework</h2><pre><code>package main\n\nimport (\n    \"github.com/gin-gonic/gin\"\n    \"net/http\"\n)\n\nfunc main() {\n    r := gin.Default()\n    \n    // Middleware\n    r.Use(gin.Logger())\n    r.Use(gin.Recovery())\n    \n    // Routes\n    r.GET(\"/\", func(c *gin.Context) {\n        c.JSON(http.StatusOK, gin.H{\n            \"message\": \"Hello, World!\",\n        })\n    })\n    \n    r.Run(\":8080\")\n}</code></pre><h2>Best Practices</h2><ul><li>Use middleware for cross-cutting concerns</li><li>Implement proper error handling</li><li>Structure your application with clean architecture</li><li>Use dependency injection for testability</li><li>Implement proper logging and monitoring</li></ul><p>Learn more about <a href=\"https://gin-gonic.com/docs/\">Gin framework</a>.</p>",
+    "author": "Sarah Johnson",
+    "createdAt": "2025-01-25T11:15:00Z", 
+    "updatedAt": "2025-01-25T11:15:00Z",
+    "pageViews": 67,
+    "recentViews": 12,
+    "lastViewed": "2025-01-26T16:45:00Z",
+    "firstViewed": "2025-01-25T11:20:00Z",
+    "commentCount": 1
+  }
+]

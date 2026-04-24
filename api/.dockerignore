@@ -1,0 +1,40 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+README.md
+
+# Testing
+*_test.go
+test/
+
+# Build artifacts
+main
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Data
+data/
+*.db
+*.sqlite
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Terraform
+terraform/
+*.tfstate
+*.tfvars
