@@ -123,12 +123,12 @@ useEffect(() => {
   const primarySolidMat = useMemo(
     () => new MeshStandardMaterial({
       color: colors.accentColor,
-      emissive: isDark ? 0x006666 : 0x000000,
-      emissiveIntensity: isDark ? 2.0 : 0,
-      roughness: 0.4,
-      metalness: 0.1,
+      emissive: isDark ? colors.accentColor : 0x000000,
+      emissiveIntensity: isDark ? 3.4 : 0,
+      roughness: 0.28,
+      metalness: 0.05,
     }),
-    [isDark],
+    [isDark, colors.accentColor],
   );
   const greyOutlineMat = useMemo(
     () =>

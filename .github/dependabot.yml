@@ -1,0 +1,51 @@
+version: 2
+updates:
+  # Go API dependencies
+  - package-ecosystem: "gomod"
+    directory: "/api"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "go"
+
+  # UI npm/pnpm dependencies
+  - package-ecosystem: "npm"
+    directory: "/ui"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "frontend"
+
+  # API Docker base image
+  - package-ecosystem: "docker"
+    directory: "/api"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # UI Docker base image
+  - package-ecosystem: "docker"
+    directory: "/ui"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # Helm charts (nginx-ingress, cert-manager)
+  - package-ecosystem: "helm"
+    directory: "/helm"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "helm"

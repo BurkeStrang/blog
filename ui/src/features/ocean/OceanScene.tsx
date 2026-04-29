@@ -946,7 +946,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
           />
           <ambientLight intensity={colors.ambientSceneIntensity} color={colors.sceneLightColor} />
           <hemisphereLight
-            color={0xffffff}
+            color={0xafffff}
             groundColor={colors.sceneGroundColor}
             intensity={colors.hemisphereLightIntensity}
             position={[0, 900, 0]}

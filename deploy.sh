@@ -1,93 +1,102 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Parse arguments
 DEPLOY_API=false
 DEPLOY_UI=false
 
 if [ $# -eq 0 ]; then
-  # No arguments - deploy both
   DEPLOY_API=true
   DEPLOY_UI=true
 else
-  # Parse arguments
   for arg in "$@"; do
     case $arg in
-      api)
-        DEPLOY_API=true
-        ;;
-      ui)
-        DEPLOY_UI=true
-        ;;
+      api) DEPLOY_API=true ;;
+      ui)  DEPLOY_UI=true ;;
       *)
         echo "Usage: ./deploy.sh [api] [ui]"
-        echo "  No arguments: Deploy both API and UI"
-        echo "  api: Deploy only API"
-        echo "  ui: Deploy only UI"
-        echo "  api ui: Deploy both"
+        echo "  No arguments: deploy both"
         exit 1
         ;;
     esac
   done
 fi
 
-# Get ACR login server from Terraform
+RESOURCE_GROUP="rg-blog-prod"
+CLUSTER_NAME="aks-blog-prod"
+VAULT_NAME=$(az keyvault list --resource-group "$RESOURCE_GROUP" --query "[0].name" -o tsv)
+
 cd terraform
 ACR_SERVER=$(terraform output -raw acr_login_server)
 cd ..
 
-echo "🔐 Logging into Azure Container Registry: $ACR_SERVER"
-az acr login --name ${ACR_SERVER%%.*}
+GIT_SHA=$(git rev-parse --short HEAD)
+
+echo "ACR: $ACR_SERVER  |  SHA: $GIT_SHA"
+echo "Logging into ACR..."
+az acr login --name "${ACR_SERVER%%.*}"
 
 if [ "$DEPLOY_API" = true ]; then
   echo ""
-  echo "🏗️  Building and pushing API Docker image..."
-  cd api
-  docker build  -t ${ACR_SERVER}/blog-api:latest .
-  docker push ${ACR_SERVER}/blog-api:latest
-  cd ..
+  echo "Building and pushing API..."
+  docker build -t "${ACR_SERVER}/blog-api:${GIT_SHA}" -t "${ACR_SERVER}/blog-api:latest" api/
+  docker push "${ACR_SERVER}/blog-api:${GIT_SHA}"
+  docker push "${ACR_SERVER}/blog-api:latest"
 fi
 
 if [ "$DEPLOY_UI" = true ]; then
   echo ""
-  echo "🏗️  Building and pushing UI Docker image..."
-  cd ui
-  docker build --build-arg VITE_API_URL=https://api.brxstrng.com -t ${ACR_SERVER}/blog-ui:latest .
-  docker push ${ACR_SERVER}/blog-ui:latest
-  cd ..
+  echo "Building and pushing UI..."
+  docker build \
+    --build-arg VITE_API_URL=https://api.brxstrng.com \
+    -t "${ACR_SERVER}/blog-ui:${GIT_SHA}" \
+    -t "${ACR_SERVER}/blog-ui:latest" \
+    ui/
+  docker push "${ACR_SERVER}/blog-ui:${GIT_SHA}"
+  docker push "${ACR_SERVER}/blog-ui:latest"
 fi
 
 echo ""
-echo "✅ Docker images built and pushed successfully!"
-echo ""
-echo "🚀 Deploying to Azure Container Apps..."
+echo "Getting AKS credentials..."
+az aks get-credentials --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME" --overwrite-existing
 
-# Get timestamp for forcing new revisions
-TIMESTAMP=$(date +%s)
+echo "Ensuring namespace, config, and manifests exist..."
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/api/deployment.yaml
+kubectl apply -f k8s/api/service.yaml
+kubectl apply -f k8s/ui/deployment.yaml
+kubectl apply -f k8s/ui/service.yaml
+kubectl apply -f k8s/ingress.yaml
+
+echo "Syncing secrets from Key Vault to Kubernetes..."
+COSMOS_DB_KEY=$(az keyvault secret show --vault-name "$VAULT_NAME" --name cosmos-db-key --query value -o tsv)
+GOOGLE_CLIENT_ID=$(az keyvault secret show --vault-name "$VAULT_NAME" --name google-client-id --query value -o tsv)
+GOOGLE_CLIENT_SECRET=$(az keyvault secret show --vault-name "$VAULT_NAME" --name google-client-secret --query value -o tsv)
+JWT_SECRET=$(az keyvault secret show --vault-name "$VAULT_NAME" --name jwt-secret --query value -o tsv)
+
+kubectl create secret generic blog-secrets \
+  --namespace blog \
+  --from-literal=COSMOS_DB_KEY="$COSMOS_DB_KEY" \
+  --from-literal=GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
+  --from-literal=GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
+  --from-literal=JWT_SECRET="$JWT_SECRET" \
+  --dry-run=client -o yaml | kubectl apply -f -
 
 if [ "$DEPLOY_API" = true ]; then
-  echo "Deploying API with revision suffix: ${TIMESTAMP}"
-  az containerapp update \
-    --name blog-api \
-    --resource-group rg-blog-prod \
-    --image ${ACR_SERVER}/blog-api:latest \
-    --revision-suffix "deploy-${TIMESTAMP}"
+  echo ""
+  echo "Deploying API (${GIT_SHA})..."
+  kubectl set image deployment/blog-api blog-api="${ACR_SERVER}/blog-api:${GIT_SHA}" -n blog
+  kubectl rollout status deployment/blog-api -n blog --timeout=120s
 fi
 
 if [ "$DEPLOY_UI" = true ]; then
-  echo "Deploying UI with revision suffix: ${TIMESTAMP}"
-  az containerapp update \
-    --name blog-ui \
-    --resource-group rg-blog-prod \
-    --image ${ACR_SERVER}/blog-ui:latest \
-    --revision-suffix "deploy-${TIMESTAMP}"
+  echo ""
+  echo "Deploying UI (${GIT_SHA})..."
+  kubectl set image deployment/blog-ui blog-ui="${ACR_SERVER}/blog-ui:${GIT_SHA}" -n blog
+  kubectl rollout status deployment/blog-ui -n blog --timeout=120s
 fi
 
 echo ""
-echo "✅ Deployment complete!"
-echo ""
-echo "📊 Container App URLs:"
-cd terraform
-echo "  API: $(terraform output -raw api_url)"
-echo "  UI:  $(terraform output -raw ui_url)"
-cd ..
+echo "Deployment complete!"
+echo "  UI:  https://brxstrng.com"
+echo "  API: https://api.brxstrng.com"

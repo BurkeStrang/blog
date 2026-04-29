@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blog-config
+  namespace: blog
+data:
+  COSMOS_DB_ENDPOINT: "https://cosmos-blog-brxstng-prod.documents.azure.com:443/"
+  COSMOS_DB_DATABASE_NAME: "blog"
+  FRONTEND_URL: "https://brxstrng.com"
+  GOOGLE_REDIRECT_URL: "https://api.brxstrng.com/auth/google/callback"

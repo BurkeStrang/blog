@@ -1,0 +1,110 @@
+name: Deploy to AKS
+
+on:
+  push:
+    branches: [master]
+
+env:
+  RESOURCE_GROUP: rg-blog-prod
+  CLUSTER_NAME: aks-blog-prod
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.changes.outputs.api }}
+      ui: ${{ steps.changes.outputs.ui }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: changes
+        run: |
+          git diff --name-only HEAD~1 HEAD
+          echo "api=$(git diff --name-only HEAD~1 HEAD | grep -q '^api/' && echo true || echo false)" >> $GITHUB_OUTPUT
+          echo "ui=$(git diff --name-only HEAD~1 HEAD | grep -q '^ui/' && echo true || echo false)" >> $GITHUB_OUTPUT
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ui == 'true'
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set shared env vars
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+          ACR_SERVER=$(az acr list --resource-group "$RESOURCE_GROUP" --query "[0].loginServer" -o tsv)
+          echo "ACR_SERVER=$ACR_SERVER" >> $GITHUB_ENV
+          az acr login --name "${ACR_SERVER%%.*}"
+
+      - name: Build and push API
+        if: needs.detect-changes.outputs.api == 'true'
+        run: |
+          docker build \
+            -t "$ACR_SERVER/blog-api:$SHORT_SHA" \
+            -t "$ACR_SERVER/blog-api:latest" \
+            api/
+          docker push "$ACR_SERVER/blog-api:$SHORT_SHA"
+          docker push "$ACR_SERVER/blog-api:latest"
+
+      - name: Build and push UI
+        if: needs.detect-changes.outputs.ui == 'true'
+        run: |
+          docker build \
+            --build-arg VITE_API_URL=https://api.brxstrng.com \
+            -t "$ACR_SERVER/blog-ui:$SHORT_SHA" \
+            -t "$ACR_SERVER/blog-ui:latest" \
+            ui/
+          docker push "$ACR_SERVER/blog-ui:$SHORT_SHA"
+          docker push "$ACR_SERVER/blog-ui:latest"
+
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "$CLUSTER_NAME" \
+            --overwrite-existing
+
+      - name: Apply manifests
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/api/deployment.yaml
+          kubectl apply -f k8s/api/service.yaml
+          kubectl apply -f k8s/ui/deployment.yaml
+          kubectl apply -f k8s/ui/service.yaml
+          kubectl apply -f k8s/ingress.yaml
+
+      - name: Sync secrets from Key Vault
+        run: |
+          VAULT_NAME=$(az keyvault list --resource-group "$RESOURCE_GROUP" --query "[0].name" -o tsv)
+          COSMOS_DB_KEY=$(az keyvault secret show --vault-name "$VAULT_NAME" --name cosmos-db-key --query value -o tsv)
+          GOOGLE_CLIENT_ID=$(az keyvault secret show --vault-name "$VAULT_NAME" --name google-client-id --query value -o tsv)
+          GOOGLE_CLIENT_SECRET=$(az keyvault secret show --vault-name "$VAULT_NAME" --name google-client-secret --query value -o tsv)
+          JWT_SECRET=$(az keyvault secret show --vault-name "$VAULT_NAME" --name jwt-secret --query value -o tsv)
+          kubectl create secret generic blog-secrets \
+            --namespace blog \
+            --from-literal=COSMOS_DB_KEY="$COSMOS_DB_KEY" \
+            --from-literal=GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
+            --from-literal=GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
+            --from-literal=JWT_SECRET="$JWT_SECRET" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Roll out API
+        if: needs.detect-changes.outputs.api == 'true'
+        run: |
+          kubectl set image deployment/blog-api blog-api="$ACR_SERVER/blog-api:$SHORT_SHA" -n blog
+          kubectl rollout status deployment/blog-api -n blog --timeout=120s
+
+      - name: Roll out UI
+        if: needs.detect-changes.outputs.ui == 'true'
+        run: |
+          kubectl set image deployment/blog-ui blog-ui="$ACR_SERVER/blog-ui:$SHORT_SHA" -n blog
+          kubectl rollout status deployment/blog-ui -n blog --timeout=120s

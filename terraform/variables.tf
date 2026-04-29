@@ -73,3 +73,21 @@ variable "jwt_secret" {
   sensitive   = true
   default     = ""
 }
+
+variable "aks_system_vm_size" {
+  description = "VM size for AKS system node pool"
+  type        = string
+  default     = "Standard_D2s_v3"
+}
+
+variable "aks_api_vm_size" {
+  description = "VM size for AKS API node pool"
+  type        = string
+  default     = "Standard_B2s"
+}
+
+variable "aks_ui_vm_size" {
+  description = "VM size for AKS UI node pool"
+  type        = string
+  default     = "Standard_B2s"
+}

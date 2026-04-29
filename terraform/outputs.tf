@@ -45,27 +45,6 @@ output "acr_name" {
   value       = azurerm_container_registry.blog.name
 }
 
-# Container Apps URLs
-output "api_url" {
-  description = "API Container App URL"
-  value       = "https://${azurerm_container_app.api.ingress[0].fqdn}"
-}
-
-output "ui_url" {
-  description = "UI Container App URL"
-  value       = "https://${azurerm_container_app.ui.ingress[0].fqdn}"
-}
-
-output "api_fqdn" {
-  description = "API Container App FQDN"
-  value       = azurerm_container_app.api.ingress[0].fqdn
-}
-
-output "ui_fqdn" {
-  description = "UI Container App FQDN"
-  value       = azurerm_container_app.ui.ingress[0].fqdn
-}
-
 # Key Vault outputs
 output "key_vault_name" {
   description = "Key Vault name"
@@ -77,23 +56,17 @@ output "key_vault_uri" {
   value       = azurerm_key_vault.blog.vault_uri
 }
 
-output "api_managed_identity_principal_id" {
-  description = "API Container App Managed Identity Principal ID"
-  value       = azurerm_container_app.api.identity[0].principal_id
+output "aks_cluster_name" {
+  description = "AKS cluster name"
+  value       = azurerm_kubernetes_cluster.blog.name
 }
 
-# Custom Domain Information
-output "custom_domain_verification_id" {
-  description = "Custom domain verification ID for Container Apps"
-  value       = azurerm_container_app_environment.blog.custom_domain_verification_id
+output "aks_resource_group" {
+  description = "AKS resource group"
+  value       = azurerm_kubernetes_cluster.blog.resource_group_name
 }
 
-output "api_custom_domain" {
-  description = "API custom domain"
-  value       = "api.brxstrng.com"
-}
-
-output "ui_custom_domain" {
-  description = "UI custom domain"
-  value       = "brxstrng.com"
+output "aks_kubelet_identity" {
+  description = "AKS kubelet managed identity object ID"
+  value       = azurerm_kubernetes_cluster.blog.kubelet_identity[0].object_id
 }
