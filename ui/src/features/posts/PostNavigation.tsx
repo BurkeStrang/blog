@@ -1,6 +1,6 @@
 import { useMemo, useRef, useEffect, useState } from "react";
 import { useFrame, useThree, ThreeEvent } from "@react-three/fiber";
-import { BufferGeometry, Vector3, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, SphereGeometry, Material, AdditiveBlending, BackSide, Object3D } from "three";
+import { BufferGeometry, Vector3, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, SphereGeometry, CircleGeometry, Material, AdditiveBlending, BackSide, Object3D } from "three";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 import type { Font } from "three/examples/jsm/loaders/FontLoader";
@@ -130,13 +130,23 @@ useEffect(() => {
     }),
     [isDark, colors.accentColor],
   );
+  const labelBackdropMat = useMemo(
+    () =>
+      new MeshBasicMaterial({
+        color: colors.sphereLabelBackdropColor,
+        transparent: true,
+        opacity: colors.sphereLabelBackdropOpacity,
+        toneMapped: false,
+      }),
+    [isDark],
+  );
   const greyOutlineMat = useMemo(
     () =>
       new MeshBasicMaterial({
-        color: colors.accentColor,
+        color: colors.sphereArrowBodyColor,
         blending: AdditiveBlending,
         transparent: true,
-        opacity: 0.35,
+        opacity: colors.sphereArrowBodyOpacity,
         toneMapped: false,
       }),
     [isDark],
@@ -144,7 +154,7 @@ useEffect(() => {
   const brightOutlineMat = useMemo(
     () =>
       new MeshBasicMaterial({
-        color: colors.accentColor,
+        color: colors.sphereArrowBodyColor,
         blending: AdditiveBlending,
         transparent: true,
         opacity: 0.7,
@@ -158,7 +168,7 @@ useEffect(() => {
         color: colors.sphereArrowAccentColor,
         blending: AdditiveBlending,
         transparent: true,
-        opacity: 1,
+        opacity: colors.sphereArrowAccentOpacity,
         toneMapped: false,
       }),
     [isDark],
@@ -175,7 +185,7 @@ useEffect(() => {
         maxRadius = Math.max(maxRadius, geom.boundingSphere!.radius);
       }
     });
-    const geo = new SphereGeometry(maxRadius * 0.7, 12, 12);
+    const geo = new SphereGeometry(maxRadius * 0.30, 14, 14);
     const mat = new MeshBasicMaterial({
       color: DARK_SCENE_THEME.sphereGlowColor,
       side: BackSide,
@@ -194,6 +204,7 @@ useEffect(() => {
     // glow shell
     const shell = new Mesh(glowShellGeo, glowShellMat);
     shell.renderOrder = 0;
+    shell.position.set(-1.6, 0.48, 1.58);
     group.add(shell);
 
     // sphere clone (reuse buffers)
@@ -295,6 +306,14 @@ useEffect(() => {
       sphereGroup.add(hitbox);
     };
 
+    // label backdrop disc (sits just behind the label text)
+    const backdropGeo = new CircleGeometry(.52, 36);
+    const backdrop = new Mesh(backdropGeo, labelBackdropMat);
+    backdrop.name = 'label-backdrop';
+    backdrop.position.set(-1.26, 0.29, 1.18);
+    backdrop.rotation.set(-0.4, -1.00, -0.95);
+    sphereGroup.add(backdrop);
+
     // label (no glow effect)
     addMesh(labelGeo, primarySolidMat, [-1.55, 0.2, 1], [-1.1, -1.05, -0.85], 1, 'label-solid');
 
@@ -369,6 +388,7 @@ useEffect(() => {
     leftGeo,
     rightGeo,
     primarySolidMat,
+    labelBackdropMat,
     greyOutlineMat,
     brightOutlineMat,
     showLeftArrow,

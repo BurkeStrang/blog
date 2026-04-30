@@ -56,7 +56,12 @@ export interface SceneTheme {
   sphereEnvMapIntensity: number;
   sphereGlowColor: number;
   sphereGlowOpacity: number;
+  sphereArrowBodyColor: number;
+  sphereArrowBodyOpacity: number;
   sphereArrowAccentColor: number;
+  sphereArrowAccentOpacity: number;
+  sphereLabelBackdropColor: number;
+  sphereLabelBackdropOpacity: number;
 }
 
 export const DARK_SCENE_THEME: SceneTheme = {
@@ -95,14 +100,19 @@ export const DARK_SCENE_THEME: SceneTheme = {
   cubeEnvMapIntensity: 0.9,
   cubeBackdropColor: 0x202020,
   cubeBackdropOpacity: 0.9,
-  accentColor: 0x00ffff,
+  accentColor: 0x00aaaa,
   sphereBodyColor: 0x6a8a6a,
   sphereMetalness: 0.9,
   sphereRoughness: 0.6,
   sphereEnvMapIntensity: 0.7,
-  sphereGlowColor: 0x3fcfd6,
+  sphereGlowColor: 0x000002,
   sphereGlowOpacity: 0.10,
-  sphereArrowAccentColor: 0x00ffff,
+  sphereArrowBodyColor: 0x00aaaa,
+  sphereArrowBodyOpacity: 0.35,
+  sphereArrowAccentColor: 0x00aaaa,
+  sphereArrowAccentOpacity: 1.0,
+  sphereLabelBackdropColor: 0x202020,
+  sphereLabelBackdropOpacity: 0.9,
 };
 
 export const LIGHT_SCENE_THEME: SceneTheme = {
@@ -145,10 +155,15 @@ export const LIGHT_SCENE_THEME: SceneTheme = {
   sphereBodyColor: 0xcfcfcf,
   sphereMetalness: 0.3,
   sphereRoughness: 0.3,
-  sphereEnvMapIntensity: 0,
-  sphereGlowColor: 0xaabbcc,
-  sphereGlowOpacity: 0.18,
+  sphereEnvMapIntensity: 0.8,
+  sphereGlowColor: 0x1a5a5a,
+  sphereGlowOpacity: 0.4,
+  sphereArrowBodyColor: 0x007a7a,
+  sphereArrowBodyOpacity: 0.35,
   sphereArrowAccentColor: 0x007755,
+  sphereArrowAccentOpacity: 1.0,
+  sphereLabelBackdropColor: 0x1a1a1a,
+  sphereLabelBackdropOpacity: 0.2,
 };
 
 export function getSceneTheme(isDark: boolean): SceneTheme {

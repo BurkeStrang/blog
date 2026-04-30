@@ -6,8 +6,8 @@ import { backgroundColor, darkgrey, neon, primary, secondary } from "./colors";
 export const GlobalStyle = createGlobalStyle`
   :root, [data-theme="dark"] {
     --color-bg: #010101;
-    --color-primary: #099;
-    --color-accent: #0aaaaa;
+    --color-primary: #088;
+    --color-accent: #099aaa;
     --color-lightgrey: #B0B3C6;
     --color-darkgrey: rgba(13, 155, 125, 0.4);
     --color-neon: #15aa14;
@@ -46,8 +46,8 @@ export const GlobalStyle = createGlobalStyle`
     --color-cube-bg-end: #444;
     --color-cube-accent: #0ff;
     --color-sidebar-bg: rgba(0, 0, 0, 0.35);
-    --color-sidebar-link: #099;
-    --color-sidebar-glow-near: #099;
+    --color-sidebar-link: #088;
+    --color-sidebar-glow-near: #088;
     --color-sidebar-glow-far: rgba(40, 0, 255, 0.18);
     --color-sidebar-hover-bg: rgba(255, 255, 255, 0.05);
     --color-sidebar-active-bg: rgba(0, 255, 255, 0.07);
