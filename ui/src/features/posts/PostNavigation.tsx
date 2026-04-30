@@ -185,7 +185,7 @@ useEffect(() => {
         maxRadius = Math.max(maxRadius, geom.boundingSphere!.radius);
       }
     });
-    const geo = new SphereGeometry(maxRadius * 0.30, 14, 14);
+    const geo = new SphereGeometry(maxRadius * 0.33, 14, 14);
     const mat = new MeshBasicMaterial({
       color: DARK_SCENE_THEME.sphereGlowColor,
       side: BackSide,
@@ -204,7 +204,7 @@ useEffect(() => {
     // glow shell
     const shell = new Mesh(glowShellGeo, glowShellMat);
     shell.renderOrder = 0;
-    shell.position.set(-1.6, 0.48, 1.58);
+    shell.position.set(-1.4, 0.38, 1.28);
     group.add(shell);
 
     // sphere clone (reuse buffers)
@@ -307,10 +307,10 @@ useEffect(() => {
     };
 
     // label backdrop disc (sits just behind the label text)
-    const backdropGeo = new CircleGeometry(.52, 36);
+    const backdropGeo = new CircleGeometry(.54, 36);
     const backdrop = new Mesh(backdropGeo, labelBackdropMat);
     backdrop.name = 'label-backdrop';
-    backdrop.position.set(-1.26, 0.29, 1.18);
+    backdrop.position.set(-1.26, 0.28, 1.18);
     backdrop.rotation.set(-0.4, -1.00, -0.95);
     sphereGroup.add(backdrop);
 
