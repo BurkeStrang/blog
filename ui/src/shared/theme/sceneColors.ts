@@ -76,8 +76,8 @@ export const DARK_SCENE_THEME: SceneTheme = {
   },
   clouds: {
     cloudCoverage: 0.4,
-    cloudDensity: 0.99,
-    cloudElevation: 0.9,
+    cloudDensity: 0.49,
+    cloudElevation: 0.4,
   },
   waterColor: 0x113a5c,
   sunColor: 0x110a6a,
