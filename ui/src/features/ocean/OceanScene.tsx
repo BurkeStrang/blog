@@ -852,6 +852,13 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
       shadows={false}
     >
       {/* Scene content */}
+      <OceanCamera
+        positions={offsetPositions}
+        lerpFactor={0.08}
+        stepSize={1}
+        scrollToIndex={scrollToIndex}
+        maxPositionIndex={maxPositionIndex}
+      />
       <ThemeSync isDark={isDark} />
       <ThemeSky isDark={isDark} />
       <ambientLight intensity={0.5} color={colors.ambientLightColor} />
@@ -954,13 +961,6 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         </group>
       )}
 
-      <OceanCamera
-        positions={offsetPositions}
-        lerpFactor={0.08}
-        stepSize={1}
-        scrollToIndex={scrollToIndex}
-        maxPositionIndex={maxPositionIndex}
-      />
     </Canvas>
   );
 };

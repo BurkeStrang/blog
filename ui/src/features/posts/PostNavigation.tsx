@@ -1,6 +1,6 @@
-import { useMemo, useRef, useEffect, useState } from "react";
+import { useMemo, useRef, useEffect, useLayoutEffect } from "react";
 import { useFrame, useThree, ThreeEvent } from "@react-three/fiber";
-import { BufferGeometry, Vector3, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, SphereGeometry, CircleGeometry, Material, AdditiveBlending, BackSide, Object3D } from "three";
+import { BufferGeometry, Vector3, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, SphereGeometry, CircleGeometry, PlaneGeometry, AdditiveBlending, BackSide, DoubleSide, Object3D } from "three";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 import type { Font } from "three/examples/jsm/loaders/FontLoader";
@@ -31,95 +31,44 @@ export default function FollowerSphere({
   showRightArrow = true,
   isDark = true,
 }: FollowerSphereProps) {
-  const groupRef = useRef<Group>(null);
+  const navGroupRef = useRef<Group>(null!);
+  const leftHoveredRef = useRef(false);
+  const rightHoveredRef = useRef(false);
+  const leftHoverT = useRef(0);
+  const rightHoverT = useRef(0);
   const { camera, gl } = useThree();
-  const [leftArrowHovered, setLeftArrowHovered] = useState(false);
-  const [rightArrowHovered, setRightArrowHovered] = useState(false);
-  const leftOutlineRef = useRef<Mesh | null>(null);
-  const rightOutlineRef = useRef<Mesh | null>(null);
   const colors = isDark ? DARK_SCENE_THEME : LIGHT_SCENE_THEME;
 
-  // 1) Pre-build TextGeometries
   const labelText = useMemo(() => {
-    const pad = (n: number) => String(n).padStart(2, '0');
-    if (totalPosts === 0) return '00-00';
+    const pad = (n: number) => String(n).padStart(2, "0");
+    if (totalPosts === 0) return "00-00";
     const startPost = totalPosts <= 10 ? 1 : (currentPage - 1) * 10 + 1;
     const endPost = Math.min(currentPage * 10, totalPosts);
     return `${pad(startPost)}-${pad(endPost)}`;
   }, [currentPage, totalPosts]);
 
-  // Cache TextGeometry instances to prevent recreation on every page change
-const labelGeo = useMemo(
-    () => {
-    // Create new TextGeometry for label
-      const geo = new TextGeometry(labelText, {
-        font,
-        size: 0.25,
-        depth: 0.08, // use `depth` not `height`
-      });
-      
-      // Register with asset disposal manager
-      if (typeof window !== 'undefined') {
-        const windowWithAssetManager = window as Window & { assetDisposalManager?: { registerAsset: (id: string, asset: BufferGeometry, priority: string) => void } };
-        if (windowWithAssetManager.assetDisposalManager) {
-          windowWithAssetManager.assetDisposalManager.registerAsset(
-            `nav-label-${labelText}`,
-            geo,
-            'low'
-          );
-        }
-      }
-      
-      return geo;
-    },
-  [font, labelText],
-);
-
-// Dispose previous label geometry when labelText changes to prevent memory leaks
-useEffect(() => {
-  return () => {
-    labelGeo.dispose();
-    if (typeof window !== 'undefined') {
-      const windowWithAssetManager = window as Window & { assetDisposalManager?: { unregisterAsset: (id: string) => void } };
-      windowWithAssetManager.assetDisposalManager?.unregisterAsset(`nav-label-${labelText}`);
+  const labelGeo = useMemo(() => {
+    const geo = new TextGeometry(labelText, { font, size: 0.25, depth: 0.08 });
+    if (typeof window !== "undefined") {
+      const w = window as Window & { assetDisposalManager?: { registerAsset: (id: string, asset: BufferGeometry, priority: string) => void } };
+      w.assetDisposalManager?.registerAsset(`nav-label-${labelText}`, geo, "low");
     }
-  };
-}, [labelGeo, labelText]);
-  const leftGeo = useMemo(
-    () => {
-      const geo = new TextGeometry("<", {
-        font,
-        size: 0.78,
-        depth: 0.25,
-      });
-      return geo;
-    },
-    [font],
-  );
-  const rightGeo = useMemo(
-    () => {
-      const geo = new TextGeometry(">", {
-        font,
-        size: 0.84,
-        depth: 0.25,
-      });
-      return geo;
-    },
-    [font],
-  );
+    return geo;
+  }, [font, labelText]);
 
-  // 2) Pre-build Materials
-  const primaryGlowMat = useMemo(
-    () =>
-      new MeshBasicMaterial({
-        color: colors.accentColor,
-        blending: AdditiveBlending,
-        transparent: true,
-        opacity: 0.3,
-        toneMapped: false,
-      }),
-    [isDark],
-  );
+  useEffect(() => {
+    return () => {
+      labelGeo.dispose();
+      if (typeof window !== "undefined") {
+        const w = window as Window & { assetDisposalManager?: { unregisterAsset: (id: string) => void } };
+        w.assetDisposalManager?.unregisterAsset(`nav-label-${labelText}`);
+      }
+    };
+  }, [labelGeo, labelText]);
+
+  const leftGeo = useMemo(() => new TextGeometry("<", { font, size: 0.78, depth: 0.25 }), [font]);
+  const rightGeo = useMemo(() => new TextGeometry(">", { font, size: 0.84, depth: 0.25 }), [font]);
+
   const primarySolidMat = useMemo(
     () => new MeshStandardMaterial({
       color: colors.accentColor,
@@ -131,51 +80,114 @@ useEffect(() => {
     [isDark, colors.accentColor],
   );
   const labelBackdropMat = useMemo(
-    () =>
-      new MeshBasicMaterial({
-        color: colors.sphereLabelBackdropColor,
-        transparent: true,
-        opacity: colors.sphereLabelBackdropOpacity,
-        toneMapped: false,
-      }),
+    () => new MeshBasicMaterial({
+      color: colors.sphereLabelBackdropColor,
+      transparent: true,
+      opacity: colors.sphereLabelBackdropOpacity,
+      toneMapped: false,
+    }),
     [isDark],
   );
+
+  // Pre-built Three.js mesh so it gets <primitive> treatment (same as sphereGroup),
+  // preventing any R3F reconciler timing difference from causing visual trailing.
+  const backdropMesh = useMemo(() => {
+    const geo = new CircleGeometry(0.50, 36);
+    const m = new Mesh(geo, labelBackdropMat);
+    m.name = "label-backdrop";
+    m.position.set(-1.25, 0.28, 1.18);
+    m.rotation.set(-0.1, -1.0, -0.85);
+    return m;
+  }, [labelBackdropMat]);
+
+  useEffect(() => {
+    return () => { backdropMesh.geometry.dispose(); };
+  }, [backdropMesh]);
+
   const greyOutlineMat = useMemo(
-    () =>
-      new MeshBasicMaterial({
-        color: colors.sphereArrowBodyColor,
-        blending: AdditiveBlending,
-        transparent: true,
-        opacity: colors.sphereArrowBodyOpacity,
-        toneMapped: false,
-      }),
-    [isDark],
-  );
-  const brightOutlineMat = useMemo(
-    () =>
-      new MeshBasicMaterial({
-        color: colors.sphereArrowBodyColor,
-        blending: AdditiveBlending,
-        transparent: true,
-        opacity: 0.7,
-        toneMapped: false,
-      }),
+    () => new MeshBasicMaterial({
+      color: colors.sphereArrowBodyColor,
+      blending: AdditiveBlending,
+      transparent: true,
+      opacity: colors.sphereArrowBodyOpacity,
+      toneMapped: false,
+    }),
     [isDark],
   );
   const greenOutlineMat = useMemo(
-    () =>
-      new MeshBasicMaterial({
-        color: colors.sphereArrowAccentColor,
-        blending: AdditiveBlending,
-        transparent: true,
-        opacity: colors.sphereArrowAccentOpacity,
-        toneMapped: false,
-      }),
+    () => new MeshBasicMaterial({
+      color: colors.sphereArrowAccentColor,
+      blending: AdditiveBlending,
+      transparent: true,
+      opacity: colors.sphereArrowAccentOpacity,
+      toneMapped: false,
+    }),
     [isDark],
   );
 
+  // Invisible hitbox planes — solid PlaneGeometry covers the gaps in TextGeometry strokes
+  // so clicks register anywhere in the arrow's visual bounds, not just on the letter strokes.
+  const hitboxMat = useMemo(() => new MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, side: DoubleSide }), []);
+  const leftArrowHitMesh = useMemo(() => {
+    const m = new Mesh(new PlaneGeometry(1.5, 1.5), hitboxMat);
+    m.name = "leftArrow";
+    m.position.set(-1.4, -0.27, -1.29);
+    m.rotation.set(-1.43, -1.17, -1.22);
+    return m;
+  }, [hitboxMat]);
+  const rightArrowHitMesh = useMemo(() => {
+    const m = new Mesh(new PlaneGeometry(1.5, 1.5), hitboxMat);
+    m.name = "rightArrow";
+    m.position.set(1.9, 0.1, 0.5);
+    m.rotation.set(1.43, 1.27, 1.42);
+    return m;
+  }, [hitboxMat]);
 
-  // 3) Compute glow-shell geometry & material  
+  // Pre-built overlay meshes — <primitive> so R3F only checks object identity on re-render,
+  // avoiding the per-prop .set() calls that JSX <mesh> triggers on every hover state change.
+  const labelMesh = useMemo(() => {
+    const m = new Mesh(labelGeo, primarySolidMat);
+    m.name = "label-solid";
+    m.position.set(-1.55, 0.2, 1);
+    m.rotation.set(-1.1, -1.05, -0.85);
+    return m;
+  }, [labelGeo, primarySolidMat]);
+
+  const leftArrowOutlineMesh = useMemo(() => {
+    const m = new Mesh(leftGeo, greenOutlineMat);
+    m.name = "leftArrow-outline";
+    m.position.set(-1.4, -0.27, -1.29);
+    m.rotation.set(-1.43, -1.17, -1.22);
+    m.visible = false;
+    return m;
+  }, [leftGeo, greenOutlineMat]);
+
+  const leftArrowMesh = useMemo(() => {
+    const m = new Mesh(leftGeo, greyOutlineMat);
+    m.name = "leftArrow";
+    m.position.set(-1.4, -0.27, -1.29);
+    m.rotation.set(-1.43, -1.17, -1.22);
+    return m;
+  }, [leftGeo, greyOutlineMat]);
+
+  const rightArrowOutlineMesh = useMemo(() => {
+    const m = new Mesh(rightGeo, greenOutlineMat);
+    m.name = "rightArrow-outline";
+    m.position.set(1.9, 0.1, 0.5);
+    m.rotation.set(1.43, 1.27, 1.42);
+    m.visible = false;
+    return m;
+  }, [rightGeo, greenOutlineMat]);
+
+  const rightArrowMesh = useMemo(() => {
+    const m = new Mesh(rightGeo, greyOutlineMat);
+    m.name = "rightArrow";
+    m.position.set(1.9, 0.1, 0.5);
+    m.rotation.set(1.43, 1.27, 1.42);
+    m.scale.set(1.1, 1.1, 1.1);
+    return m;
+  }, [rightGeo, greyOutlineMat]);
+
   const [glowShellGeo, glowShellMat] = useMemo(() => {
     let maxRadius = 0;
     sphereModel.scene.traverse((child) => {
@@ -185,7 +197,7 @@ useEffect(() => {
         maxRadius = Math.max(maxRadius, geom.boundingSphere!.radius);
       }
     });
-    const geo = new SphereGeometry(maxRadius * 0.33, 14, 14);
+    const geo = new SphereGeometry(maxRadius * 0.32, 14, 14);
     const mat = new MeshBasicMaterial({
       color: DARK_SCENE_THEME.sphereGlowColor,
       side: BackSide,
@@ -197,17 +209,14 @@ useEffect(() => {
     return [geo, mat] as const;
   }, [sphereModel]);
 
-  // 4) Create stable sphere group (only sphere and glow shell)
   const sphereGroup = useMemo(() => {
     const group = new Group();
 
-    // glow shell
     const shell = new Mesh(glowShellGeo, glowShellMat);
     shell.renderOrder = 0;
-    shell.position.set(-1.4, 0.38, 1.28);
+    shell.position.set(-1.31, 0.33, 1.24);
     group.add(shell);
 
-    // sphere clone (reuse buffers)
     const sphereClone = sphereModel.scene.clone(true);
     sphereClone.traverse((child) => {
       if (child instanceof Mesh) {
@@ -230,7 +239,47 @@ useEffect(() => {
     return group;
   }, [sphereModel, glowShellGeo, glowShellMat]);
 
-  // 4b) Update sphere body and glow shell reactively when theme changes
+  // Stable container — [] deps means R3F mounts this once and never remounts it.
+  // Children are managed imperatively via useLayoutEffect (fires before next RAF).
+  const navGroup = useMemo(() => {
+    const group = new Group();
+    group.scale.set(3, 3, 3);
+    navGroupRef.current = group;
+    return group;
+  }, []);
+
+  useLayoutEffect(() => {
+    navGroupRef.current.add(sphereGroup);
+    return () => { navGroupRef.current.remove(sphereGroup); };
+  }, [sphereGroup]);
+
+  useLayoutEffect(() => {
+    navGroupRef.current.add(backdropMesh);
+    return () => { navGroupRef.current.remove(backdropMesh); };
+  }, [backdropMesh]);
+
+  useLayoutEffect(() => {
+    navGroupRef.current.add(labelMesh);
+    return () => { navGroupRef.current.remove(labelMesh); };
+  }, [labelMesh]);
+
+  useLayoutEffect(() => {
+    leftArrowMesh.visible = showLeftArrow;
+    leftArrowHitMesh.visible = showLeftArrow;
+    leftArrowOutlineMesh.visible = false;
+    navGroupRef.current.add(leftArrowMesh, leftArrowOutlineMesh, leftArrowHitMesh);
+    return () => { navGroupRef.current.remove(leftArrowMesh, leftArrowOutlineMesh, leftArrowHitMesh); };
+  }, [leftArrowMesh, leftArrowOutlineMesh, leftArrowHitMesh, showLeftArrow]);
+
+  useLayoutEffect(() => {
+    rightArrowMesh.visible = showRightArrow;
+    rightArrowHitMesh.visible = showRightArrow;
+    rightArrowOutlineMesh.visible = false;
+    navGroupRef.current.add(rightArrowMesh, rightArrowOutlineMesh, rightArrowHitMesh);
+    return () => { navGroupRef.current.remove(rightArrowMesh, rightArrowOutlineMesh, rightArrowHitMesh); };
+  }, [rightArrowMesh, rightArrowOutlineMesh, rightArrowHitMesh, showRightArrow]);
+
+  // Update sphere materials reactively when theme changes
   useEffect(() => {
     glowShellMat.color.setHex(colors.sphereGlowColor);
     glowShellMat.opacity = colors.sphereGlowOpacity;
@@ -239,7 +288,7 @@ useEffect(() => {
       const mesh = child as Mesh;
       if (!mesh.isMesh) return;
       const mat = mesh.material as MeshStandardMaterial;
-      if (mat && mat.isMeshStandardMaterial) {
+      if (mat?.isMeshStandardMaterial) {
         mat.map = null;
         mat.metalnessMap = null;
         mat.roughnessMap = null;
@@ -253,259 +302,93 @@ useEffect(() => {
     });
   }, [isDark, sphereGroup, glowShellMat]);
 
-  // 5) Update text elements dynamically
-  useEffect(() => {
-    // Remove existing text meshes
-    const textMeshesToRemove = sphereGroup.children.filter(child =>
-      child instanceof Mesh &&
-      (child.geometry instanceof TextGeometry || child.name?.includes('Arrow') || child.name?.includes('label') || child.name?.includes('hitbox'))
-    );
-    textMeshesToRemove.forEach(mesh => {
-      sphereGroup.remove(mesh);
-      if (mesh instanceof Mesh) {
-        if (mesh.geometry) mesh.geometry.dispose();
-        if (mesh.material && !Array.isArray(mesh.material)) mesh.material.dispose();
-      }
-    });
-
-    // helper to add text/arrow meshes
-    const addMesh = (
-      geo: TextGeometry,
-      mat: Material,
-      pos: [number, number, number],
-      rot: [number, number, number],
-      scale: number = 1,
-      name?: string,
-      visible: boolean = true,
-    ) => {
-      const mesh = new Mesh(geo, mat);
-      if (name) mesh.name = name;
-      mesh.position.set(...pos);
-      mesh.rotation.set(...rot);
-      mesh.scale.set(scale, scale, scale);
-      mesh.visible = visible;
-      sphereGroup.add(mesh);
-      return mesh;
-    };
-
-    // helper to add invisible hitbox for larger click area
-    const addHitbox = (
-      pos: [number, number, number],
-      size: number,
-      name: string,
-    ) => {
-      const hitboxGeo = new SphereGeometry(size, 8, 8);
-      const hitboxMat = new MeshBasicMaterial({
-        transparent: true,
-        opacity: 0,
-        visible: false, // Invisible but still captures pointer events
-      });
-      const hitbox = new Mesh(hitboxGeo, hitboxMat);
-      hitbox.name = name;
-      hitbox.position.set(...pos);
-      sphereGroup.add(hitbox);
-    };
-
-    // label backdrop disc (sits just behind the label text)
-    const backdropGeo = new CircleGeometry(.54, 36);
-    const backdrop = new Mesh(backdropGeo, labelBackdropMat);
-    backdrop.name = 'label-backdrop';
-    backdrop.position.set(-1.26, 0.28, 1.18);
-    backdrop.rotation.set(-0.4, -1.00, -0.95);
-    sphereGroup.add(backdrop);
-
-    // label (no glow effect)
-    addMesh(labelGeo, primarySolidMat, [-1.55, 0.2, 1], [-1.1, -1.05, -0.85], 1, 'label-solid');
-
-    // left arrow + outline (conditional)
-    if (showLeftArrow) {
-      // Primary color outline (store in ref, initially hidden)
-      // addMesh(
-      //   leftGeo,
-      //   brightOutlineMat,
-      //   [-1.4, -0.27, -1.29],
-      //   [-1.43, -1.17, -1.22],
-      //   1.1,
-      //   "leftArrow-outline",
-      // );
-
-      addMesh(
-        leftGeo,
-        greenOutlineMat,
-        [-1.4, -0.27, -1.29],
-        [-1.43, -1.17, -1.22],
-        1.0,
-        "leftArrow-outline-nohover",
-      );
-      // Main arrow
-      addMesh(
-        leftGeo,
-        greyOutlineMat,
-        [-1.4, -0.27, -1.29],
-        [-1.43, -1.17, -1.22],
-        1.0,
-        "leftArrow",
-      );
-      // Add larger invisible hitbox for easier clicking
-      addHitbox([-1.5, -0.27, -1.59], 1.5, "leftArrow-hitbox");
-    }
-
-    // right arrow + outline (conditional)
-    if (showRightArrow) {
-      // Primary color outline (store in ref, initially hidden)
-      // addMesh(
-      //   rightGeo,
-      //   brightOutlineMat,
-      //   [1.8, 0.1, 0.5],
-      //   [1.43, 1.37, 1.42],
-      //   1.0,
-      //   "rightArrow",
-      // );
-
-      addMesh(
-        rightGeo,
-        greenOutlineMat,
-        [1.9, 0.1, 0.5],
-        [1.43, 1.27, 1.42],
-        1.0,
-        "rightArrow",
-      );
-      // Main arrow
-      addMesh(
-        rightGeo,
-        greyOutlineMat,
-        [1.9, 0.1, 0.5],
-        [1.43, 1.27, 1.42],
-        1.1,
-        "rightArrow",
-      );
-      // Add larger invisible hitbox for easier clicking
-      addHitbox([1.9, 0.1, 0.5], 1.5, "rightArrow-hitbox");
-    }
-  }, [
-    sphereGroup,
-    labelGeo,
-    leftGeo,
-    rightGeo,
-    primarySolidMat,
-    labelBackdropMat,
-    greyOutlineMat,
-    brightOutlineMat,
-    showLeftArrow,
-    showRightArrow,
-  ]);
-
-  // Update outline visibility based on hover state
-  useEffect(() => {
-    if (leftOutlineRef.current) {
-      leftOutlineRef.current.visible = leftArrowHovered;
-    }
-  }, [leftArrowHovered]);
-
-  useEffect(() => {
-    if (rightOutlineRef.current) {
-      rightOutlineRef.current.visible = rightArrowHovered;
-    }
-  }, [rightArrowHovered]);
-
-  // follow camera
   useFrame(() => {
-    if (groupRef.current) {
-      const camPos = camera.position.clone().add(new Vector3(...offset));
-      // Move sphere slightly to the right
-      camPos.x += 1.5;
-      groupRef.current.position.copy(camPos);
-    }
+    const camPos = camera.position.clone().add(new Vector3(...offset));
+    camPos.x += 1.5;
+    navGroupRef.current.position.copy(camPos);
+
+    // Lerp hover progress (0 → 1 on hover, 1 → 0 on leave)
+    leftHoverT.current += ((leftHoveredRef.current ? 1 : 0) - leftHoverT.current) * 0.12;
+    rightHoverT.current += ((rightHoveredRef.current ? 1 : 0) - rightHoverT.current) * 0.12;
+
+    // Scale arrows up on hover
+    const ls = 1 + 0.35 * leftHoverT.current;
+    leftArrowMesh.scale.setScalar(ls);
+    leftArrowOutlineMesh.scale.setScalar(ls);
+    leftArrowHitMesh.scale.setScalar(ls);
+
+    const rs = 1.1 + 0.35 * rightHoverT.current;
+    rightArrowMesh.scale.setScalar(rs);
+    rightArrowOutlineMesh.scale.setScalar(rs);
+    rightArrowHitMesh.scale.setScalar(rs);
   });
 
-  // pointer events
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     const name = e.object.name;
-    if (name === "leftArrow" || name === "leftArrow-hitbox") {
-      onLeftClick?.();
-    }
-    if (name === "rightArrow" || name === "rightArrow-hitbox") {
-      onRightClick?.();
-    }
+    if (name === "leftArrow" || name === "leftArrow-outline") onLeftClick?.();
+    if (name === "rightArrow" || name === "rightArrow-outline") onRightClick?.();
   };
   const handlePointerOver = (e: ThreeEvent<PointerEvent>) => {
     const name = e.object.name;
-    if (name === "leftArrow" || name === "leftArrow-hitbox") {
-      setLeftArrowHovered(true);
-      if (gl.domElement) {
-        gl.domElement.style.setProperty('cursor', 'pointer');
-      }
+    if (name === "leftArrow" || name === "leftArrow-outline") {
+      leftHoveredRef.current = true;
+      const obj = navGroupRef.current.getObjectByName("leftArrow-outline");
+      if (obj) obj.visible = true;
+      gl.domElement?.style.setProperty("cursor", "pointer");
     }
-    if (name === "rightArrow" || name === "rightArrow-hitbox") {
-      setRightArrowHovered(true);
-      if (gl.domElement) {
-        gl.domElement.style.setProperty('cursor', 'pointer');
-      }
+    if (name === "rightArrow" || name === "rightArrow-outline") {
+      rightHoveredRef.current = true;
+      const obj = navGroupRef.current.getObjectByName("rightArrow-outline");
+      if (obj) obj.visible = true;
+      gl.domElement?.style.setProperty("cursor", "pointer");
     }
   };
   const handlePointerOut = (e: ThreeEvent<PointerEvent>) => {
     const name = e.object.name;
-    if (name === "leftArrow" || name === "leftArrow-hitbox") {
-      setLeftArrowHovered(false);
-      if (gl.domElement) {
-        gl.domElement.style.setProperty('cursor', 'auto');
-      }
+    if (name === "leftArrow" || name === "leftArrow-outline") {
+      leftHoveredRef.current = false;
+      const obj = navGroupRef.current.getObjectByName("leftArrow-outline");
+      if (obj) obj.visible = false;
+      gl.domElement?.style.setProperty("cursor", "auto");
     }
-    if (name === "rightArrow" || name === "rightArrow-hitbox") {
-      setRightArrowHovered(false);
-      if (gl.domElement) {
-        gl.domElement.style.setProperty('cursor', 'auto');
-      }
+    if (name === "rightArrow" || name === "rightArrow-outline") {
+      rightHoveredRef.current = false;
+      const obj = navGroupRef.current.getObjectByName("rightArrow-outline");
+      if (obj) obj.visible = false;
+      gl.domElement?.style.setProperty("cursor", "auto");
     }
   };
 
-  // cleanup on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      // Unregister geometries from asset disposal manager
-      if (typeof window !== 'undefined') {
-        const windowWithAssetManager = window as Window & { assetDisposalManager?: { unregisterAsset: (id: string) => void } };
-        if (windowWithAssetManager.assetDisposalManager) {
-          windowWithAssetManager.assetDisposalManager.unregisterAsset(`nav-label-${labelText}`);
-        }
+      if (typeof window !== "undefined") {
+        const w = window as Window & { assetDisposalManager?: { unregisterAsset: (id: string) => void } };
+        w.assetDisposalManager?.unregisterAsset(`nav-label-${labelText}`);
       }
-      
       labelGeo.dispose();
       leftGeo.dispose();
       rightGeo.dispose();
       glowShellGeo.dispose();
-      primaryGlowMat.dispose();
+      leftArrowHitMesh.geometry.dispose();
+      rightArrowHitMesh.geometry.dispose();
       primarySolidMat.dispose();
+      labelBackdropMat.dispose();
       greyOutlineMat.dispose();
+      greenOutlineMat.dispose();
       glowShellMat.dispose();
-      
-      // Reset cursor on unmount to prevent stuck cursor states
-      if (gl.domElement) {
-        gl.domElement.style.setProperty('cursor', 'auto');
-      }
+      hitboxMat.dispose();
+      gl.domElement?.style.setProperty("cursor", "auto");
     };
-  }, [
-    labelGeo,
-    leftGeo,
-    rightGeo,
-    glowShellGeo,
-    primaryGlowMat,
-    primarySolidMat,
-    greyOutlineMat,
-    glowShellMat,
-    labelText,
-    gl.domElement,
-  ]);
+  }, [labelGeo, leftGeo, rightGeo, glowShellGeo, leftArrowHitMesh, rightArrowHitMesh, primarySolidMat, labelBackdropMat, greyOutlineMat, greenOutlineMat, glowShellMat, hitboxMat, labelText, gl.domElement]);
 
   return (
-    <group ref={groupRef} scale={[3, 3, 3]}>
-      <primitive 
-        object={sphereGroup}
-        onPointerDown={handlePointerDown}
-        onPointerOver={handlePointerOver}
-        onPointerOut={handlePointerOut}
-      />
-    </group>
+    <primitive
+      object={navGroup}
+      onPointerDown={handlePointerDown}
+      onPointerOver={handlePointerOver}
+      onPointerOut={handlePointerOut}
+    />
   );
 }
