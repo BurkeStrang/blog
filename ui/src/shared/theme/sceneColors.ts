@@ -99,7 +99,7 @@ export const DARK_SCENE_THEME: SceneTheme = {
   sphereBodyColor: 0x6a8a6a,
   sphereMetalness: 0.7,
   sphereRoughness: 0.6,
-  sphereEnvMapIntensity: 0.8,
+  sphereEnvMapIntensity: 0.7,
   sphereGlowColor: 0x3fcfd6,
   sphereGlowOpacity: 0.10,
   sphereArrowAccentColor: 0x00ffff,
