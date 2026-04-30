@@ -3,6 +3,7 @@ name: Deploy to AKS
 on:
   push:
     branches: [master]
+    tags: ["v*"]
 
 env:
   RESOURCE_GROUP: rg-blog-prod
@@ -40,6 +41,13 @@ jobs:
       - name: Set shared env vars
         run: |
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+          # Use the semver tag as the image tag when deploying from a tag push;
+          # fall back to the short commit SHA for branch-based deploys.
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "IMAGE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          else
+            echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+          fi
           ACR_SERVER=$(az acr list --resource-group "$RESOURCE_GROUP" --query "[0].loginServer" -o tsv)
           echo "ACR_SERVER=$ACR_SERVER" >> $GITHUB_ENV
           az acr login --name "${ACR_SERVER%%.*}"
@@ -48,10 +56,10 @@ jobs:
         if: needs.detect-changes.outputs.api == 'true'
         run: |
           docker build \
-            -t "$ACR_SERVER/blog-api:$SHORT_SHA" \
+            -t "$ACR_SERVER/blog-api:$IMAGE_TAG" \
             -t "$ACR_SERVER/blog-api:latest" \
             api/
-          docker push "$ACR_SERVER/blog-api:$SHORT_SHA"
+          docker push "$ACR_SERVER/blog-api:$IMAGE_TAG"
           docker push "$ACR_SERVER/blog-api:latest"
 
       - name: Build and push UI
@@ -59,10 +67,10 @@ jobs:
         run: |
           docker build \
             --build-arg VITE_API_URL=https://api.brxstrng.com \
-            -t "$ACR_SERVER/blog-ui:$SHORT_SHA" \
+            -t "$ACR_SERVER/blog-ui:$IMAGE_TAG" \
             -t "$ACR_SERVER/blog-ui:latest" \
             ui/
-          docker push "$ACR_SERVER/blog-ui:$SHORT_SHA"
+          docker push "$ACR_SERVER/blog-ui:$IMAGE_TAG"
           docker push "$ACR_SERVER/blog-ui:latest"
 
       - name: Get AKS credentials
@@ -100,11 +108,11 @@ jobs:
       - name: Roll out API
         if: needs.detect-changes.outputs.api == 'true'
         run: |
-          kubectl set image deployment/blog-api blog-api="$ACR_SERVER/blog-api:$SHORT_SHA" -n blog
+          kubectl set image deployment/blog-api blog-api="$ACR_SERVER/blog-api:$IMAGE_TAG" -n blog
           kubectl rollout status deployment/blog-api -n blog --timeout=120s
 
       - name: Roll out UI
         if: needs.detect-changes.outputs.ui == 'true'
         run: |
-          kubectl set image deployment/blog-ui blog-ui="$ACR_SERVER/blog-ui:$SHORT_SHA" -n blog
+          kubectl set image deployment/blog-ui blog-ui="$ACR_SERVER/blog-ui:$IMAGE_TAG" -n blog
           kubectl rollout status deployment/blog-ui -n blog --timeout=120s
