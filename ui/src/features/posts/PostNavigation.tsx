@@ -95,7 +95,7 @@ export default function FollowerSphere({
     const geo = new CircleGeometry(0.50, 36);
     const m = new Mesh(geo, labelBackdropMat);
     m.name = "label-backdrop";
-    m.position.set(-1.25, 0.28, 1.18);
+    m.position.set(-1.24, 0.28, 1.18);
     m.rotation.set(-0.1, -1.0, -0.85);
     return m;
   }, [labelBackdropMat]);
@@ -197,7 +197,7 @@ export default function FollowerSphere({
         maxRadius = Math.max(maxRadius, geom.boundingSphere!.radius);
       }
     });
-    const geo = new SphereGeometry(maxRadius * 0.32, 14, 14);
+    const geo = new SphereGeometry(maxRadius * 0.33, 14, 14);
     const mat = new MeshBasicMaterial({
       color: DARK_SCENE_THEME.sphereGlowColor,
       side: BackSide,
