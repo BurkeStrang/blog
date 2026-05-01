@@ -193,10 +193,13 @@ func (r *RedisCache) ValidateAndCleanCache() map[string]interface{} {
 // Falls back to the existing in-memory caches if the connection fails.
 func InitRedisCache(addr string) {
 	client := redis.NewClient(&redis.Options{
-		Addr:         addr,
-		DialTimeout:  2 * time.Second,
-		ReadTimeout:  2 * time.Second,
-		WriteTimeout: 2 * time.Second,
+		Addr:                addr,
+		DialTimeout:         2 * time.Second,
+		ReadTimeout:         2 * time.Second,
+		WriteTimeout:        2 * time.Second,
+		MinIdleConns:        1,               // keep one persistent connection so health checks don't open/close every 3s
+		PoolSize:            5,               // blog traffic doesn't need a large pool
+		ConnMaxIdleTime:     5 * time.Minute,
 	})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
