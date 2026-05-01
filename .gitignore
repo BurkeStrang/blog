@@ -418,6 +418,13 @@ FodyWeavers.xsd
 /build/
 /out/
 
+# CMake build output (customredis)
+customredis/build/
+
+# Vite / frontend build output
+ui/dist/
+ui/.vite/
+
 # Vendor directory (if using Go modules and not vendoring dependencies)
 vendor/
 

@@ -685,6 +685,7 @@ interface PostDetailProps {
   user?: User | null;
   onLogin?: (user: User, token: string) => void;
   onPostsChange?: () => Promise<void>;
+  onCommentCountChange?: (postId: number, count: number) => void;
 }
 
 const PostDetailComponent = function PostDetail({
@@ -693,6 +694,7 @@ const PostDetailComponent = function PostDetail({
   user,
   onLogin,
   onPostsChange,
+  onCommentCountChange,
 }: PostDetailProps) {
   const { slug } = useParams<{ slug: string }>();
   const { trackPostView } = useSearch();
@@ -949,10 +951,13 @@ const PostDetailComponent = function PostDetail({
     setCommentsExpanded((prev) => !prev);
   }, []);
 
-  // Called once when comments finish loading — use actual count from DB
+  // Called when comments finish loading — sync count into local state and parent allPosts
   const handleCommentsLoad = React.useCallback((total: number) => {
     setLocalCommentCount(total);
-  }, []);
+    if (post?.id !== undefined && total !== post.commentCount) {
+      onCommentCountChange?.(post.id, total);
+    }
+  }, [post?.id, post?.commentCount, onCommentCountChange]);
 
   // Get the display comment count (local override or original)
   const displayCommentCount = localCommentCount ?? post?.commentCount ?? 0;

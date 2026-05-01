@@ -3,18 +3,21 @@ set -euo pipefail
 
 DEPLOY_API=false
 DEPLOY_UI=false
+DEPLOY_REDIS=false
 
 if [ $# -eq 0 ]; then
   DEPLOY_API=true
   DEPLOY_UI=true
+  DEPLOY_REDIS=true
 else
   for arg in "$@"; do
     case $arg in
-      api) DEPLOY_API=true ;;
-      ui)  DEPLOY_UI=true ;;
+      api)         DEPLOY_API=true ;;
+      ui)          DEPLOY_UI=true ;;
+      customredis) DEPLOY_REDIS=true ;;
       *)
-        echo "Usage: ./deploy.sh [api] [ui]"
-        echo "  No arguments: deploy both"
+        echo "Usage: ./deploy.sh [api] [ui] [customredis]"
+        echo "  No arguments: deploy all"
         exit 1
         ;;
     esac
@@ -55,6 +58,17 @@ if [ "$DEPLOY_UI" = true ]; then
   docker push "${ACR_SERVER}/blog-ui:latest"
 fi
 
+if [ "$DEPLOY_REDIS" = true ]; then
+  echo ""
+  echo "Building and pushing customredis..."
+  docker build \
+    -t "${ACR_SERVER}/blog-customredis:${GIT_SHA}" \
+    -t "${ACR_SERVER}/blog-customredis:latest" \
+    customredis/
+  docker push "${ACR_SERVER}/blog-customredis:${GIT_SHA}"
+  docker push "${ACR_SERVER}/blog-customredis:latest"
+fi
+
 echo ""
 echo "Getting AKS credentials..."
 az aks get-credentials --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME" --overwrite-existing
@@ -62,6 +76,8 @@ az aks get-credentials --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME"
 echo "Ensuring namespace, config, and manifests exist..."
 kubectl apply -f k8s/namespace.yaml
 kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/customredis/deployment.yaml
+kubectl apply -f k8s/customredis/service.yaml
 kubectl apply -f k8s/api/deployment.yaml
 kubectl apply -f k8s/api/service.yaml
 kubectl apply -f k8s/ui/deployment.yaml
@@ -81,6 +97,13 @@ kubectl create secret generic blog-secrets \
   --from-literal=GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
   --from-literal=JWT_SECRET="$JWT_SECRET" \
   --dry-run=client -o yaml | kubectl apply -f -
+
+if [ "$DEPLOY_REDIS" = true ]; then
+  echo ""
+  echo "Deploying customredis (${GIT_SHA})..."
+  kubectl set image deployment/blog-customredis blog-customredis="${ACR_SERVER}/blog-customredis:${GIT_SHA}" -n blog
+  kubectl rollout status deployment/blog-customredis -n blog --timeout=120s
+fi
 
 if [ "$DEPLOY_API" = true ]; then
   echo ""

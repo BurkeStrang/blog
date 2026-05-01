@@ -46,6 +46,11 @@ spec:
                 configMapKeyRef:
                   name: blog-config
                   key: GOOGLE_REDIRECT_URL
+            - name: REDIS_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: blog-config
+                  key: REDIS_ADDR
             - name: COSMOS_DB_KEY
               valueFrom:
                 secretKeyRef:

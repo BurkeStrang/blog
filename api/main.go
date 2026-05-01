@@ -22,6 +22,13 @@ func main() {
 	}
 	defer database.CloseCosmos()
 
+	// Connect to customredis (falls back to in-memory if unavailable)
+	redisAddr := os.Getenv("REDIS_ADDR")
+	if redisAddr == "" {
+		redisAddr = "localhost:6379"
+	}
+	middleware.InitRedisCache(redisAddr)
+
 	r := gin.Default()
 
 	// Security and validation middleware

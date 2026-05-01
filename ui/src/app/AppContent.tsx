@@ -83,6 +83,13 @@ const AppContent: React.FC = memo(() => {
     }
   }, [setAllPosts, refetchPosts]);
 
+  // Surgically update a single post's comment count without a full refetch
+  const updatePostCommentCount = useCallback((postId: number, count: number) => {
+    setAllPosts(
+      searchPosts.map((p) => (p.id === postId ? { ...p, commentCount: count } : p))
+    );
+  }, [setAllPosts, searchPosts]);
+
   // Create a Set of visible post slugs for efficient lookup - memoized more efficiently
   const visiblePostSlugs = useMemo(() => {
     return new Set(filteredPosts.map((post) => post.slug));
@@ -553,6 +560,7 @@ const AppContent: React.FC = memo(() => {
                   user={user}
                   onLogin={handleLogin}
                   onPostsChange={refreshPostsImmediate}
+                  onCommentCountChange={updatePostCommentCount}
                 />
               }
             />

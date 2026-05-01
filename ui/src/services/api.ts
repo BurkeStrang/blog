@@ -360,8 +360,9 @@ class ApiService {
         cache: 'none'
       });
 
-      // Invalidate comments cache
+      // Invalidate comments and posts caches so comment counts are fresh
       cacheInvalidation.invalidateByType('analytics');
+      cacheInvalidation.invalidatePostCaches();
 
       return result;
     } catch (error) {

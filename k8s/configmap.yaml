@@ -8,3 +8,4 @@ data:
   COSMOS_DB_DATABASE_NAME: "blog"
   FRONTEND_URL: "https://brxstrng.com"
   GOOGLE_REDIRECT_URL: "https://api.brxstrng.com/auth/google/callback"
+  REDIS_ADDR: "blog-customredis:6379"
