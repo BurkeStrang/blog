@@ -13,8 +13,8 @@ export const GlobalStyle = createGlobalStyle`
     --color-neon: #15aa14;
     --color-secondary: #748B55;
     --color-bluish: rgba(0, 128, 255, 1);
-    --color-header-glow: rgba(0, 255, 180, 0.9);
-    --color-header-glow-far: rgba(0, 200, 255, 0.1);
+    --color-header-glow: rgba(0, 0, 180, 0.9);
+    --color-header-glow-far: rgba(0, 0, 255, 0.1);
     --color-header-mobile-shadow: rgba(0, 0, 0, 0.38);
     --color-search-outline: rgba(0, 220, 200, 0.8);
     --color-search-outline-focus: rgba(0, 255, 220, 1);
@@ -67,8 +67,8 @@ export const GlobalStyle = createGlobalStyle`
     --color-neon: #0a7a09;
     --color-secondary: #4a5a35;
     --color-bluish: rgba(0, 80, 200, 1);
-    --color-header-glow: rgba(0, 100, 120, 0.6);
-    --color-header-glow-far: rgba(0, 80, 100, 0.15);
+    --color-header-glow: rgba(0, 0, 120, 0.6);
+    --color-header-glow-far: rgba(0, 0, 100, 0.15);
     --color-header-mobile-shadow: rgba(0, 72, 82, 0.12);
     --color-search-outline: rgba(0, 100, 120, 0.7);
     --color-search-outline-focus: rgba(0, 120, 140, 1);
@@ -219,8 +219,8 @@ export const Header = styled.header`
     background-clip: text;
 
     text-shadow:
-      0 1px 0 var(--color-header-glow-far),
-      0 1.5px 0 var(--color-header-mobile-shadow);
+      0 1px 0 var(--color-header-glow),
+      0 1.5px 0 var(--color-header-far);
   }
 
   @media (max-width: 768px) {
