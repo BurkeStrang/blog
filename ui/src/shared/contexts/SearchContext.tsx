@@ -173,22 +173,32 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const lastCall = recentApiCalls.current.get(slug) ?? 0;
     const shouldCallApi = now - lastCall > 5 * 60 * 1000;
 
-    setAllPostsRaw((prev) =>
-      prev.map((p) =>
-        p.slug === slug
-          ? { ...p, lastViewed: new Date(now), recentViews: (p.recentViews || 0) + 1, pageViews: (p.pageViews || 0) + 1 }
-          : p
-      )
-    );
+    const updateLocalViewCount = () => {
+      setAllPostsRaw((prev) =>
+        prev.map((p) =>
+          p.slug === slug
+            ? {
+                ...p,
+                lastViewed: new Date(now),
+                recentViews: (p.recentViews || 0) + 1,
+                pageViews: (p.pageViews || 0) + 1,
+              }
+            : p,
+        ),
+      );
+    };
+
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(() => {
+        setTimeout(updateLocalViewCount, 0);
+      });
+    } else {
+      setTimeout(updateLocalViewCount, 0);
+    }
 
     if (shouldCallApi) {
       recentApiCalls.current.set(slug, now);
-      apiService.trackPostView(slug).catch((err) => {
-        if (!err?.message?.includes("404")) {
-          console.warn("Failed to track post view:", err);
-          recentApiCalls.current.delete(slug);
-        }
-      });
+      apiService.trackPostView(slug);
     }
   }, []);
 

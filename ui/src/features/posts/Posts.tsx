@@ -17,14 +17,11 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import CheckIcon from "@mui/icons-material/Check";
 import AddIcon from "@mui/icons-material/Add";
 import { useSort, useSearchQuery } from "../../shared/contexts/SearchContext";
+import { useAuth } from "../../shared/contexts/AuthContext";
 import { useFontLoaded } from "../../shared/hooks";
-import { User, isAdmin } from "../../shared/types/user";
-import { useNavigate, useLocation } from "react-router-dom";
+import { isAdmin } from "../../shared/types/user";
+import { useNavigate } from "react-router-dom";
 import { accent, backgroundColor } from "../../shared/theme/colors";
-
-interface PostsProps {
-  user?: User | null;
-}
 
 const ControlsContainer = styled.div`
   position: relative;
@@ -254,38 +251,51 @@ const SearchBarMemo = React.memo(function SearchBarMemo() {
   );
 });
 
-const Posts: React.FC<PostsProps> = ({ user }) => {
-  const location = useLocation();
-  const isVisible = !/^\/posts\/[^/]+$/.test(location.pathname);
-  const navigate = useNavigate();
-
+const PostsHeader = React.memo(function PostsHeader() {
   // Wait for the mega font to load before showing the title
   const isFontLoaded = useFontLoaded("mega");
+
+  if (!isFontLoaded) return null;
+
+  return (
+    <>
+      <Header>
+        <h1>BRXSTNG BLG</h1>
+      </Header>
+      <ControlsContainer>
+        <SearchBarMemo />
+        <FilterDropdownComponent />
+      </ControlsContainer>
+    </>
+  );
+});
+
+const AdminAddPostButton = React.memo(function AdminAddPostButton() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleAddPost = React.useCallback(() => {
     navigate("/posts/new");
   }, [navigate]);
 
+  if (!isAdmin(user)) return null;
+
+  return (
+    <AddPostButton onClick={handleAddPost}>
+      <AddIcon />
+    </AddPostButton>
+  );
+});
+
+const Posts: React.FC = React.memo(() => {
   return (
     <Page>
-      {isVisible && isFontLoaded && (
-        <>
-          <Header>
-            <h1>BRXSTNG BLG</h1>
-          </Header>
-          <ControlsContainer>
-            <SearchBarMemo />
-            <FilterDropdownComponent />
-          </ControlsContainer>
-        </>
-      )}
-      {isAdmin(user) && (
-        <AddPostButton onClick={handleAddPost}>
-          <AddIcon />
-        </AddPostButton>
-      )}
+      <PostsHeader />
+      <AdminAddPostButton />
     </Page>
   );
-};
+});
 
-export default React.memo(Posts);
+Posts.displayName = "Posts";
+
+export default Posts;

@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef, memo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useLocation, Navigate } from "react-router-dom";
 import styled, { css } from "styled-components";
 import { primary } from "../../shared/theme/colors";
-import { User } from "../../shared/types/user";
-import { apiService } from "../../services/api";
 import MenuIcon from "@mui/icons-material/Menu";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { useTheme } from "../../shared/contexts/ThemeContext";
+import { useAuth } from "../../shared/contexts/AuthContext";
 
 // Sidebar container
 const Sidebar = styled.nav<{ open: boolean }>`
@@ -196,7 +195,7 @@ const SidebarButton = styled.button`
   width: 100%;
   text-align: left;
   font-family: inherit;
-  
+
   &:disabled {
     opacity: 0.7;
     cursor: not-allowed;
@@ -235,7 +234,7 @@ const LogoutButton = styled(SidebarButton)`
   font-size: 1rem;
   margin-top: 0.5rem;
   font-weight: 600;
-  
+
   &:hover {
     color: #ff5252;
     text-shadow:
@@ -244,24 +243,13 @@ const LogoutButton = styled(SidebarButton)`
   }
 `;
 
-interface SidebarNavProps {
-  onPostsClick?: () => void;
-  user?: User | null;
-  onLogout?: () => void;
-  onLogin?: (user: User, token: string) => void;
-}
-
-// Main sidebar component
-const SidebarNav: React.FC<SidebarNavProps> = ({ onPostsClick, user, onLogout, onLogin }) => {
+const SidebarNav: React.FC = React.memo(() => {
   const location = useLocation();
+  const { user, loginLoading, logout, loginWithGoogle } = useAuth();
   const [open, setOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const [loginLoading, setLoginLoading] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
   const hamburgerRef = useRef<HTMLDivElement>(null);
-
-  // Detect mobile devices
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   // Close sidebar when clicking outside
   useEffect(() => {
@@ -282,90 +270,6 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ onPostsClick, user, onLogout, o
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [open]);
-
-  // Handle Google OAuth login (popup for desktop, redirect for mobile)
-  const handleGoogleLogin = async () => {
-    if (!onLogin || loginLoading) return;
-    
-    try {
-      setLoginLoading(true);
-      setOpen(false);
-
-      // Get the Google OAuth URL from our API
-      const response = await apiService.getGoogleAuthUrl();
-      
-      if (isMobile) {
-        // Mobile: Use redirect flow
-        localStorage.setItem('returnTo', location.pathname);
-        window.location.href = response.url;
-      } else {
-        // Desktop: Use popup flow to preserve app state
-        const popup = window.open(
-          response.url,
-          'google-oauth',
-          'width=500,height=600,scrollbars=yes,resizable=yes'
-        );
-
-        if (!popup) {
-          // Fallback to redirect if popup is blocked
-          localStorage.setItem('returnTo', location.pathname);
-          window.location.href = response.url;
-          return;
-        }
-
-        // Listen for messages from popup (better cross-origin handling)
-        const messageListener = (event: MessageEvent) => {
-          if (event.origin !== window.location.origin) return;
-
-          if (event.data.type === 'OAUTH_SUCCESS') {
-            clearInterval(checkAuthStatus);
-            window.removeEventListener('message', messageListener);
-            setLoginLoading(false);
-            onLogin(event.data.user, event.data.token);
-          }
-          
-          if (event.data.type === 'OAUTH_ERROR') {
-            clearInterval(checkAuthStatus);
-            window.removeEventListener('message', messageListener);
-            setLoginLoading(false);
-            console.error('OAuth error:', event.data.error);
-          }
-        };
-        
-        window.addEventListener('message', messageListener);
-
-        // Track popup start time for timeout
-        const popupStartTime = Date.now();
-
-        // Fallback: Use localStorage polling instead of popup.closed due to COOP restrictions
-        const checkAuthStatus = setInterval(() => {
-          // Check if authentication was successful by checking localStorage
-          const token = localStorage.getItem('authToken');
-          const savedUser = localStorage.getItem('user');
-          if (token && savedUser) {
-            clearInterval(checkAuthStatus);
-            window.removeEventListener('message', messageListener);
-            setLoginLoading(false);
-            onLogin(JSON.parse(savedUser), token);
-            return;
-          }
-          
-          // If popup has been running for too long, assume it's closed or failed
-          const now = Date.now();
-          if (now - popupStartTime > 300000) { // 5 minutes timeout
-            clearInterval(checkAuthStatus);
-            window.removeEventListener('message', messageListener);
-            setLoginLoading(false);
-            console.warn('OAuth popup timeout - authentication may have failed');
-          }
-        }, 1000);
-      }
-
-    } catch (error) {
-      console.error('Failed to initiate Google login:', error);
-      setLoginLoading(false);
-    }
-  };
 
   // Redirect if at root
   if (location.pathname === "/") {
@@ -388,22 +292,12 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ onPostsClick, user, onLogout, o
             </SidebarLink>
           </SidebarItem>
           <SidebarItem>
-            <SidebarLink 
-              to="/posts" 
-              onClick={() => {
-                setOpen(false);
-                onPostsClick?.();
-              }}
-            >
+            <SidebarLink to="/posts" onClick={() => setOpen(false)}>
               POSTS
             </SidebarLink>
           </SidebarItem>
           <SidebarItem>
-            <SidebarButton
-              onClick={() => {
-                toggleTheme();
-              }}
-            >
+            <SidebarButton onClick={toggleTheme}>
               {theme === 'dark' ? (
                 <LightModeIcon sx={{ fontSize: '1rem', marginRight: '0.4rem', verticalAlign: 'middle' }} />
               ) : (
@@ -417,7 +311,7 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ onPostsClick, user, onLogout, o
               <div style={{ padding: '0.75rem 1.25rem', margin: '0.2rem auto', width: '90%' }}>
                 <ProfileSection>
                   <ProfileInfo>
-                    <ProfilePicture 
+                    <ProfilePicture
                       src={user.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0ff&color=000`}
                       alt={user.name}
                       onError={(e) => {
@@ -431,9 +325,9 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ onPostsClick, user, onLogout, o
             ) : (
               <SidebarButton
                 onClick={() => {
-                  // Save current location for return after login
                   localStorage.setItem('returnTo', location.pathname);
-                  handleGoogleLogin();
+                  setOpen(false);
+                  loginWithGoogle();
                 }}
                 disabled={loginLoading}
               >
@@ -441,11 +335,11 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ onPostsClick, user, onLogout, o
               </SidebarButton>
             )}
           </SidebarItem>
-          {user && onLogout && (
+          {user && (
             <SidebarItem>
               <LogoutButton onClick={() => {
                 setOpen(false);
-                onLogout();
+                logout();
               }}>
                 LOGOUT
               </LogoutButton>
@@ -455,9 +349,8 @@ const SidebarNav: React.FC<SidebarNavProps> = ({ onPostsClick, user, onLogout, o
       </Sidebar>
     </>
   );
-};
+});
 
-const MemoizedSidebarNav = memo(SidebarNav);
-MemoizedSidebarNav.displayName = 'SidebarNav';
+SidebarNav.displayName = "SidebarNav";
 
-export default MemoizedSidebarNav;
+export default SidebarNav;

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AppContent from "./AppContent";
 import { OAuthCallback } from "../features/auth";
 import { SearchProvider } from "../shared/contexts/SearchContext";
+import { AuthProvider } from "../shared/contexts/AuthContext";
 
 const App: React.FC = () => (
   <BrowserRouter>
@@ -12,9 +13,11 @@ const App: React.FC = () => (
       <Route
         path="/*"
         element={
-          <SearchProvider>
-            <AppContent />
-          </SearchProvider>
+          <AuthProvider>
+            <SearchProvider>
+              <AppContent />
+            </SearchProvider>
+          </AuthProvider>
         }
       />
     </Routes>

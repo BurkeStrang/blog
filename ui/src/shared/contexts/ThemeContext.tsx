@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { userPreferencesService } from '../../services/userPreferencesService';
+import { useAuth } from './AuthContext';
 
 type Theme = 'dark' | 'light';
 
@@ -21,11 +22,11 @@ function readLocalTheme(): Theme {
 }
 
 interface ThemeProviderProps {
-  userEmail?: string | null;
   children: React.ReactNode;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ userEmail, children }) => {
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+  const userEmail = useAuth().user?.email;
   const [theme, setTheme] = useState<Theme>(() => {
     const resolved = readLocalTheme();
     document.documentElement.setAttribute('data-theme', resolved);

@@ -81,4 +81,18 @@ export default defineConfig([
       ],
     },
   },
+  // Mirror babel plugin exclusion: react-compiler is not run on these paths,
+  // so its lint rule shouldn't apply either (see vite.config.ts).
+  {
+    files: [
+      "src/engine/**/*.{ts,tsx}",
+      "src/shared/contexts/**/*.{ts,tsx}",
+      "src/services/**/*.{ts,tsx}",
+      "src/cache/**/*.{ts,tsx}",
+      "src/**/MarkdownContent.{ts,tsx}",
+    ],
+    rules: {
+      "react-compiler/react-compiler": "off",
+    },
+  },
 ]);

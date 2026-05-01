@@ -1,9 +1,25 @@
 import { useState, useEffect } from 'react';
 
+const checkFontSync = (fontFamily: string): boolean => {
+  if (typeof document === 'undefined' || !document.fonts || !document.fonts.check) {
+    return false;
+  }
+  try {
+    return document.fonts.check(`1em "${fontFamily}"`);
+  } catch {
+    return false;
+  }
+};
+
 export const useFontLoaded = (fontFamily: string, timeout: number = 3000): boolean => {
-  const [isLoaded, setIsLoaded] = useState(false);
+  // Lazy initial state: if the font is already loaded (e.g. on remount after
+  // initial page load), skip the one-frame "false" flash that conditional
+  // renders gated on this hook produce.
+  const [isLoaded, setIsLoaded] = useState(() => checkFontSync(fontFamily));
 
   useEffect(() => {
+    if (isLoaded) return;
+
     // Check if font is already loaded
     if (document.fonts && document.fonts.check) {
       const checkFont = () => {
@@ -57,7 +73,7 @@ export const useFontLoaded = (fontFamily: string, timeout: number = 3000): boole
 
       return () => clearTimeout(fallbackTimeout);
     }
-  }, [fontFamily, timeout]);
+  }, [fontFamily, timeout, isLoaded]);
 
   return isLoaded;
 };

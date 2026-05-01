@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { backgroundColor, lightgrey, accent } from "../../shared/theme/colors";
 import { apiService } from "../../services/api";
-import { User, isAdmin } from "../../shared/types/user";
+import { isAdmin } from "../../shared/types/user";
+import { useAuth } from "../../shared/contexts/AuthContext";
 
 const Article = styled.article`
   width: 100vw;
@@ -178,12 +179,12 @@ const HelpText = styled.div`
 `;
 
 interface NewPostProps {
-  user?: User | null;
   onPostsChange?: () => Promise<void>;
 }
 
-const NewPost: React.FC<NewPostProps> = ({ user, onPostsChange }) => {
+const NewPost: React.FC<NewPostProps> = ({ onPostsChange }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [form, setForm] = useState({
     title: "",
     slug: "",

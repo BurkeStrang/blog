@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, Navigate, useLocation } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
 import { Post } from "../../app/AppContent";
 import styled from "styled-components";
 import { backgroundColor, lightgrey, accent } from "../../shared/theme/colors";
 import { usePostsData } from "../../shared/contexts/SearchContext";
+import { useAuth } from "../../shared/contexts/AuthContext";
 import { CommentSection } from "../comments";
 import { apiService } from "../../services/api";
-import { User, isAdmin } from "../../shared/types/user";
+import { isAdmin } from "../../shared/types/user";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import CommentIcon from "@mui/icons-material/Comment";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -682,8 +683,6 @@ const CommentsToggleButton = styled.button`
 interface PostDetailProps {
   allPosts: Post[];
   handleClose: () => void;
-  user?: User | null;
-  onLogin?: (user: User, token: string) => void;
   onPostsChange?: () => Promise<void>;
   onCommentCountChange?: (postId: number, count: number) => void;
 }
@@ -691,15 +690,12 @@ interface PostDetailProps {
 const PostDetailComponent = function PostDetail({
   allPosts,
   handleClose,
-  user,
-  onLogin,
   onPostsChange,
   onCommentCountChange,
 }: PostDetailProps) {
   const { slug } = useParams<{ slug: string }>();
   const { trackPostView } = usePostsData();
-  const location = useLocation();
-  const [loginLoading, setLoginLoading] = useState(false);
+  const { user, loginWithGoogle } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     title: "",
@@ -719,16 +715,6 @@ const PostDetailComponent = function PostDetail({
   }, [allPosts, slug]);
   const hasTrackedRef = useRef<string | null>(null);
   const articleRef = useRef<HTMLElement>(null);
-  const loginIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const loginListenerRef = useRef<((e: MessageEvent) => void) | null>(null);
-
-  // Clean up any in-flight OAuth resources if the component unmounts mid-flow
-  useEffect(() => {
-    return () => {
-      if (loginIntervalRef.current) clearInterval(loginIntervalRef.current);
-      if (loginListenerRef.current) window.removeEventListener('message', loginListenerRef.current);
-    };
-  }, []);
 
   // Reset local comment count when post changes
   React.useEffect(() => {
@@ -771,91 +757,11 @@ const PostDetailComponent = function PostDetail({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Handle Google OAuth login (same logic as sidebar)
-  const handleGoogleLogin = React.useCallback(async () => {
-    if (!onLogin || loginLoading) return;
-
-    try {
-      setLoginLoading(true);
-
-      // Get the Google OAuth URL from our API
-      const response = await apiService.getGoogleAuthUrl();
-
-      // Detect mobile devices
-      const isMobile =
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent,
-        );
-
-      if (isMobile) {
-        // Mobile: Use redirect flow
-        localStorage.setItem("returnTo", location.pathname);
-        window.location.href = response.url;
-      } else {
-        // Desktop: Use popup flow to preserve app state
-        const popup = window.open(
-          response.url,
-          "google-oauth",
-          "width=500,height=600,scrollbars=yes,resizable=yes",
-        );
-
-        if (!popup) {
-          // Fallback to redirect if popup is blocked
-          localStorage.setItem("returnTo", location.pathname);
-          window.location.href = response.url;
-          return;
-        }
-
-        const cleanup = () => {
-          if (loginIntervalRef.current) { clearInterval(loginIntervalRef.current); loginIntervalRef.current = null; }
-          if (loginListenerRef.current) { window.removeEventListener('message', loginListenerRef.current); loginListenerRef.current = null; }
-        };
-
-        // Listen for messages from popup (better cross-origin handling)
-        const messageListener = (event: MessageEvent) => {
-          if (event.origin !== window.location.origin) return;
-
-          if (event.data.type === "OAUTH_SUCCESS") {
-            cleanup();
-            setLoginLoading(false);
-            onLogin(event.data.user, event.data.token);
-          }
-
-          if (event.data.type === "OAUTH_ERROR") {
-            cleanup();
-            setLoginLoading(false);
-          }
-        };
-
-        loginListenerRef.current = messageListener;
-        window.addEventListener("message", messageListener);
-
-        // Use localStorage polling instead of popup.closed due to COOP restrictions
-        const popupStartTime = Date.now();
-        loginIntervalRef.current = setInterval(() => {
-          const token = localStorage.getItem("authToken");
-          const savedUser = localStorage.getItem("user");
-          if (token && savedUser) {
-            cleanup();
-            setLoginLoading(false);
-            onLogin(JSON.parse(savedUser), token);
-            return;
-          }
-
-          // Timeout after 5 minutes
-          if (Date.now() - popupStartTime > 300000) {
-            cleanup();
-            setLoginLoading(false);
-          }
-        }, 1000);
-      }
-    } catch (error) {
-      console.error("Failed to initiate Google login:", error);
-      setLoginLoading(false);
-    }
-  }, [onLogin, loginLoading, location.pathname]);
-
   if (!post) {
+    if (allPosts.length === 0) {
+      return null;
+    }
+
     return <Navigate to="/posts" replace />;
   }
 
@@ -1070,7 +976,7 @@ const PostDetailComponent = function PostDetail({
                 postId={post.id || 0}
                 isAuthenticated={!!user}
                 user={user}
-                onLogin={handleGoogleLogin}
+                onLogin={loginWithGoogle}
                 onCommentsLoad={handleCommentsLoad}
               />
             )}
