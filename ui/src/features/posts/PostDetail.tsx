@@ -719,6 +719,16 @@ const PostDetailComponent = function PostDetail({
   }, [allPosts, slug]);
   const hasTrackedRef = useRef<string | null>(null);
   const articleRef = useRef<HTMLElement>(null);
+  const loginIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const loginListenerRef = useRef<((e: MessageEvent) => void) | null>(null);
+
+  // Clean up any in-flight OAuth resources if the component unmounts mid-flow
+  useEffect(() => {
+    return () => {
+      if (loginIntervalRef.current) clearInterval(loginIntervalRef.current);
+      if (loginListenerRef.current) window.removeEventListener('message', loginListenerRef.current);
+    };
+  }, []);
 
   // Reset local comment count when post changes
   React.useEffect(() => {
@@ -796,35 +806,37 @@ const PostDetailComponent = function PostDetail({
           return;
         }
 
+        const cleanup = () => {
+          if (loginIntervalRef.current) { clearInterval(loginIntervalRef.current); loginIntervalRef.current = null; }
+          if (loginListenerRef.current) { window.removeEventListener('message', loginListenerRef.current); loginListenerRef.current = null; }
+        };
+
         // Listen for messages from popup (better cross-origin handling)
         const messageListener = (event: MessageEvent) => {
           if (event.origin !== window.location.origin) return;
 
           if (event.data.type === "OAUTH_SUCCESS") {
-            clearInterval(checkAuthStatus);
-            window.removeEventListener("message", messageListener);
+            cleanup();
             setLoginLoading(false);
             onLogin(event.data.user, event.data.token);
           }
 
           if (event.data.type === "OAUTH_ERROR") {
-            clearInterval(checkAuthStatus);
-            window.removeEventListener("message", messageListener);
+            cleanup();
             setLoginLoading(false);
           }
         };
 
+        loginListenerRef.current = messageListener;
         window.addEventListener("message", messageListener);
 
         // Use localStorage polling instead of popup.closed due to COOP restrictions
         const popupStartTime = Date.now();
-        const checkAuthStatus = setInterval(() => {
-          // Check if authentication was successful by checking localStorage
+        loginIntervalRef.current = setInterval(() => {
           const token = localStorage.getItem("authToken");
           const savedUser = localStorage.getItem("user");
           if (token && savedUser) {
-            clearInterval(checkAuthStatus);
-            window.removeEventListener("message", messageListener);
+            cleanup();
             setLoginLoading(false);
             onLogin(JSON.parse(savedUser), token);
             return;
@@ -832,8 +844,7 @@ const PostDetailComponent = function PostDetail({
 
           // Timeout after 5 minutes
           if (Date.now() - popupStartTime > 300000) {
-            clearInterval(checkAuthStatus);
-            window.removeEventListener("message", messageListener);
+            cleanup();
             setLoginLoading(false);
           }
         }, 1000);

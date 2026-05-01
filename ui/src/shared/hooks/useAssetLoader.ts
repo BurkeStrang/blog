@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
-import { Texture } from 'three';
+import { Texture, Mesh, MeshStandardMaterial, LinearFilter } from 'three';
 import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader';
 import { TextureCompressor } from '../../engine/rendering';
@@ -130,44 +130,16 @@ export function useResourcePreloader() {
     // Optimize GLTF model textures with aggressive compression
     function optimizeGLTFTextures(gltf: GLTF) {
       gltf.scene.traverse((child) => {
-        if ((child as { material?: unknown }).material) {
-          const material = (child as unknown as { 
-            material: { 
-              map?: { 
-                generateMipmaps: boolean; 
-                minFilter: number; 
-                magFilter: number;
-                image?: { width?: number; height?: number };
-              }; 
-              normalMap?: { 
-                generateMipmaps: boolean; 
-                minFilter: number; 
-                magFilter: number;
-                image?: { width?: number; height?: number };
-              }; 
-              roughnessMap?: { 
-                generateMipmaps: boolean; 
-                minFilter: number; 
-                magFilter: number;
-                image?: { width?: number; height?: number };
-              };
-            } 
-          }).material;
-          
-          // Aggressive texture optimization for memory reduction
-          const optimizeTexture = (texture: typeof material.map) => {
-            if (texture) {
-              texture.generateMipmaps = false; // Disable mipmaps to save memory
-              texture.minFilter = 1006; // LinearFilter for better performance
-              texture.magFilter = 1006; // LinearFilter for magnification
-              
-              // Texture optimized
-            }
-          };
-          
-          optimizeTexture(material.map);
-          optimizeTexture(material.normalMap);
-          optimizeTexture(material.roughnessMap);
+        if (!(child instanceof Mesh)) return;
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        for (const mat of materials) {
+          if (!(mat instanceof MeshStandardMaterial)) continue;
+          for (const tex of [mat.map, mat.normalMap, mat.roughnessMap]) {
+            if (!tex) continue;
+            tex.generateMipmaps = false;
+            tex.minFilter = LinearFilter;
+            tex.magFilter = LinearFilter;
+          }
         }
       });
     }
