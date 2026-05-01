@@ -206,20 +206,11 @@ export const Header = styled.header`
     font-family: "mega", "Arial Black", sans-serif;
     font-weight: normal;
     letter-spacing: 0.1em;
-    height: clamp(2rem, 6vw, 3rem);
+    line-height: 1;
     margin: 1rem 0;
-    height: 3rem;
-
-    -webkit-text-stroke: 0.04em var(--color-primary);
 
     text-shadow:
-      0 0 2px  var(--color-primary),
-      0 0 4px  var(--color-primary),
-      0 0 8px  var(--color-header-glow),
-      0 0 16px var(--color-header-glow),
-      0 0 30px var(--color-header-glow-far),
-      0 0 50px var(--color-header-glow-far),
-      0 0 80px var(--color-header-glow-far),
+      0 0 5px var(--color-header-glow);
   }
 
   @media (max-height: 1200px) {
