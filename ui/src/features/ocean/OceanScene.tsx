@@ -24,7 +24,7 @@ import { PostNavigation } from "../posts";
 import type { Post } from "../../app/AppContent";
 import { memoryProfiler } from "../../engine/memory";
 import { performanceMonitor } from "../../engine";
-import { useSearch } from "../../shared/contexts/SearchContext";
+import { usePagination } from "../../shared/contexts/SearchContext";
 
 // TypeScript augmentation for outputEncoding
 declare module "three" {
@@ -481,7 +481,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   }, []);
   const location = useLocation();
   // Get pagination state from SearchContext
-  const { currentPage, setCurrentPage } = useSearch();
+  const { currentPage, setCurrentPage } = usePagination();
   const postsPerPage = 10;
   const [scrollToIndex, setScrollToIndex] = useState<number | undefined>(
     undefined,

@@ -14,7 +14,7 @@ import { memoryTracker } from "../engine/memory/MemoryTracker";
 import { User } from "../shared/types/user";
 import { memoryMonitor } from "../engine/memory/MemoryProfiler";
 import { cleanupResourcePoolIntervals } from "../engine/memory/ResourcePool";
-import { useSearch } from "../shared/contexts/SearchContext";
+import { usePostsData } from "../shared/contexts/SearchContext";
 import { ThemeProvider } from "../shared/contexts/ThemeContext";
 import { apiService } from "../services/api";
 import { cacheInvalidation } from "../services/cache/CacheManager";
@@ -60,7 +60,7 @@ const AppContent: React.FC = memo(() => {
   const { posts, loading: postsLoading, error: postsError, refetch: refetchPosts } = usePostsApi();
 
   // Use search context
-  const { allPosts: searchPosts, filteredPosts, setAllPosts, isSorting } = useSearch();
+  const { allPosts: searchPosts, filteredPosts, setAllPosts, updatePost, isSorting } = usePostsData();
 
   // Immediate uncached refresh function
   const refreshPostsImmediate = useCallback(async () => {
@@ -83,12 +83,9 @@ const AppContent: React.FC = memo(() => {
     }
   }, [setAllPosts, refetchPosts]);
 
-  // Surgically update a single post's comment count without a full refetch
   const updatePostCommentCount = useCallback((postId: number, count: number) => {
-    setAllPosts(
-      searchPosts.map((p) => (p.id === postId ? { ...p, commentCount: count } : p))
-    );
-  }, [setAllPosts, searchPosts]);
+    updatePost(postId, { commentCount: count });
+  }, [updatePost]);
 
   // Create a Set of visible post slugs for efficient lookup - memoized more efficiently
   const visiblePostSlugs = useMemo(() => {

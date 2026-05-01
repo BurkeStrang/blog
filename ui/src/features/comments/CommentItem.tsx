@@ -200,11 +200,12 @@ const ReplyFormContainer = styled.div`
 
 const EditTextArea = styled.textarea`
   width: 100%;
+  box-sizing: border-box;
   padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--color-input-bg);
+  border: 1px solid var(--color-input-border);
   border-radius: 6px;
-  color: ${lightgrey};
+  color: var(--color-lightgrey);
   font-size: 1rem;
   font-family: inherit;
   line-height: 1.5;
@@ -215,7 +216,7 @@ const EditTextArea = styled.textarea`
   &:focus {
     outline: none;
     border-color: ${accent};
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--color-input-bg-focus);
   }
 `;
 
@@ -522,8 +523,15 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       {isEditing ? (
         <>
           <EditTextArea
+            autoFocus
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey && !isSaving && editContent.trim()) {
+                e.preventDefault();
+                handleSaveEdit();
+              }
+            }}
             placeholder="Edit your comment..."
           />
           <EditActions>

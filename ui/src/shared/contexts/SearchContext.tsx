@@ -14,12 +14,23 @@ import { apiService } from "../../services/api";
 export type SortCriteria = "pageViews" | "date" | "trending";
 export type SortDirection = "asc" | "desc";
 
-interface SearchContextType {
-  query: string;
-  setQuery: (query: string) => void;
+// ── context types ─────────────────────────────────────────────────────────────
+
+interface PostsDataContextType {
   allPosts: Post[];
   filteredPosts: Post[];
   setAllPosts: (posts: Post[]) => void;
+  updatePost: (postId: number, updates: Partial<Post>) => void;
+  isSorting: boolean;
+  trackPostView: (slug: string) => void;
+}
+
+interface SearchQueryContextType {
+  query: string;
+  setQuery: (query: string) => void;
+}
+
+interface SortContextType {
   sortBy: SortCriteria;
   setSortBy: (criteria: SortCriteria) => void;
   sortDirection: SortDirection;
@@ -27,311 +38,229 @@ interface SearchContextType {
   toggleSortDirection: () => void;
   cycleSortCriteria: () => void;
   isSorting: boolean;
-  trackPostView: (slug: string) => void;
+}
+
+interface PaginationContextType {
   currentPage: number;
   setCurrentPage: (page: number) => void;
 }
 
-const SearchContext = createContext<SearchContextType | undefined>(undefined);
+// ── contexts ──────────────────────────────────────────────────────────────────
 
-interface SearchProviderProps {
-  children: React.ReactNode;
-}
+const PostsDataContext = createContext<PostsDataContextType | undefined>(undefined);
+const SearchQueryContext = createContext<SearchQueryContextType | undefined>(undefined);
+const SortContext = createContext<SortContextType | undefined>(undefined);
+const PaginationContext = createContext<PaginationContextType | undefined>(undefined);
 
-// Helper function to strip HTML tags and search full text
-const stripHtmlTags = (html: string): string => {
-  return html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-};
+// ── pure helpers (defined outside to avoid re-creation) ───────────────────────
 
-// Full-text search function
+const stripHtmlTags = (html: string): string =>
+  html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
 const searchPosts = (posts: Post[], query: string): Post[] => {
-  if (!query.trim()) {
-    return posts;
-  }
-
-  const searchTerms = query.toLowerCase().trim().split(/\s+/);
-
+  if (!query.trim()) return posts;
+  const terms = query.toLowerCase().trim().split(/\s+/);
   return posts.filter((post) => {
-    const titleText = post.title.toLowerCase();
-    const bodyText = stripHtmlTags(post.body).toLowerCase();
-    const combinedText = `${titleText} ${bodyText}`;
-
-    // All search terms must be found in the combined text
-    return searchTerms.every((term) => combinedText.includes(term));
+    const text = `${post.title.toLowerCase()} ${stripHtmlTags(post.body).toLowerCase()}`;
+    return terms.every((t) => text.includes(t));
   });
 };
 
-// Calculate trending score based on recent views, recency, and comment count
 const calculateTrendingScore = (post: Post): number => {
   const recentViews = post.recentViews || 0;
-  const commentCount = post.commentCount || 0;
-  
-  // Base score from recent views (weight: 1x)
-  let score = recentViews;
-  
-  // Add comment count with higher weight (weight: 3x)
-  score += commentCount * 3;
-  
-  const now = Date.now();
+  let score = recentViews + (post.commentCount || 0) * 3;
   if (post.lastViewed) {
-    // If last viewed is more than 24 hours ago, reduce score
-    const hoursSinceLastViewed =
-      (now - new Date(post.lastViewed).getTime()) / (1000 * 60 * 60);
-    // Reduce score based on how stale the view is
-    score -= Math.floor(hoursSinceLastViewed / 24) * recentViews;
+    const hoursSince = (Date.now() - new Date(post.lastViewed).getTime()) / (1000 * 60 * 60);
+    score -= Math.floor(hoursSince / 24) * recentViews;
   }
-  
   return score;
 };
 
-// Sorting functions - optimized to reduce re-renders
 const sortPosts = (
   posts: Post[],
   sortBy: SortCriteria,
   direction: SortDirection,
-  trendingSnapshot?: Post[],
-): Post[] => {
-  // Remove frequent debug logging that causes re-renders
-  
-  const sorted = [...posts].sort((a, b) => {
-    let comparison = 0;
-
+  snapshot?: Post[],
+): Post[] =>
+  [...posts].sort((a, b) => {
+    let cmp = 0;
     if (sortBy === "pageViews") {
-      const aViews = a.pageViews || 0;
-      const bViews = b.pageViews || 0;
-      comparison = aViews - bViews;
+      cmp = (a.pageViews || 0) - (b.pageViews || 0);
     } else if (sortBy === "date") {
-      const aDate = a.date ? new Date(a.date).getTime() : 0;
-      const bDate = b.date ? new Date(b.date).getTime() : 0;
-      comparison = aDate - bDate;
-    } else if (sortBy === "trending") {
-      // Use snapshot for trending to prevent re-sorting during session
-      const snapshotA = trendingSnapshot?.find((p) => p.slug === a.slug) || a;
-      const snapshotB = trendingSnapshot?.find((p) => p.slug === b.slug) || b;
-      const aTrending = calculateTrendingScore(snapshotA);
-      const bTrending = calculateTrendingScore(snapshotB);
-      comparison = aTrending - bTrending;
+      cmp = (a.date ? new Date(a.date).getTime() : 0) - (b.date ? new Date(b.date).getTime() : 0);
+    } else {
+      const sa = snapshot?.find((p) => p.slug === a.slug) ?? a;
+      const sb = snapshot?.find((p) => p.slug === b.slug) ?? b;
+      cmp = calculateTrendingScore(sa) - calculateTrendingScore(sb);
     }
-
-    return direction === "desc" ? -comparison : comparison;
+    return direction === "desc" ? -cmp : cmp;
   });
 
+// ── provider ──────────────────────────────────────────────────────────────────
 
-  return sorted;
-};
-
-export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
+export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [allPosts, setAllPosts] = useState<Post[]>([]);
+  const [allPosts, setAllPostsRaw] = useState<Post[]>([]);
   const [sortBy, setSortBy] = useState<SortCriteria>("trending");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [isSorting, setIsSorting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-
-  // Keep a snapshot of initial posts for trending calculation to prevent re-sorting during session
   const [initialPostsSnapshot, setInitialPostsSnapshot] = useState<Post[]>([]);
 
-  // Track timeouts for proper cleanup
   const timeoutRefs = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  const recentApiCalls = useRef<Map<string, number>>(new Map());
 
-  // Debounce search query - reduced from 1000ms to 300ms for better responsiveness
+  // Debounce search query
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(query);
-    }, 300);
-
-    return () => clearTimeout(timer);
+    const id = setTimeout(() => setDebouncedQuery(query), 300);
+    return () => clearTimeout(id);
   }, [query]);
 
-  // Cleanup all timeouts on unmount
+  // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
-      timeoutRefs.current.forEach((timeoutId) => clearTimeout(timeoutId));
+      timeoutRefs.current.forEach(clearTimeout);
       timeoutRefs.current.clear();
     };
   }, []);
 
-  // Toggle sort direction - memoize with useCallback
+  // Cleanup stale API call timestamps
+  useEffect(() => {
+    const id = setInterval(() => {
+      const cutoff = Date.now() - 5 * 60 * 1000;
+      recentApiCalls.current.forEach((ts, slug) => {
+        if (ts < cutoff) recentApiCalls.current.delete(slug);
+      });
+    }, 5 * 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Reset pagination when search/sort changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedQuery, sortBy, sortDirection]);
+
+  // Stable setter that captures initial snapshot for trending
+  const setAllPosts = useCallback((posts: Post[]) => {
+    setAllPostsRaw(posts);
+    setInitialPostsSnapshot((prev) => (prev.length === 0 ? posts : prev));
+  }, []);
+
+  // Surgical update for a single post — uses functional form, no stale closure
+  const updatePost = useCallback((postId: number, updates: Partial<Post>) => {
+    setAllPostsRaw((prev) =>
+      prev.map((p) => (p.id === postId ? { ...p, ...updates } : p))
+    );
+  }, []);
+
   const toggleSortDirection = useCallback(() => {
     setIsSorting(true);
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-    // Reset sorting state after animation time
-    const timeoutId = setTimeout(() => setIsSorting(false), 1000);
-    timeoutRefs.current.add(timeoutId);
+    const id = setTimeout(() => setIsSorting(false), 1000);
+    timeoutRefs.current.add(id);
   }, []);
 
-  // Cycle through sort criteria - memoize with useCallback
   const cycleSortCriteria = useCallback(() => {
     setIsSorting(true);
-    setSortBy((prev) => {
-      if (prev === "pageViews") return "date";
-      if (prev === "date") return "trending";
-      return "pageViews";
-    });
-    // Reset sorting state after animation time
-    const timeoutId = setTimeout(() => setIsSorting(false), 1000);
-    timeoutRefs.current.add(timeoutId);
+    setSortBy((prev) => (prev === "pageViews" ? "date" : prev === "date" ? "trending" : "pageViews"));
+    const id = setTimeout(() => setIsSorting(false), 1000);
+    timeoutRefs.current.add(id);
   }, []);
 
-  // Track recent API calls to prevent duplicates (for React.StrictMode and rapid navigation)
-  const recentApiCalls = useRef<Map<string, number>>(new Map());
-
-  // Cleanup old API call timestamps periodically
-  useEffect(() => {
-    const cleanupInterval = setInterval(
-      () => {
-        const now = Date.now();
-        const fiveMinutesAgo = now - 5 * 60 * 1000;
-
-        recentApiCalls.current.forEach((timestamp, slug) => {
-          if (timestamp < fiveMinutesAgo) {
-            recentApiCalls.current.delete(slug);
-          }
-        });
-      },
-      5 * 60 * 1000,
-    ); // Run cleanup every 5 minutes
-
-    return () => clearInterval(cleanupInterval);
-  }, []);
-
-  // Track post views and update trending data
   const trackPostView = useCallback((slug: string) => {
     const now = Date.now();
-    const lastApiCall = recentApiCalls.current.get(slug) || 0;
-    const timeSinceLastCall = now - lastApiCall;
+    const lastCall = recentApiCalls.current.get(slug) ?? 0;
+    const shouldCallApi = now - lastCall > 5 * 60 * 1000;
 
-    // Prevent duplicate API calls within 5 minutes (same logic as local state)
-    const shouldCallAPI = timeSinceLastCall > 5 * 60 * 1000;
+    setAllPostsRaw((prev) =>
+      prev.map((p) =>
+        p.slug === slug
+          ? { ...p, lastViewed: new Date(now), recentViews: (p.recentViews || 0) + 1, pageViews: (p.pageViews || 0) + 1 }
+          : p
+      )
+    );
 
-    // Update local state (optimistic update)
-    // Always increment on each navigation for immediate UI feedback
-    setAllPosts((prevPosts) => {
-      return prevPosts.map((post) => {
-        if (post.slug === slug) {
-          return {
-            ...post,
-            lastViewed: new Date(now),
-            recentViews: (post.recentViews || 0) + 1,
-            pageViews: (post.pageViews || 0) + 1,
-          };
-        }
-        return post;
-      });
-    });
-
-    // Only call API if enough time has passed since last call for this slug
-    if (shouldCallAPI) {
+    if (shouldCallApi) {
       recentApiCalls.current.set(slug, now);
-      apiService.trackPostView(slug).catch((error) => {
-        // Only warn for non-404 errors since 404s are expected for missing posts
-        if (!error?.message?.includes('404')) {
-          console.warn("Failed to track post view in API:", error);
-          // Remove from recent calls on error so it can be retried
+      apiService.trackPostView(slug).catch((err) => {
+        if (!err?.message?.includes("404")) {
+          console.warn("Failed to track post view:", err);
           recentApiCalls.current.delete(slug);
         }
       });
     }
   }, []);
 
-  // Use deferred values for expensive operations to prevent blocking UI
   const deferredSortBy = useDeferredValue(sortBy);
   const deferredSortDirection = useDeferredValue(sortDirection);
 
-  // Memoize filtered and sorted posts to avoid unnecessary recalculations
-  const filteredPosts = useMemo(() => {
-    const searched = searchPosts(allPosts, debouncedQuery);
-    const result = sortPosts(
-      searched,
-      deferredSortBy,
-      deferredSortDirection,
-      initialPostsSnapshot,
-    );
-    
-    
-    return result;
-  }, [
-    allPosts,
-    debouncedQuery,
-    deferredSortBy,
-    deferredSortDirection,
-    initialPostsSnapshot,
-  ]);
-
-  // Reset pagination when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedQuery, sortBy, sortDirection]);
-
-  // Enhanced setAllPosts that captures initial snapshot for trending
-  const setAllPostsWithSnapshot = useCallback(
-    (posts: Post[]) => {
-      setAllPosts(posts);
-      
-      // If we have a query that hasn't been debounced yet, apply it immediately
-      if (query && query !== debouncedQuery) {
-        setDebouncedQuery(query);
-      }
-      
-      // Only set snapshot if it's empty (first load) - use callback to avoid dependency
-      setInitialPostsSnapshot(prevSnapshot => {
-        if (prevSnapshot.length === 0) {
-          return posts;
-        }
-        return prevSnapshot;
-      });
-    },
-    [debouncedQuery, sortBy, query], // Add dependencies to track filter state
+  const filteredPosts = useMemo(
+    () => sortPosts(searchPosts(allPosts, debouncedQuery), deferredSortBy, deferredSortDirection, initialPostsSnapshot),
+    [allPosts, debouncedQuery, deferredSortBy, deferredSortDirection, initialPostsSnapshot],
   );
 
-  // Split context value to prevent unnecessary re-renders
-  const stableHandlers = useMemo(() => ({
-    setQuery,
-    setAllPosts: setAllPostsWithSnapshot,
-    setSortBy,
-    setSortDirection,
-    toggleSortDirection,
-    cycleSortCriteria,
-    trackPostView,
-    setCurrentPage,
-  }), [setAllPostsWithSnapshot, toggleSortDirection, cycleSortCriteria, trackPostView]);
+  // Each context value is independently memoized — consumers only re-render when
+  // their slice of state changes.
+  const postsDataValue = useMemo<PostsDataContextType>(
+    () => ({ allPosts, filteredPosts, setAllPosts, updatePost, isSorting, trackPostView }),
+    [allPosts, filteredPosts, setAllPosts, updatePost, isSorting, trackPostView],
+  );
 
-  const value = useMemo(
-    () => ({
-      query,
-      allPosts,
-      filteredPosts,
-      sortBy,
-      sortDirection,
-      isSorting,
-      currentPage,
-      ...stableHandlers,
-    }),
-    [
-      query,
-      allPosts,
-      filteredPosts,
-      sortBy,
-      sortDirection,
-      isSorting,
-      currentPage,
-      stableHandlers,
-    ],
+  const searchQueryValue = useMemo<SearchQueryContextType>(
+    () => ({ query, setQuery }),
+    [query],
+  );
+
+  const sortValue = useMemo<SortContextType>(
+    () => ({ sortBy, setSortBy, sortDirection, setSortDirection, toggleSortDirection, cycleSortCriteria, isSorting }),
+    [sortBy, sortDirection, toggleSortDirection, cycleSortCriteria, isSorting],
+  );
+
+  const paginationValue = useMemo<PaginationContextType>(
+    () => ({ currentPage, setCurrentPage }),
+    [currentPage],
   );
 
   return (
-    <SearchContext.Provider value={value}>{children}</SearchContext.Provider>
+    <PostsDataContext.Provider value={postsDataValue}>
+      <SearchQueryContext.Provider value={searchQueryValue}>
+        <SortContext.Provider value={sortValue}>
+          <PaginationContext.Provider value={paginationValue}>
+            {children}
+          </PaginationContext.Provider>
+        </SortContext.Provider>
+      </SearchQueryContext.Provider>
+    </PostsDataContext.Provider>
   );
 };
 
-export const useSearch = (): SearchContextType => {
-  const context = useContext(SearchContext);
-  if (context === undefined) {
-    throw new Error("useSearch must be used within a SearchProvider");
-  }
-  return context;
+// ── hooks ─────────────────────────────────────────────────────────────────────
+
+const missingProvider = (name: string) => {
+  throw new Error(`${name} must be used within a SearchProvider`);
+};
+
+export const usePostsData = (): PostsDataContextType => {
+  const ctx = useContext(PostsDataContext);
+  if (!ctx) missingProvider("usePostsData");
+  return ctx!;
+};
+
+export const useSearchQuery = (): SearchQueryContextType => {
+  const ctx = useContext(SearchQueryContext);
+  if (!ctx) missingProvider("useSearchQuery");
+  return ctx!;
+};
+
+export const useSort = (): SortContextType => {
+  const ctx = useContext(SortContext);
+  if (!ctx) missingProvider("useSort");
+  return ctx!;
+};
+
+export const usePagination = (): PaginationContextType => {
+  const ctx = useContext(PaginationContext);
+  if (!ctx) missingProvider("usePagination");
+  return ctx!;
 };

@@ -200,17 +200,25 @@ export const Header = styled.header`
   pointer-events: none;
 
   h1 {
-    position: relative;
-    color: var(--color-primary);
-    font-size: clamp(2rem, 6vw, 3rem);
     font-family: "mega", "Arial Black", sans-serif;
-    font-weight: normal;
+    font-size: clamp(2rem, 6vw, 3rem);
     letter-spacing: 0.1em;
     line-height: 1;
     margin: 1rem 0;
 
+    color: transparent;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-primary) 88%, white) 0%,
+      var(--color-primary) 50%,
+      color-mix(in srgb, var(--color-primary) 88%, black) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+
     text-shadow:
-      0 0 5px var(--color-header-glow);
+      0 1px 0 rgba(255, 255, 255, 0.08),
+      0 2px 0 rgba(0, 0, 0, 0.22);
   }
 
   @media (max-height: 1200px) {
@@ -281,7 +289,6 @@ export const Header = styled.header`
     }
   }
 `;
-
 
 export const SortButton = styled.button`
   position: absolute;

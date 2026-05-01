@@ -16,7 +16,7 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import CheckIcon from "@mui/icons-material/Check";
 import AddIcon from "@mui/icons-material/Add";
-import { useSearch } from "../../shared/contexts/SearchContext";
+import { useSort, useSearchQuery } from "../../shared/contexts/SearchContext";
 import { useFontLoaded } from "../../shared/hooks";
 import { User, isAdmin } from "../../shared/types/user";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -86,7 +86,7 @@ const AddPostButton = styled.button`
 
 const FilterDropdownComponent = React.memo(function FilterDropdownComponent() {
   const { sortBy, sortDirection, toggleSortDirection, cycleSortCriteria } =
-    useSearch();
+    useSort();
   const [isOpen, setIsOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
@@ -212,7 +212,7 @@ const FilterDropdownComponent = React.memo(function FilterDropdownComponent() {
 });
 
 const SearchBarMemo = React.memo(function SearchBarMemo() {
-  const { query, setQuery } = useSearch();
+  const { query, setQuery } = useSearchQuery();
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { lightgrey, accent } from "../../shared/theme/colors";
 import { CommentItem } from "./CommentItem";
@@ -132,6 +132,11 @@ const CommentSectionComponent: React.FC<CommentSectionProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Keep a ref to onCommentsLoad so loadComments doesn't depend on it.
+  // This prevents the effect from re-running when the parent re-renders.
+  const onCommentsLoadRef = useRef(onCommentsLoad);
+  useEffect(() => { onCommentsLoadRef.current = onCommentsLoad; });
+
   const loadComments = React.useCallback(async () => {
     try {
       setLoading(true);
@@ -139,7 +144,6 @@ const CommentSectionComponent: React.FC<CommentSectionProps> = ({
       const fetchedComments = await commentService.getComments(postId);
       const allComments = Array.isArray(fetchedComments) ? fetchedComments : [];
 
-      // Build nested tree from flat list
       const commentMap = new Map<number | string, Comment>();
       for (const c of allComments) {
         commentMap.set(c.id, { ...c, replies: [] });
@@ -162,7 +166,7 @@ const CommentSectionComponent: React.FC<CommentSectionProps> = ({
 
       setComments(topLevel);
       setTotalCount(allComments.length);
-      onCommentsLoad?.(allComments.length);
+      onCommentsLoadRef.current?.(allComments.length);
     } catch (err) {
       console.error("Failed to load comments:", err);
       setError("Failed to load comments. Please try again later.");
@@ -170,7 +174,7 @@ const CommentSectionComponent: React.FC<CommentSectionProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [postId, onCommentsLoad]);
+  }, [postId]); // Only re-creates when the post changes, not when parent re-renders
 
   const handleSubmitComment = React.useCallback(
     async (commentData: CreateCommentRequest) => {

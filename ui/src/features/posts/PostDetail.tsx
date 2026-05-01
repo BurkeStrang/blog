@@ -3,7 +3,7 @@ import { useParams, Navigate, useLocation } from "react-router-dom";
 import { Post } from "../../app/AppContent";
 import styled from "styled-components";
 import { backgroundColor, lightgrey, accent } from "../../shared/theme/colors";
-import { useSearch } from "../../shared/contexts/SearchContext";
+import { usePostsData } from "../../shared/contexts/SearchContext";
 import { CommentSection } from "../comments";
 import { apiService } from "../../services/api";
 import { User, isAdmin } from "../../shared/types/user";
@@ -697,7 +697,7 @@ const PostDetailComponent = function PostDetail({
   onCommentCountChange,
 }: PostDetailProps) {
   const { slug } = useParams<{ slug: string }>();
-  const { trackPostView } = useSearch();
+  const { trackPostView } = usePostsData();
   const location = useLocation();
   const [loginLoading, setLoginLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
