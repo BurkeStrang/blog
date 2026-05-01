@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useRef, useMemo, useState } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { useLocation } from "react-router-dom";
 import { useTheme } from "../../shared/contexts/ThemeContext";
@@ -490,14 +490,21 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   // Check if we're on the About route
   const isAboutRoute = location.pathname === "/about";
 
+  const postsToUse = sortedPosts || posts;
+  const visiblePosts = useMemo(() => {
+    if (!visiblePostSlugs) return postsToUse;
+    return postsToUse.filter((post) => visiblePostSlugs.has(post.slug));
+  }, [postsToUse, visiblePostSlugs]);
+
   // Calculate pagination info
-  const totalPosts = visiblePostSlugs
-    ? (sortedPosts || posts).filter((post) => visiblePostSlugs.has(post.slug))
-        .length
-    : (sortedPosts || posts).length;
+  const totalPosts = visiblePosts.length;
   const totalPages = Math.ceil(totalPosts / postsPerPage);
   const startIndex = (currentPage - 1) * postsPerPage;
   const endIndex = startIndex + postsPerPage;
+  const postsToRender = useMemo(
+    () => visiblePosts.slice(startIndex, endIndex),
+    [visiblePosts, startIndex, endIndex],
+  );
 
   // Pagination handlers
   // Track timeouts for cleanup
@@ -526,7 +533,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     };
   }, []);
 
-  const handleLeftClick = () => {
+  const handleLeftClick = useCallback(() => {
     if (currentPage > 1) {
       const newPage = currentPage - 1;
       setCurrentPage(newPage);
@@ -544,9 +551,9 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
       }, 0);
       timeoutIds.current.add(timeoutId);
     }
-  };
+  }, [currentPage, setCurrentPage, totalPosts]);
 
-  const handleRightClick = () => {
+  const handleRightClick = useCallback(() => {
     if (currentPage < totalPages) {
       const newPage = currentPage + 1;
       setCurrentPage(newPage);
@@ -558,7 +565,11 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
       }, 0);
       timeoutIds.current.add(timeoutId);
     }
-  };
+  }, [currentPage, setCurrentPage, totalPages]);
+
+  const handlePostCubeClick = useCallback((slug: string) => {
+    onPostClick?.(slug);
+  }, [onPostClick]);
 
   // Reset scroll target after scrolling
   useEffect(() => {
@@ -570,24 +581,12 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     }
   }, [scrollToIndex]);
 
-
-  // Original positions for all posts (used when no search filter)
-  const originalPositions = useMemo(() => {
-    if (!posts || !Array.isArray(posts) || posts.length === 0) return [];
-    return posts
-      .filter((post) => post) // Filter out any undefined posts
-      .map(
-        (_, i) => new Vector3(i * 50 - (posts.length - 1) * 25, -100, i * 40),
-      );
-  }, [posts]);
-
   // Compacted positions - use sorted posts for positioning with pagination
   const compactedPositions = useMemo(() => {
     const maxPostsPerPage = postsPerPage; // Always use 10 for consistent positioning
 
     if (!visiblePostSlugs) {
       // No filter - use sorted posts if available, otherwise original posts
-      const postsToUse = sortedPosts || posts;
       const paginatedPosts = postsToUse.slice(startIndex, endIndex);
       return paginatedPosts.map(
         (_, i) =>
@@ -595,11 +594,6 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
       );
     }
 
-    // Filter applied - use sorted visible posts with pagination
-    const postsToUse = sortedPosts || posts;
-    const visiblePosts = postsToUse.filter((post) =>
-      visiblePostSlugs.has(post.slug),
-    );
     const paginatedPosts = visiblePosts.slice(startIndex, endIndex);
     if (paginatedPosts.length === 0) return [];
 
@@ -608,18 +602,15 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
       (_, i) => new Vector3(i * 50 - (maxPostsPerPage - 1) * 25, -8.5, i * 40),
     );
   }, [
-    posts,
     visiblePostSlugs,
-    originalPositions,
-    sortedPosts,
+    postsToUse,
+    visiblePosts,
     startIndex,
     endIndex,
-    postsPerPage,
   ]);
 
   // Calculate offset positions for camera positioning - need ALL filtered posts for proper pagination
   const offsetPositions = useMemo(() => {
-    const postsToUse = sortedPosts || posts;
     let allFilteredPosts;
     
     if (!visiblePostSlugs) {
@@ -644,7 +635,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     }
     
     return positions;
-  }, [posts, visiblePostSlugs, sortedPosts, postsPerPage]);
+  }, [postsToUse, visiblePostSlugs, postsPerPage]);
   const startPos = useMemo(() => {
     // Provide default position when no posts are available
     if (offsetPositions.length === 0) {
@@ -655,21 +646,9 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
 
   // Calculate max position index for current page
   const maxPositionIndex = useMemo(() => {
-    const postsToUse = sortedPosts || posts;
-    let currentPagePosts;
-
-    if (!visiblePostSlugs) {
-      // No filter - use pagination
-      currentPagePosts = postsToUse.slice(startIndex, endIndex);
-    } else {
-      // Filter applied - get visible posts then paginate
-      const visiblePosts = postsToUse.filter((post) => visiblePostSlugs.has(post.slug));
-      currentPagePosts = visiblePosts.slice(startIndex, endIndex);
-    }
-
     // Return max index (count - 1) for current page
-    return Math.max(0, currentPagePosts.length - 1);
-  }, [posts, sortedPosts, visiblePostSlugs, startIndex, endIndex]);
+    return Math.max(0, postsToRender.length - 1);
+  }, [postsToRender]);
 
   // Reset camera position when currentPage changes (handles both pagination and filter changes)
   useEffect(() => {
@@ -881,23 +860,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
           isDark={isDark}
         />
       )}
-      {(() => {
-        // Get posts for current page
-        const postsToUse = sortedPosts || posts;
-        let postsToRender;
-
-        if (!visiblePostSlugs) {
-          // No filter - use pagination
-          postsToRender = postsToUse.slice(startIndex, endIndex);
-        } else {
-          // Filter applied - get visible posts then paginate
-          const visiblePosts = postsToUse.filter((post) =>
-            visiblePostSlugs.has(post.slug),
-          );
-          postsToRender = visiblePosts.slice(startIndex, endIndex);
-        }
-
-        return postsToRender.map((post, renderIndex) => {
+      {postsToRender.map((post, renderIndex) => {
           // Use renderIndex for positioning (0, 1, 2, etc.)
           const targetPos = compactedPositions[renderIndex];
 
@@ -918,7 +881,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
               title={post.title}
               position={[startPosX, startPosY, startPosZ]}
               targetPosition={[targetPos.x, targetPos.y, targetPos.z]}
-              onClick={() => onPostClick?.(post.slug)}
+              onClick={handlePostCubeClick}
               rubiksCubeModel={resources.models.rubiksCube!}
               font={resources.fonts.gentilis!}
               isVisible={true}
@@ -926,8 +889,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
               isDark={isDark}
             />
           );
-        });
-      })()}
+        })}
 
       {!isAboutRoute && (
         <group>

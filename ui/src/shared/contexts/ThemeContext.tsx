@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { userPreferencesService } from '../../services/userPreferencesService';
 
 type Theme = 'dark' | 'light';
@@ -71,8 +71,13 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ userEmail, childre
     });
   }, [userEmail]);
 
+  const value = useMemo(
+    () => ({ theme, toggleTheme }),
+    [theme, toggleTheme],
+  );
+
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );

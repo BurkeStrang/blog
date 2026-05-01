@@ -90,10 +90,14 @@ const FilterDropdownComponent = React.memo(function FilterDropdownComponent() {
   const [isOpen, setIsOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
-  const handleOptionClick = (action: () => void) => {
+  const handleOptionClick = React.useCallback((action: () => void) => {
     action();
     setIsOpen(false);
-  };
+  }, []);
+
+  const handleToggleOpen = React.useCallback(() => {
+    setIsOpen((current) => !current);
+  }, []);
 
   // Close dropdown when clicking outside
   React.useEffect(() => {
@@ -116,7 +120,7 @@ const FilterDropdownComponent = React.memo(function FilterDropdownComponent() {
   }, [isOpen]);
 
   // Get display text and next action for sort criteria
-  const getSortCriteriaDisplay = () => {
+  const criteriaDisplay = React.useMemo(() => {
     switch (sortBy) {
       case "pageViews":
         return { current: "VIEWS", next: "DATE" };
@@ -127,14 +131,12 @@ const FilterDropdownComponent = React.memo(function FilterDropdownComponent() {
       default:
         return { current: "TRENDING", next: "VIEWS" };
     }
-  };
-
-  const criteriaDisplay = getSortCriteriaDisplay();
+  }, [sortBy]);
 
   return (
     <div ref={dropdownRef} style={{ position: "relative" }}>
       <FilterButton
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggleOpen}
         aria-label="Filter options"
       >
         <FilterListIcon
@@ -215,6 +217,14 @@ const SearchBarMemo = React.memo(function SearchBarMemo() {
   const { query, setQuery } = useSearchQuery();
   const inputRef = React.useRef<HTMLInputElement>(null);
 
+  const handleChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+  }, [setQuery]);
+
+  const handleClear = React.useCallback(() => {
+    setQuery("");
+  }, [setQuery]);
+
   React.useEffect(() => {
     const isMobile = window.matchMedia('(hover: none)').matches;
     if (!isMobile) {
@@ -232,12 +242,10 @@ const SearchBarMemo = React.memo(function SearchBarMemo() {
           type="text"
           placeholder="Search"
           value={query}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setQuery(e.target.value)
-          }
+          onChange={handleChange}
         />
         {query && (
-          <ClearButton onClick={() => setQuery("")} aria-label="Clear search">
+          <ClearButton onClick={handleClear} aria-label="Clear search">
             ×
           </ClearButton>
         )}
@@ -254,9 +262,9 @@ const Posts: React.FC<PostsProps> = ({ user }) => {
   // Wait for the mega font to load before showing the title
   const isFontLoaded = useFontLoaded("mega");
 
-  const handleAddPost = () => {
+  const handleAddPost = React.useCallback(() => {
     navigate("/posts/new");
-  };
+  }, [navigate]);
 
   return (
     <Page>

@@ -105,7 +105,7 @@ interface PostBoxProps {
   slug: string;
   index: number;
   position: [number, number, number]; // Original/base position
-  onClick: () => void;
+  onClick: (slug: string) => void;
   rubiksCubeModel: GLTF;
   font: Font;
   onReady?: () => void;
@@ -595,7 +595,7 @@ function PostBoxCore(props: PostBoxProps) {
   const handleClick = (e: { stopPropagation: () => void }) => {
     e.stopPropagation();
     if (!isVisible || sortingPhase !== "none") return;
-    onClick();
+    onClick(slug);
   };
 
   // Always render - frustum culling removed

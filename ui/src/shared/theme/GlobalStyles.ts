@@ -203,7 +203,7 @@ export const Header = styled.header`
     font-family: "mega", "Arial Black", sans-serif;
     font-size: clamp(2rem, 6vw, 3rem);
     letter-spacing: 0.1em;
-    line-height: 1;
+    line-height: 0.95;
     margin: 1rem 0;
 
     color: transparent;
@@ -217,53 +217,19 @@ export const Header = styled.header`
     background-clip: text;
 
     text-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.08),
-      0 2px 0 rgba(0, 0, 0, 0.22);
-  }
-
-  @media (max-height: 1200px) {
-    padding-top: 3rem;
-
-    h1 {
-      font-size: clamp(1.8rem, 5.5vw, 2.5rem);
-      margin-top: 0.75rem;
-    }
-  }
-
-  @media (max-height: 800px) {
-    padding-top: 3rem;
-
-    h1 {
-      font-size: clamp(1.4rem, 4.5vw, 2rem);
-      margin-top: 0.75rem;
-    }
-  }
-
-  @media (max-height: 600px) {
-    padding-top: 3rem;
-
-    h1 {
-      font-size: clamp(1.4rem, 4.5vw, 1.8rem);
-      margin: 0.5rem 0;
-    }
-  }
-
-  @media (max-height: 450px) {
-    padding-top: 2rem;
-
-    h1 {
-      font-size: clamp(1rem, 3.5vw, 1.2rem);
-      margin: 0.25rem 0;
-    }
+      0 1px 0 rgba(255, 255, 255, 0.06),
+      0 1.5px 0 rgba(0, 0, 0, 0.18);
   }
 
   @media (max-width: 768px) {
     padding-top: 2rem;
 
     h1 {
-      font-size: clamp(1.5rem, 8vw, 2rem);
-      margin: 0.75rem 0;
-      letter-spacing: 0.08em;
+      font-size: clamp(1.5rem, 7vw, 2rem);
+      letter-spacing: 0.045em;
+      line-height: 1;
+      margin: 0.65rem 0;
+      text-wrap: balance;
     }
   }
 
@@ -271,21 +237,22 @@ export const Header = styled.header`
     padding-top: 1.5rem;
 
     h1 {
-      font-size: clamp(1.5rem, 9vw, 2rem);
-      margin: 0.5rem 0;
-      letter-spacing: 0.06em;
-      height: auto;
+      font-size: clamp(1.35rem, 8vw, 1.85rem);
+      letter-spacing: 0.025em;
+      line-height: 1.05;
+      margin: 0.45rem 0;
+      max-width: 95vw;
     }
   }
 
-  @media (max-width: 320px) {
+  @media (max-width: 360px) {
     padding-top: 1rem;
 
     h1 {
-      font-size: clamp(1.2rem, 10vw, 1.6rem);
-      margin: 0.375rem 0;
-      letter-spacing: 0.04em;
-      height: auto;
+      font-size: clamp(1.15rem, 8.5vw, 1.55rem);
+      letter-spacing: 0.01em;
+      line-height: 1.08;
+      margin: 0.35rem 0;
     }
   }
 `;

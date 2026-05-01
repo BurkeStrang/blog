@@ -353,39 +353,47 @@ const CodeBlockWrapper = styled.div`
   }
 `;
 
-export const MarkdownContent: React.FC<MarkdownContentProps> = ({ content }) => {
+export const MarkdownContent = React.memo(function MarkdownContent({ content }: MarkdownContentProps) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+
+  const markdownComponents = React.useMemo(
+    () => ({
+      code(props: {
+        children?: React.ReactNode;
+        className?: string;
+      }) {
+        const { children, className } = props;
+        const match = /language-(\w+)/.exec(className || '');
+        const language = match ? match[1] : 'text';
+        const isInline = !className;
+
+        return !isInline ? (
+          <CodeBlockWrapper>
+            <Suspense fallback={<pre><code>{String(children).replace(/\n$/, '')}</code></pre>}>
+              <LazyCodeBlock language={language} isDark={isDark}>
+                {String(children).replace(/\n$/, '')}
+              </LazyCodeBlock>
+            </Suspense>
+          </CodeBlockWrapper>
+        ) : (
+          <code className={className}>
+            {children}
+          </code>
+        );
+      },
+    }),
+    [isDark],
+  );
 
   return (
     <MarkdownWrapper>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        components={{
-          code(props) {
-            const { children, className } = props;
-            const match = /language-(\w+)/.exec(className || '');
-            const language = match ? match[1] : 'text';
-            const isInline = !className;
-
-            return !isInline ? (
-              <CodeBlockWrapper>
-                <Suspense fallback={<pre><code>{String(children).replace(/\n$/, '')}</code></pre>}>
-                  <LazyCodeBlock language={language} isDark={isDark}>
-                    {String(children).replace(/\n$/, '')}
-                  </LazyCodeBlock>
-                </Suspense>
-              </CodeBlockWrapper>
-            ) : (
-              <code className={className}>
-                {children}
-              </code>
-            );
-          },
-        }}
+        components={markdownComponents}
       >
         {content}
       </ReactMarkdown>
     </MarkdownWrapper>
   );
-};
+});

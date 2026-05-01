@@ -92,8 +92,6 @@ const AppContent: React.FC = memo(() => {
     return new Set(filteredPosts.map((post) => post.slug));
   }, [filteredPosts]);
 
-  // Track navigation history to determine if we should load canvas
-  const [, setHasVisitedHome] = useState(false);
   const [shouldLoadCanvas, setShouldLoadCanvas] = useState(false);
 
   // Preload all assets once
@@ -127,7 +125,6 @@ const AppContent: React.FC = memo(() => {
     // Load canvas for posts list, home, and about routes
     // Do NOT load for direct post detail navigation (/posts/:slug)
     if (isHomeRoute || isPostsRoute || isAboutRoute) {
-      setHasVisitedHome(true);
       setShouldLoadCanvas(true);
     }
   }, [location.pathname]);
@@ -223,7 +220,7 @@ const AppContent: React.FC = memo(() => {
         memoryTracker.takeSnapshot("AppContent-Cleanup");
       }, 100);
     };
-  }, [resources, setAllPosts]);
+  }, [resources]);
 
   const lastClickedSlugRef = useRef<string | null>(null);
   const handlePostClick = useCallback(
@@ -236,6 +233,10 @@ const AppContent: React.FC = memo(() => {
     [navigate],
   );
 
+  const handleCanvasLoaded = useCallback(() => {
+    setCanvasLoaded(true);
+  }, []);
+
   // Memoize stable props to prevent LazyOceanCanvas re-renders
   const oceanCanvasProps = useMemo(
     () => ({
@@ -245,10 +246,10 @@ const AppContent: React.FC = memo(() => {
       sortedPosts: filteredPosts,
       isSorting,
       onPostClick: handlePostClick,
-      onLoaded: () => setCanvasLoaded(true),
+      onLoaded: handleCanvasLoaded,
       loadTrigger: "viewport" as const,
     }),
-    [posts, resources, visiblePostSlugs, filteredPosts, isSorting, handlePostClick],
+    [posts, resources, visiblePostSlugs, filteredPosts, isSorting, handlePostClick, handleCanvasLoaded],
   );
 
   const handleClose = useCallback(() => {
@@ -457,13 +458,16 @@ const AppContent: React.FC = memo(() => {
 
 
   // Update search context when posts are loaded from API - prevent multiple calls
-  const prevPostsLengthRef = useRef(0);
-  const hasSetPostsRef = useRef(false);
+  const prevPostsSignatureRef = useRef("");
 
   useEffect(() => {
-    if (posts.length > 0 && (!hasSetPostsRef.current || posts.length !== prevPostsLengthRef.current)) {
-      prevPostsLengthRef.current = posts.length;
-      hasSetPostsRef.current = true;
+    if (posts.length > 0) {
+      const signature = posts
+        .map((post) => `${post.id ?? post.slug}:${post.slug}:${post.title}:${post.date ?? ""}:${post.pageViews ?? 0}:${post.commentCount ?? 0}`)
+        .join("|");
+      if (signature === prevPostsSignatureRef.current) return;
+
+      prevPostsSignatureRef.current = signature;
       setAllPosts(posts);
     }
   }, [posts, setAllPosts]);

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState, useEffect } from 'react';
+import React, { lazy, Suspense, memo, useCallback, useMemo, useState, useEffect } from 'react';
 import LoadingCubes from '../../shared/components/LoadingCubes';
 import type { Post } from '../../app/AppContent';
 
@@ -35,7 +35,95 @@ interface LazyOceanCanvasProps {
 /**
  * Lazy loading wrapper for OceanDemoCanvas with intersection observer
  */
-const LazyOceanCanvas: React.FC<LazyOceanCanvasProps> = ({
+const loadingOverlayStyle: React.CSSProperties = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  color: 'white',
+  fontSize: '18px',
+  fontFamily: 'monospace'
+};
+
+const containerStyle: React.CSSProperties = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%'
+};
+
+const interactionPlaceholderStyle: React.CSSProperties = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'rgba(0, 0, 0, 0.9)',
+  color: 'white',
+  cursor: 'pointer',
+  userSelect: 'none'
+};
+
+const resourcesLoadingStyle: React.CSSProperties = {
+  ...loadingOverlayStyle,
+  fontSize: '16px',
+};
+
+const LoadingFallback = memo(function LoadingFallback() {
+  return (
+    <div style={loadingOverlayStyle}>
+      <div style={{ textAlign: 'center' }}>
+        <LoadingCubes />
+      </div>
+    </div>
+  );
+});
+
+interface InteractionPlaceholderProps {
+  postCount: number;
+  onInteraction: () => void;
+}
+
+const InteractionPlaceholder = memo(function InteractionPlaceholder({
+  postCount,
+  onInteraction,
+}: InteractionPlaceholderProps) {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      onInteraction();
+    }
+  }, [onInteraction]);
+
+  return (
+    <div 
+      style={interactionPlaceholderStyle}
+      onClick={onInteraction}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="button"
+      aria-label="Load 3D scene"
+    >
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌊</div>
+        <div style={{ fontSize: '24px', marginBottom: '8px' }}>Click to Load 3D Scene</div>
+        <div style={{ fontSize: '14px', opacity: 0.7 }}>
+          Interactive ocean with {postCount} posts
+        </div>
+      </div>
+    </div>
+  );
+});
+
+const LazyOceanCanvas = memo(function LazyOceanCanvas({
   posts,
   onPostClick,
   resources,
@@ -45,7 +133,7 @@ const LazyOceanCanvas: React.FC<LazyOceanCanvasProps> = ({
   visiblePostSlugs,
   sortedPosts,
   isSorting = false
-}) => {
+}: LazyOceanCanvasProps) {
   const [shouldLoad, setShouldLoad] = useState(loadTrigger === 'immediate');
   const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null);
 
@@ -75,96 +163,37 @@ const LazyOceanCanvas: React.FC<LazyOceanCanvasProps> = ({
   }, [containerRef, loadTrigger, shouldLoad]);
 
   // User interaction loading
-  const handleUserInteraction = () => {
+  const handleUserInteraction = useCallback(() => {
     if (loadTrigger === 'user-interaction' && !shouldLoad) {
       setShouldLoad(true);
     }
-  };
+  }, [loadTrigger, shouldLoad]);
 
   // Check if resources are ready
-  const resourcesReady = React.useMemo(() => {
+  const resourcesReady = useMemo(() => {
     return !!(
       resources.textures.waterNormals &&
       resources.models.sphere &&
       resources.models.rubiksCube &&
       resources.fonts.gentilis
     );
-  }, [resources]);
-
-  // Loading fallback component
-  const LoadingFallback = () => (
-    <div 
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        color: 'white',
-        fontSize: '18px',
-        fontFamily: 'monospace'
-      }}
-    >
-      <div style={{ textAlign: 'center' }}>
-        <LoadingCubes />
-      </div>
-    </div>
-  );
-
-  // Placeholder for user interaction trigger
-  const InteractionPlaceholder = () => (
-    <div 
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.9)',
-        color: 'white',
-        cursor: 'pointer',
-        userSelect: 'none'
-      }}
-      onClick={handleUserInteraction}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          handleUserInteraction();
-        }
-      }}
-      tabIndex={0}
-      role="button"
-      aria-label="Load 3D scene"
-    >
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌊</div>
-        <div style={{ fontSize: '24px', marginBottom: '8px' }}>Click to Load 3D Scene</div>
-        <div style={{ fontSize: '14px', opacity: 0.7 }}>
-          Interactive ocean with {posts.length} posts
-        </div>
-      </div>
-    </div>
-  );
+  }, [
+    resources.textures.waterNormals,
+    resources.models.sphere,
+    resources.models.rubiksCube,
+    resources.fonts.gentilis,
+  ]);
 
   return (
     <div 
       ref={setContainerRef}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%'
-      }}
+      style={containerStyle}
     >
       {!shouldLoad && loadTrigger === 'user-interaction' && (
-        <InteractionPlaceholder />
+        <InteractionPlaceholder
+          postCount={posts.length}
+          onInteraction={handleUserInteraction}
+        />
       )}
       
       {shouldLoad && resourcesReady && (
@@ -184,20 +213,7 @@ const LazyOceanCanvas: React.FC<LazyOceanCanvasProps> = ({
       
       {shouldLoad && !resourcesReady && (
         <div 
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            color: 'white',
-            fontSize: '16px',
-            fontFamily: 'monospace'
-          }}
+          style={resourcesLoadingStyle}
         >
           <div style={{ textAlign: 'center' }}>
             <LoadingCubes />
@@ -210,6 +226,8 @@ const LazyOceanCanvas: React.FC<LazyOceanCanvasProps> = ({
       )}
     </div>
   );
-};
+});
+
+LazyOceanCanvas.displayName = 'LazyOceanCanvas';
 
 export default LazyOceanCanvas;
