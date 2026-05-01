@@ -233,8 +233,8 @@ export const Header = styled.header`
       margin: 0.65rem 0;
       text-wrap: balance;
       text-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.2),
-        0 2px 8px var(--color-header-mobile-shadow);
+        0 1px 0 var(--color-header-glow),
+        0 2px 8px var(--color-header-glow-far);
     }
   }
 
@@ -265,8 +265,8 @@ export const Header = styled.header`
     @media (max-width: 768px) {
       h1 {
         text-shadow:
-          0 1px 0 rgba(255, 255, 255, 0.55),
-          0 1.5px 6px var(--color-header-mobile-shadow);
+          0 1px 0 var(--color-header-glow),
+          0 1.5px 6px var(--color-header-glow-far);
       }
     }
   }
