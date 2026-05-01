@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 
 	"blogapi/database"
 
@@ -55,6 +56,34 @@ func WarmPostsCache(router http.Handler) {
 	}
 
 	log.Printf("Posts cache warm complete: %d post detail routes primed", warmed)
+}
+
+// WarmCommentsCache primes cached comment list responses for each post.
+func WarmCommentsCache(router http.Handler) {
+	log.Println("Warming comments cache")
+
+	targets, err := fetchPostCacheWarmTargets()
+	if err != nil {
+		log.Printf("Comments cache warm skipped: %v", err)
+		return
+	}
+
+	warmed := 0
+	for _, target := range targets {
+		postID := strings.TrimPrefix(target.ID, "post-")
+		if postID == "" {
+			continue
+		}
+
+		path := fmt.Sprintf("/api/comments?post_id=%s", postID)
+		if err := warmCacheRequest(router, path); err != nil {
+			log.Printf("Comments cache warm failed for post %s: %v", postID, err)
+			continue
+		}
+		warmed++
+	}
+
+	log.Printf("Comments cache warm complete: %d comment list routes primed", warmed)
 }
 
 func warmCacheRequest(router http.Handler, path string) error {

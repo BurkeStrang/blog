@@ -192,17 +192,12 @@ const AppContent: React.FC = memo(() => {
         detail: { severity: event.detail.severity }
       }));
 
-      // Force React to clean up any lingering state
       if (event.detail.severity === "high") {
-        // setSelectedPost(null);
+        // no-op: high-severity memory pressure logged above
       }
     };
 
-    // Emergency cleanup handler
-    const handleEmergencyCleanup = () => {
-      // Clear state to free memory
-      // setSelectedPost(null);
-    };
+    const handleEmergencyCleanup = () => {};
 
     window.addEventListener(
       "memory-cleanup-force",

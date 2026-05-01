@@ -149,6 +149,7 @@ func main() {
 	}
 
 	middleware.WarmPostsCache(r)
+	middleware.WarmCommentsCache(r)
 
 	r.Run(":8080")
 }

@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 
 // Centralized breakpoints - no more magic numbers scattered everywhere
 export const breakpoints = {
@@ -96,35 +95,4 @@ export const responsivePatterns = {
       margin: '5px'
     }
   }
-};
-
-// Utility function to create responsive styles
-export const createResponsiveStyles = <T extends Record<string, unknown>>(
-  styles: T
-): T => {
-  return styles;
-};
-
-// Hook for detecting screen size
-export const useScreenSize = () => {
-  const [screenSize, setScreenSize] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
-
-  useEffect(() => {
-    const checkScreenSize = () => {
-      const width = window.innerWidth;
-      if (width <= parseInt(breakpoints.mobile)) {
-        setScreenSize('mobile');
-      } else if (width <= parseInt(breakpoints.tablet)) {
-        setScreenSize('tablet');
-      } else {
-        setScreenSize('desktop');
-      }
-    };
-
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
-
-  return screenSize;
 };

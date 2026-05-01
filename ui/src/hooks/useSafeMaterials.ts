@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Material, Texture, MeshBasicMaterial, MeshLambertMaterial, MeshStandardMaterial } from 'three';
+import { Material, Texture } from 'three';
 
 /**
  * Custom hook to create safe materials that handle undefined textures
@@ -45,28 +45,4 @@ export function useSafeMaterials<T extends Record<string, Material>>(materials: 
     
     return safeMaterials;
   }, [materials]);
-}
-
-/**
- * Create a fallback material for when textures fail to load
- */
-export function createFallbackMaterial(options: {
-  color?: number;
-  type?: 'basic' | 'lambert' | 'standard';
-} = {}): Material {
-  const { color = 0x808080, type = 'standard' } = options;
-  
-  switch (type) {
-    case 'basic':
-      return new MeshBasicMaterial({ color });
-    case 'lambert':
-      return new MeshLambertMaterial({ color });
-    case 'standard':
-    default:
-      return new MeshStandardMaterial({ 
-        color,
-        roughness: 0.7,
-        metalness: 0.1
-      });
-  }
 }
