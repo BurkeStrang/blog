@@ -44,7 +44,8 @@ static std::string addr_str(const sockaddr_in& addr) {
 
 struct Client {
     std::string buf;
-    std::string addr; // "ip:port" for logging
+    std::string addr;    // "ip:port" for logging
+    int cmd_count = 0;   // commands processed; 0 means silent TCP probe
 };
 
 Server::Server(Store& store, int port) : store_(store), port_(port) {
@@ -104,17 +105,16 @@ void Server::run() {
                     int cfd = accept4(listen_fd_, (sockaddr*)&cli, &len, SOCK_NONBLOCK);
                     if (cfd < 0) break;
                     std::string peer = addr_str(cli);
-                    clients[cfd] = {"", peer};
+                    clients[cfd] = {"", peer, 0};
                     epoll_add(epoll_fd_, cfd, EPOLLIN | EPOLLET);
-                    LOG("CONNECT", peer + " fd=" + std::to_string(cfd));
                 }
                 continue;
             }
 
             if (events[i].events & (EPOLLHUP | EPOLLERR)) {
                 auto it = clients.find(fd);
-                std::string peer = it != clients.end() ? it->second.addr : "?";
-                LOG("DISCONNECT", peer + " fd=" + std::to_string(fd));
+                if (it != clients.end() && it->second.cmd_count > 0)
+                    LOG("DISCONNECT", it->second.addr + " fd=" + std::to_string(fd));
                 epoll_del(epoll_fd_, fd);
                 clients.erase(fd);
                 close(fd);
@@ -145,6 +145,9 @@ void Server::run() {
                         auto cmd = parse_resp(client.buf);
                         if (!cmd) break;
                         if (!cmd->args.empty()) {
+                            if (client.cmd_count == 0)
+                                LOG("CONNECT", client.addr + " fd=" + std::to_string(fd));
+                            client.cmd_count++;
                             std::string response = dispatch(store_, cmd->args);
                             if (cmd->args[0] == "QUIT" || cmd->args[0] == "quit") {
                                 send(fd, response.data(), response.size(), MSG_NOSIGNAL);
@@ -163,7 +166,8 @@ void Server::run() {
                 }
 
                 if (closed) {
-                    LOG("DISCONNECT", client.addr + " fd=" + std::to_string(fd));
+                    if (client.cmd_count > 0)
+                        LOG("DISCONNECT", client.addr + " fd=" + std::to_string(fd));
                     epoll_del(epoll_fd_, fd);
                     clients.erase(fd);
                     close(fd);
