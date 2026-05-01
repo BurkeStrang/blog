@@ -128,7 +128,7 @@ export const LIGHT_SCENE_THEME: SceneTheme = {
     elevation: 14,
     azimuth: -100,
     exposure: 1,
-    showSunDisc: 1,
+    showSunDisc: 0,
   },
   clouds: {
     cloudCoverage: 0.22,

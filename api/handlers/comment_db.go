@@ -18,6 +18,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// invalidateCommentCache removes the cached comment list for a specific post.
+// postCosmosID is in the form "post-123"; we strip the prefix to match the
+// query param the frontend sends (?post_id=123).
+func invalidateCommentCache(postCosmosID string) {
+	numericID := strings.TrimPrefix(postCosmosID, "post-")
+	key := "GET:/api/comments?post_id=" + numericID
+	middleware.APICache.Invalidate(key)
+	log.Printf("Invalidated comment cache for post %s", postCosmosID)
+}
+
 // GetCommentsDB handles GET /api/comments with Cosmos DB storage
 func GetCommentsDB(c *gin.Context) {
 	ctx := context.Background()
@@ -179,8 +189,7 @@ func CreateCommentDB(c *gin.Context) {
 		// Don't fail the request if we can't update the count
 	}
 
-	// Invalidate posts cache to reflect updated comment count
-	middleware.PostsCache.InvalidateVersion()
+	invalidateCommentCache(postCosmosID)
 
 	// Convert back to regular Comment for response
 	comment := cosmosComment.ToComment()
@@ -272,6 +281,7 @@ func UpdateCommentDB(c *gin.Context) {
 		return
 	}
 
+	invalidateCommentCache(comment.PostID)
 	log.Printf("Successfully updated comment %s by user %s", commentID, username)
 
 	// Convert back to regular Comment for response
@@ -342,8 +352,7 @@ func DeleteCommentDB(c *gin.Context) {
 		// Don't fail the request if we can't update the count
 	}
 
-	// Invalidate posts cache to reflect updated comment count
-	middleware.PostsCache.InvalidateVersion()
+	invalidateCommentCache(comment.PostID)
 
 	c.JSON(http.StatusOK, gin.H{"message": "comment deleted successfully"})
 }
@@ -744,8 +753,7 @@ func ReplyToCommentDB(c *gin.Context) {
 		// Don't fail the request if we can't update the count
 	}
 
-	// Invalidate posts cache to reflect updated comment count
-	middleware.PostsCache.InvalidateVersion()
+	invalidateCommentCache(parentComment.PostID)
 
 	// Convert back to regular Comment for response
 	reply := replyComment.ToComment()

@@ -230,11 +230,15 @@ class ApiService {
 
   // Authentication endpoints
   async getGoogleAuthUrl(): Promise<{ url: string }> {
-    return this.fetch<{ url: string }>('/auth/google');
+    return this.fetch<{ url: string }>('/auth/google', {
+      cache: 'none'
+    });
   }
 
   async loginWithGoogle(code: string, state: string): Promise<{ token: string; user: User }> {
-    return this.fetch<{ token: string; user: User }>(`/auth/google/callback?code=${code}&state=${state}`);
+    return this.fetch<{ token: string; user: User }>(`/auth/google/callback?code=${code}&state=${state}`, {
+      cache: 'none'
+    });
   }
 
   // Check if JWT token is expired

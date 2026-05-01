@@ -398,9 +398,6 @@ func TrackPostViewDB(c *gin.Context) {
 		return
 	}
 
-	// Invalidate posts cache to reflect updated view count
-	middleware.PostsCache.InvalidateVersion()
-
 	// TODO: Optionally record detailed analytics in a separate container
 	// For now, we'll skip detailed analytics to keep it simple
 
@@ -515,6 +512,7 @@ func CreatePostDB(c *gin.Context) {
 		return
 	}
 
+	middleware.PostsCache.InvalidateVersion()
 	log.Printf("Successfully created post with ID: %s", cosmosPost.ID)
 	c.JSON(http.StatusCreated, post)
 }
@@ -641,6 +639,7 @@ func UpdatePostDB(c *gin.Context) {
 		return
 	}
 
+	middleware.PostsCache.InvalidateVersion()
 	// Convert back to regular Post for response
 	updatedPost := existingPost.ToPost()
 	c.JSON(http.StatusOK, updatedPost)
@@ -722,6 +721,7 @@ func DeletePostDB(c *gin.Context) {
 	// For now, we'll leave comments as orphaned records
 	// In production, you might want to implement cascade deletion for comments
 
+	middleware.PostsCache.InvalidateVersion()
 	log.Printf("Successfully deleted post with ID: %s", existingPost.ID)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "post deleted successfully",

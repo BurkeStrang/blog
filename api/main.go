@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -29,7 +30,12 @@ func main() {
 	}
 	middleware.InitRedisCache(redisAddr)
 
-	r := gin.Default()
+	r := gin.New()
+	if err := r.SetTrustedProxies(parseTrustedProxies(os.Getenv("TRUSTED_PROXIES"))); err != nil {
+		log.Fatalf("Failed to configure trusted proxies: %v", err)
+	}
+	r.Use(gin.Recovery())
+	r.Use(middleware.RequestLoggingMiddleware())
 
 	// Security and validation middleware
 	r.Use(middleware.SecurityHeadersMiddleware())
@@ -104,15 +110,17 @@ func main() {
 	}
 
 	// Auth endpoints
-	r.GET("/auth/google", handlers.GoogleLogin)
-	r.GET("/auth/google/callback", handlers.GoogleCallback)
+	r.GET("/auth/google", middleware.NoCacheMiddleware(), handlers.GoogleLogin)
+	r.GET("/auth/google/callback", middleware.NoCacheMiddleware(), handlers.GoogleCallback)
 
 	// API group with /api prefix
 	api := r.Group("/api")
 	{
-		// Blog post endpoints (caching temporarily disabled for debugging)
-		api.GET("/posts", handlers.GetPostsDB)
-		api.GET("/posts/:id", handlers.GetPostByIDDB)
+		// Post endpoints with caching
+		api.GET("/posts", middleware.PostsCacheMiddleware(), handlers.GetPostsDB)
+		api.GET("/posts/:id", middleware.PostsCacheMiddleware(), handlers.GetPostByIDDB)
+		api.GET("/posts/popular", middleware.PostsCacheMiddleware(), handlers.GetPopularPostsDB)
+		api.GET("/posts/search", middleware.PostsCacheMiddleware(), handlers.SearchPostsDB)
 
 		// Non-cached endpoints
 		api.POST("/posts/:id/view", middleware.NoCacheMiddleware(), handlers.TrackPostViewDB)
@@ -122,7 +130,7 @@ func main() {
 		api.POST("/posts/update-comment-counts", middleware.AuthMiddleware(), middleware.RequireRole("admin"), handlers.UpdateCommentCountsDB)
 
 		// Comment endpoints
-		api.GET("/comments", middleware.NoCacheMiddleware(), handlers.GetCommentsDB)
+		api.GET("/comments", middleware.CommentsCacheMiddleware(), handlers.GetCommentsDB)
 		api.POST("/comments", middleware.AuthMiddleware(), middleware.NoCacheMiddleware(), handlers.CreateCommentDB)
 		api.PUT("/comments/:id", middleware.AuthMiddleware(), middleware.NoCacheMiddleware(), handlers.UpdateCommentDB)
 		api.DELETE("/comments/:id", middleware.AuthMiddleware(), middleware.NoCacheMiddleware(), handlers.DeleteCommentDB)
@@ -136,13 +144,35 @@ func main() {
 		api.POST("/comments/:id/reply", middleware.AuthMiddleware(), middleware.NoCacheMiddleware(), handlers.ReplyToCommentDB)
 
 		// User preferences endpoints
-		api.GET("/users/preferences", middleware.AuthMiddleware(), handlers.GetUserPreferences)
-		api.PUT("/users/preferences", middleware.AuthMiddleware(), handlers.PutUserPreferences)
-
-		// Additional endpoints
-		api.GET("/posts/popular", middleware.PostsCacheMiddleware(), handlers.GetPopularPostsDB)
-		api.GET("/posts/search", middleware.PostsCacheMiddleware(), handlers.SearchPostsDB)
+		api.GET("/users/preferences", middleware.AuthMiddleware(), middleware.PrivateNoCacheMiddleware(), handlers.GetUserPreferences)
+		api.PUT("/users/preferences", middleware.AuthMiddleware(), middleware.PrivateNoCacheMiddleware(), handlers.PutUserPreferences)
 	}
 
+	middleware.WarmPostsCache(r)
+
 	r.Run(":8080")
+}
+
+func parseTrustedProxies(raw string) []string {
+	if raw == "" {
+		log.Println("Trusted proxies disabled; set TRUSTED_PROXIES to trust forwarded headers")
+		return nil
+	}
+
+	proxies := make([]string, 0)
+	for _, entry := range strings.Split(raw, ",") {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			continue
+		}
+		proxies = append(proxies, entry)
+	}
+
+	if len(proxies) == 0 {
+		log.Println("Trusted proxies disabled; set TRUSTED_PROXIES to trust forwarded headers")
+		return nil
+	}
+
+	log.Printf("Trusted proxies configured: %s", strings.Join(proxies, ", "))
+	return proxies
 }

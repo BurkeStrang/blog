@@ -31,16 +31,33 @@ type Cache interface {
 	Invalidate(pattern string)
 	InvalidateVersion()
 	Clear()
-	GetStats() map[string]interface{}
-	ValidateAndCleanCache() map[string]interface{}
+	TTL() time.Duration
+	GetStats() map[string]any
+	ValidateAndCleanCache() map[string]any
 }
 
 // Global cache instances — default to in-memory, replaced with RedisCache in main.
 var (
-	PostsCache     Cache = NewCacheManager(15 * time.Minute)
-	AnalyticsCache Cache = NewCacheManager(2 * time.Minute)
+	PostsCache     Cache = NewCacheManager(30 * time.Minute)
+	AnalyticsCache Cache = NewCacheManager(5 * time.Minute)
 	APICache       Cache = NewCacheManager(5 * time.Minute)
 )
+
+const (
+	cacheStatusContextKey  = "cache.status"
+	cacheBackendContextKey = "cache.backend"
+)
+
+func cacheBackendName(cache Cache) string {
+	switch cache.(type) {
+	case *RedisCache:
+		return "redis"
+	case *CacheManager:
+		return "memory"
+	default:
+		return "unknown"
+	}
+}
 
 // generateCacheKey builds a cache key from the request method, path, query, and user.
 func generateCacheKey(c *gin.Context) string {
@@ -60,18 +77,13 @@ func generateETag(data []byte) string {
 	return `"` + hex.EncodeToString(hash[:]) + `"`
 }
 
-// validateJSONResponse returns an error if the data is malformed, concatenated, or too large.
+// validateJSONResponse returns an error if the data is empty, invalid JSON, or too large.
 func validateJSONResponse(data []byte, contentType string) error {
 	if !strings.Contains(contentType, "application/json") {
 		return nil
 	}
 	if len(data) == 0 {
 		return fmt.Errorf("empty response data")
-	}
-	for _, pattern := range []string{"}[", "]{", "}{", "] [", "} [", "] {", "} {"} {
-		if strings.Contains(string(data), pattern) {
-			return fmt.Errorf("detected concatenated JSON arrays in response")
-		}
 	}
 	var tmp interface{}
 	if err := json.Unmarshal(data, &tmp); err != nil {
@@ -184,7 +196,11 @@ func (cm *CacheManager) Clear() {
 	cm.cache = make(map[string]*CacheEntry)
 }
 
-func (cm *CacheManager) GetStats() map[string]interface{} {
+func (cm *CacheManager) TTL() time.Duration {
+	return cm.ttl
+}
+
+func (cm *CacheManager) GetStats() map[string]any {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
 	valid, invalid, total := 0, 0, 0
@@ -196,7 +212,7 @@ func (cm *CacheManager) GetStats() map[string]interface{} {
 			valid++
 		}
 	}
-	return map[string]interface{}{
+	return map[string]any{
 		"total_entries":    len(cm.cache),
 		"valid_entries":    valid,
 		"invalid_entries":  invalid,
@@ -207,7 +223,7 @@ func (cm *CacheManager) GetStats() map[string]interface{} {
 	}
 }
 
-func (cm *CacheManager) ValidateAndCleanCache() map[string]interface{} {
+func (cm *CacheManager) ValidateAndCleanCache() map[string]any {
 	cm.mutex.Lock()
 	defer cm.mutex.Unlock()
 	cleaned := 0
@@ -219,7 +235,7 @@ func (cm *CacheManager) ValidateAndCleanCache() map[string]interface{} {
 			cleaned++
 		}
 	}
-	result := map[string]interface{}{
+	result := map[string]any{
 		"cleaned_entries":   cleaned,
 		"remaining_entries": len(cm.cache),
 	}
@@ -245,19 +261,26 @@ func CacheMiddleware(cache Cache, cacheable func(*gin.Context) bool) gin.Handler
 		}
 
 		cacheKey := generateCacheKey(c)
+		cacheControl := fmt.Sprintf("public, max-age=%d", int(cache.TTL().Seconds()))
+		c.Set(cacheBackendContextKey, cacheBackendName(cache))
 
 		if entry, exists := cache.Get(cacheKey); exists {
+			c.Set(cacheStatusContextKey, "HIT")
 			if ifNoneMatch := c.GetHeader("If-None-Match"); ifNoneMatch != "" && ifNoneMatch == entry.ETag {
+				log.Printf("Cache HIT (304 Not Modified): %s", cacheKey)
 				c.Status(http.StatusNotModified)
 				return
 			}
+			log.Printf("Cache HIT: %s (%d bytes)", cacheKey, len(entry.Data))
 			c.Header("ETag", entry.ETag)
-			c.Header("Cache-Control", "public, max-age=300")
+			c.Header("Cache-Control", cacheControl)
 			c.Header("X-Cache", "HIT")
 			c.Data(entry.StatusCode, entry.ContentType, entry.Data)
 			return
 		}
 
+		c.Set(cacheStatusContextKey, "MISS")
+		log.Printf("Cache MISS: %s", cacheKey)
 		writer := &responseWriter{ResponseWriter: c.Writer, body: make([]byte, 0)}
 		c.Writer = writer
 		c.Next()
@@ -269,7 +292,7 @@ func CacheMiddleware(cache Cache, cacheable func(*gin.Context) bool) gin.Handler
 			}
 			cache.Set(cacheKey, writer.body, contentType, writer.status)
 			c.Header("X-Cache", "MISS")
-			c.Header("Cache-Control", "public, max-age=300")
+			c.Header("Cache-Control", cacheControl)
 		}
 	}
 }
@@ -302,6 +325,13 @@ func PostsCacheMiddleware() gin.HandlerFunc {
 	})
 }
 
+// CommentsCacheMiddleware caches GET /api/comments responses (short TTL, public data).
+func CommentsCacheMiddleware() gin.HandlerFunc {
+	return CacheMiddleware(APICache, func(c *gin.Context) bool {
+		return c.Request.Method == "GET" && c.Request.URL.Path == "/api/comments"
+	})
+}
+
 // AnalyticsCacheMiddleware caches analytics responses.
 func AnalyticsCacheMiddleware() gin.HandlerFunc {
 	return CacheMiddleware(AnalyticsCache, func(c *gin.Context) bool { return true })
@@ -320,6 +350,16 @@ func StaticCacheMiddleware() gin.HandlerFunc {
 func NoCacheMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+		c.Header("Pragma", "no-cache")
+		c.Header("Expires", "0")
+		c.Next()
+	}
+}
+
+// PrivateNoCacheMiddleware prevents caching for authenticated or user-specific responses.
+func PrivateNoCacheMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Cache-Control", "private, no-cache, no-store, must-revalidate")
 		c.Header("Pragma", "no-cache")
 		c.Header("Expires", "0")
 		c.Next()

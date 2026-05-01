@@ -27,6 +27,7 @@ class CommentService {
   async getComments(postId: number): Promise<Comment[]> {
     try {
       const response = await fetch(`${this.baseURL}/comments?post_id=${postId}`, {
+        cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
         },
