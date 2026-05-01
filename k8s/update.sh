@@ -5,7 +5,7 @@ RESOURCE_GROUP="${1:-rg-blog-prod}"
 CLUSTER_NAME="${2:-aks-blog-prod}"
 
 NGINX_VERSION="4.15.1"
-CERT_MANAGER_VERSION="1.20.2"
+CERT_MANAGER_VERSION="1.21.0"
 
 echo "Getting AKS credentials..."
 az aks get-credentials --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME" --overwrite-existing
