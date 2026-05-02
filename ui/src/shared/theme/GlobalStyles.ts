@@ -234,7 +234,7 @@ export const Header = styled.header`
       text-wrap: balance;
       text-shadow:
         0 1px 0 var(--color-header-glow),
-        0 2px 8px var(--color-header-glow-far);
+        0 2px 8px var(--color-header-far);
     }
   }
 
@@ -266,7 +266,7 @@ export const Header = styled.header`
       h1 {
         text-shadow:
           0 1px 0 var(--color-header-glow),
-          0 1.5px 6px var(--color-header-glow-far);
+          0 1.5px 6px var(--color-header-far);
       }
     }
   }
