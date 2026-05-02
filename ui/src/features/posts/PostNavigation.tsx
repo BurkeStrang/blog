@@ -264,17 +264,25 @@ export default function FollowerSphere({
   }, [labelMesh]);
 
   useLayoutEffect(() => {
+    if (!showLeftArrow) {
+      leftHoveredRef.current = false;
+      leftHoverT.current = 0;
+    }
     leftArrowMesh.visible = showLeftArrow;
     leftArrowHitMesh.visible = showLeftArrow;
-    leftArrowOutlineMesh.visible = false;
+    leftArrowOutlineMesh.visible = showLeftArrow && leftHoveredRef.current;
     navGroupRef.current.add(leftArrowMesh, leftArrowOutlineMesh, leftArrowHitMesh);
     return () => { navGroupRef.current.remove(leftArrowMesh, leftArrowOutlineMesh, leftArrowHitMesh); };
   }, [leftArrowMesh, leftArrowOutlineMesh, leftArrowHitMesh, showLeftArrow]);
 
   useLayoutEffect(() => {
+    if (!showRightArrow) {
+      rightHoveredRef.current = false;
+      rightHoverT.current = 0;
+    }
     rightArrowMesh.visible = showRightArrow;
     rightArrowHitMesh.visible = showRightArrow;
-    rightArrowOutlineMesh.visible = false;
+    rightArrowOutlineMesh.visible = showRightArrow && rightHoveredRef.current;
     navGroupRef.current.add(rightArrowMesh, rightArrowOutlineMesh, rightArrowHitMesh);
     return () => { navGroupRef.current.remove(rightArrowMesh, rightArrowOutlineMesh, rightArrowHitMesh); };
   }, [rightArrowMesh, rightArrowOutlineMesh, rightArrowHitMesh, showRightArrow]);
@@ -331,13 +339,13 @@ export default function FollowerSphere({
   };
   const handlePointerOver = (e: ThreeEvent<PointerEvent>) => {
     const name = e.object.name;
-    if (name === "leftArrow" || name === "leftArrow-outline") {
+    if (showLeftArrow && (name === "leftArrow" || name === "leftArrow-outline")) {
       leftHoveredRef.current = true;
       const obj = navGroupRef.current.getObjectByName("leftArrow-outline");
       if (obj) obj.visible = true;
       gl.domElement?.style.setProperty("cursor", "pointer");
     }
-    if (name === "rightArrow" || name === "rightArrow-outline") {
+    if (showRightArrow && (name === "rightArrow" || name === "rightArrow-outline")) {
       rightHoveredRef.current = true;
       const obj = navGroupRef.current.getObjectByName("rightArrow-outline");
       if (obj) obj.visible = true;
@@ -349,13 +357,13 @@ export default function FollowerSphere({
     if (name === "leftArrow" || name === "leftArrow-outline") {
       leftHoveredRef.current = false;
       const obj = navGroupRef.current.getObjectByName("leftArrow-outline");
-      if (obj) obj.visible = false;
+      if (obj) obj.visible = showLeftArrow && leftHoveredRef.current;
       gl.domElement?.style.setProperty("cursor", "auto");
     }
     if (name === "rightArrow" || name === "rightArrow-outline") {
       rightHoveredRef.current = false;
       const obj = navGroupRef.current.getObjectByName("rightArrow-outline");
-      if (obj) obj.visible = false;
+      if (obj) obj.visible = showRightArrow && rightHoveredRef.current;
       gl.domElement?.style.setProperty("cursor", "auto");
     }
   };
