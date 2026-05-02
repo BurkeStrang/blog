@@ -30,7 +30,7 @@ func invalidateCommentCache(postCosmosID string) {
 
 // GetCommentsDB handles GET /api/comments with Cosmos DB storage
 func GetCommentsDB(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 
 	// Filter by post_id if provided
 	if postIDStr := c.Query("post_id"); postIDStr != "" {
@@ -43,7 +43,6 @@ func GetCommentsDB(c *gin.Context) {
 			// Try as-is if it's already in string format
 			postCosmosID = postIDStr
 		}
-
 
 		// Query all comments for the specific post (including replies)
 		queryStr := "SELECT * FROM c WHERE c.type = 'comment' AND c.postId = @postId ORDER BY c.likeCount DESC, c.createdAt ASC"
@@ -102,12 +101,12 @@ func GetCommentsDB(c *gin.Context) {
 
 // CreateCommentDB handles POST /api/comments with Cosmos DB storage
 func CreateCommentDB(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 
 	var requestData struct {
-		PostID  any `json:"post_id"`
-		Content string      `json:"content"`
-		Author  string      `json:"author"`
+		PostID  any    `json:"post_id"`
+		Content string `json:"content"`
+		Author  string `json:"author"`
 	}
 
 	if err := c.ShouldBindJSON(&requestData); err != nil {
@@ -197,7 +196,7 @@ func CreateCommentDB(c *gin.Context) {
 }
 
 func UpdateCommentDB(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	commentID := c.Param("id")
 
 	// Get user from auth middleware
@@ -290,7 +289,7 @@ func UpdateCommentDB(c *gin.Context) {
 }
 
 func DeleteCommentDB(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	commentID := c.Param("id")
 
 	// Get user from auth middleware
@@ -358,7 +357,7 @@ func DeleteCommentDB(c *gin.Context) {
 }
 
 func LikeCommentDB(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	commentID := c.Param("id")
 
 	// Get user from auth middleware
@@ -373,7 +372,6 @@ func LikeCommentDB(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required to like comments"})
 		return
 	}
-
 
 	// Check for postId query parameter to optimize lookup
 	postIDParam := c.Query("postId")
@@ -461,7 +459,7 @@ func LikeCommentDB(c *gin.Context) {
 }
 
 func UnlikeCommentDB(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	commentID := c.Param("id")
 
 	// Get user from auth middleware
@@ -476,7 +474,6 @@ func UnlikeCommentDB(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required to unlike comments"})
 		return
 	}
-
 
 	// Check for postId query parameter to optimize lookup
 	postIDParam := c.Query("postId")
@@ -553,9 +550,8 @@ func DeleteReplyDB(c *gin.Context) {
 }
 
 func GetCommentLikesDB(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	commentID := c.Param("id")
-
 
 	// Get current user (if authenticated)
 	var currentUser string
@@ -647,7 +643,7 @@ func GetCommentLikesDB(c *gin.Context) {
 }
 
 func ReplyToCommentDB(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	parentCommentID := c.Param("id")
 
 	var requestData struct {
@@ -931,4 +927,3 @@ func updatePostCommentCount(ctx context.Context, postID string, delta int) error
 	log.Printf("Updated comment count for post %s: %d (delta: %d)", postID, post.CommentCount, delta)
 	return nil
 }
-

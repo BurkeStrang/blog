@@ -1,19 +1,36 @@
 package main
 
 import (
-	"blogapi/config"
-	"blogapi/database"
-	"blogapi/handlers"
-	"blogapi/middleware"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"context"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+	"time"
+
+	"blogapi/config"
+	"blogapi/database"
+	"blogapi/handlers"
+	"blogapi/middleware"
+	"blogapi/observability"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	otelShutdown, err := observability.Init(context.Background())
+	if err != nil {
+		log.Fatalf("Failed to initialize observability: %v", err)
+	}
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := otelShutdown(ctx); err != nil {
+			log.Printf("Failed to shutdown observability: %v", err)
+		}
+	}()
+
 	// Initialize OAuth configuration
 	config.InitOAuth()
 
@@ -35,6 +52,8 @@ func main() {
 		log.Fatalf("Failed to configure trusted proxies: %v", err)
 	}
 	r.Use(gin.Recovery())
+	r.Use(observability.Middleware("blog-api"))
+	r.Use(observability.HTTPMetricsMiddleware())
 	r.Use(middleware.RequestLoggingMiddleware())
 
 	// Security and validation middleware
@@ -71,6 +90,7 @@ func main() {
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
+	r.GET("/metrics", observability.MetricsHandler())
 
 	// Cache management endpoints (admin only)
 	admin := r.Group("/admin")

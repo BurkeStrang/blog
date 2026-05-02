@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
@@ -42,7 +41,6 @@ func init() {
 	}()
 }
 
-
 func GoogleLogin(c *gin.Context) {
 	state := generateState()
 
@@ -74,14 +72,15 @@ func GoogleCallback(c *gin.Context) {
 	stateMutex.Unlock()
 
 	// Exchange code for token
-	token, err := config.GoogleOAuthConfig.Exchange(context.Background(), code)
+	ctx := c.Request.Context()
+	token, err := config.GoogleOAuthConfig.Exchange(ctx, code)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to exchange code for token"})
 		return
 	}
 
 	// Get user info from Google
-	client := config.GoogleOAuthConfig.Client(context.Background(), token)
+	client := config.GoogleOAuthConfig.Client(ctx, token)
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user info"})

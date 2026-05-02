@@ -76,6 +76,11 @@ az aks get-credentials --resource-group "$RESOURCE_GROUP" --name "$CLUSTER_NAME"
 echo "Ensuring namespace, config, and manifests exist..."
 kubectl apply -f k8s/namespace.yaml
 kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/observability/namespace.yaml
+kubectl apply -f k8s/observability/tempo.yaml
+kubectl apply -f k8s/observability/otel-collector.yaml
+kubectl apply -f k8s/observability/prometheus.yaml
+kubectl apply -f k8s/observability/grafana.yaml
 kubectl apply -f k8s/customredis/deployment.yaml
 kubectl apply -f k8s/customredis/service.yaml
 kubectl apply -f k8s/api/deployment.yaml

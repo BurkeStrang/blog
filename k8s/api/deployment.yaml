@@ -17,6 +17,10 @@ spec:
     metadata:
       labels:
         app: blog-api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8080"
     spec:
       nodeSelector:
         workload: api
@@ -51,6 +55,26 @@ spec:
                 configMapKeyRef:
                   name: blog-config
                   key: REDIS_ADDR
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: blog-config
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
+            - name: OTEL_EXPORTER_OTLP_INSECURE
+              valueFrom:
+                configMapKeyRef:
+                  name: blog-config
+                  key: OTEL_EXPORTER_OTLP_INSECURE
+            - name: OTEL_SERVICE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: blog-config
+                  key: OTEL_SERVICE_NAME
+            - name: OTEL_DEPLOYMENT_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: blog-config
+                  key: OTEL_DEPLOYMENT_ENVIRONMENT
             - name: COSMOS_DB_KEY
               valueFrom:
                 secretKeyRef:

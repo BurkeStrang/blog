@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -36,7 +37,10 @@ func (r *RedisCache) key(cacheKey string) string {
 }
 
 func (r *RedisCache) Get(cacheKey string) (*CacheEntry, bool) {
-	ctx := context.Background()
+	return r.GetWithContext(context.Background(), cacheKey)
+}
+
+func (r *RedisCache) GetWithContext(ctx context.Context, cacheKey string) (*CacheEntry, bool) {
 	raw, err := r.client.Get(ctx, r.key(cacheKey)).Bytes()
 	if err != nil {
 		return nil, false
@@ -64,6 +68,10 @@ func (r *RedisCache) Get(cacheKey string) (*CacheEntry, bool) {
 }
 
 func (r *RedisCache) Set(cacheKey string, data []byte, contentType string, statusCode int) {
+	r.SetWithContext(context.Background(), cacheKey, data, contentType, statusCode)
+}
+
+func (r *RedisCache) SetWithContext(ctx context.Context, cacheKey string, data []byte, contentType string, statusCode int) {
 	if err := validateJSONResponse(data, contentType); err != nil {
 		log.Printf("RedisCache: skipping storage for key %s: %v", cacheKey, err)
 		return
@@ -82,7 +90,6 @@ func (r *RedisCache) Set(cacheKey string, data []byte, contentType string, statu
 		return
 	}
 
-	ctx := context.Background()
 	if err := r.client.Set(ctx, r.key(cacheKey), raw, r.ttl).Err(); err != nil {
 		log.Printf("RedisCache: SET error for key %s: %v", cacheKey, err)
 		return
@@ -205,6 +212,12 @@ func InitRedisCache(addr string) {
 		PoolSize:        5, // blog traffic doesn't need a large pool
 		ConnMaxIdleTime: 5 * time.Minute,
 	})
+	if err := redisotel.InstrumentTracing(client); err != nil {
+		log.Printf("Redis tracing instrumentation unavailable: %v", err)
+	}
+	if err := redisotel.InstrumentMetrics(client); err != nil {
+		log.Printf("Redis metrics instrumentation unavailable: %v", err)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()

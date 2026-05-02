@@ -24,7 +24,7 @@ const Cube = styled.div<{ $size: number; $delay: number }>`
   height: ${props => props.$size * 0.2}px;
   background: linear-gradient(145deg, var(--color-cube-bg-start), var(--color-cube-bg-end));
   border: 2px solid var(--color-cube-accent);
-  border-radius: 4px;
+  border-radius: 2px;
   box-shadow: 0 0 15px var(--color-cube-accent);
   margin: 0 5px;
   animation: ${pulse} 1.5s ease-in-out infinite;

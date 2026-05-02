@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -42,11 +41,11 @@ func GetPostsDB(c *gin.Context) {
 	// Validate sort parameters
 	validSortFields := map[string]bool{
 		"createdAt":   true,
-		"title":        true,
+		"title":       true,
 		"pageViews":   true,
 		"recentViews": true,
 		"lastViewed":  true,
-		"author":       true,
+		"author":      true,
 	}
 
 	if !validSortFields[sortBy] {
@@ -58,14 +57,14 @@ func GetPostsDB(c *gin.Context) {
 	}
 
 	// Build Cosmos DB cross-partition query
-	ctx := context.Background()
-	
+	ctx := c.Request.Context()
+
 	// Build SQL query string
 	queryStr := "SELECT * FROM c WHERE c.type = 'post'"
 	var parameters []azcosmos.QueryParameter
-	
+
 	log.Printf("Executing Cosmos DB query: %s", queryStr)
-	
+
 	// Add search filter if provided
 	if search != "" {
 		// Sanitize search input
@@ -92,13 +91,13 @@ func GetPostsDB(c *gin.Context) {
 	postPartitionKey := azcosmos.NewPartitionKeyString("post")
 	queryOptions := azcosmos.QueryOptions{
 		QueryParameters: parameters,
-		PageSizeHint:   int32(limit),
+		PageSizeHint:    int32(limit),
 	}
 
 	queryIterator := database.PostsContainer.NewQueryItemsPager(queryStr, postPartitionKey, &queryOptions)
-	
+
 	var cosmosPosts []models.CosmosPost
-	
+
 	// Get results from the "post" partition
 	if queryIterator.More() {
 		queryResponse, err := queryIterator.NextPage(ctx)
@@ -109,26 +108,26 @@ func GetPostsDB(c *gin.Context) {
 		}
 
 		log.Printf("Query returned %d items", len(queryResponse.Items))
-		
+
 		for _, item := range queryResponse.Items {
 			var post models.CosmosPost
 			if err := json.Unmarshal(item, &post); err != nil {
 				log.Printf("Error unmarshaling post: %v", err)
 				continue
 			}
-			
+
 			// Apply search filter if provided
-			if search == "" || 
-			   strings.Contains(strings.ToLower(post.Title), strings.ToLower(search)) ||
-			   strings.Contains(strings.ToLower(post.Body), strings.ToLower(search)) ||
-			   strings.Contains(strings.ToLower(post.Author), strings.ToLower(search)) {
+			if search == "" ||
+				strings.Contains(strings.ToLower(post.Title), strings.ToLower(search)) ||
+				strings.Contains(strings.ToLower(post.Body), strings.ToLower(search)) ||
+				strings.Contains(strings.ToLower(post.Author), strings.ToLower(search)) {
 				cosmosPosts = append(cosmosPosts, post)
 			}
 		}
 	}
-	
+
 	// All posts are now in the same "post" partition for efficient querying
-	
+
 	log.Printf("Found %d cosmos posts, converting to %d regular posts", len(cosmosPosts), len(cosmosPosts))
 
 	// Convert CosmosPost to Post for API compatibility
@@ -158,7 +157,7 @@ func GetPostsDB(c *gin.Context) {
 
 // GetPostByIDDB handles GET /api/posts/:id with Cosmos DB storage
 func GetPostByIDDB(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	idParam := c.Param("id")
 
 	log.Printf("Searching for post with parameter: %s", idParam)
@@ -219,15 +218,15 @@ func GetPostByIDDB(c *gin.Context) {
 
 // UpdateCommentCountsDB handles POST /api/posts/update-comment-counts (admin only)
 func UpdateCommentCountsDB(c *gin.Context) {
-	ctx := context.Background()
-	
+	ctx := c.Request.Context()
+
 	// Get all posts from Cosmos DB
 	queryStr := "SELECT * FROM c WHERE c.type = 'post'"
 	postPartitionKey := azcosmos.NewPartitionKeyString("post")
 	queryIterator := database.PostsContainer.NewQueryItemsPager(queryStr, postPartitionKey, nil)
-	
+
 	var posts []models.CosmosPost
-	
+
 	if queryIterator.More() {
 		queryResponse, err := queryIterator.NextPage(ctx)
 		if err != nil {
@@ -235,7 +234,7 @@ func UpdateCommentCountsDB(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch posts"})
 			return
 		}
-		
+
 		for _, item := range queryResponse.Items {
 			var post models.CosmosPost
 			if err := json.Unmarshal(item, &post); err != nil {
@@ -245,11 +244,11 @@ func UpdateCommentCountsDB(c *gin.Context) {
 			posts = append(posts, post)
 		}
 	}
-	
+
 	// For each post, count comments and update
 	for i := range posts {
 		post := &posts[i]
-		
+
 		// Count comments for this post
 		commentQueryStr := "SELECT VALUE COUNT(1) FROM c WHERE c.type = 'comment' AND c.postId = @postId"
 		commentParameters := []azcosmos.QueryParameter{
@@ -258,11 +257,11 @@ func UpdateCommentCountsDB(c *gin.Context) {
 		commentQueryOptions := azcosmos.QueryOptions{
 			QueryParameters: commentParameters,
 		}
-		
+
 		// Use the post ID as the partition key for comments container
 		commentPartitionKey := azcosmos.NewPartitionKeyString(post.ID)
 		commentIterator := database.CommentsContainer.NewQueryItemsPager(commentQueryStr, commentPartitionKey, &commentQueryOptions)
-		
+
 		var commentCount int
 		if commentIterator.More() {
 			commentResponse, err := commentIterator.NextPage(ctx)
@@ -270,7 +269,7 @@ func UpdateCommentCountsDB(c *gin.Context) {
 				log.Printf("Error counting comments for post %s: %v", post.ID, err)
 				continue
 			}
-			
+
 			if len(commentResponse.Items) > 0 {
 				if err := json.Unmarshal(commentResponse.Items[0], &commentCount); err != nil {
 					log.Printf("Error unmarshaling comment count: %v", err)
@@ -278,25 +277,25 @@ func UpdateCommentCountsDB(c *gin.Context) {
 				}
 			}
 		}
-		
+
 		// Update post with new comment count
 		post.CommentCount = commentCount
 		post.UpdatedAt = time.Now().UTC()
-		
+
 		// Save updated post
 		updatedPostBytes, err := json.Marshal(post)
 		if err != nil {
 			log.Printf("Failed to marshal updated post %s: %v", post.ID, err)
 			continue
 		}
-		
+
 		_, err = database.PostsContainer.ReplaceItem(ctx, postPartitionKey, post.ID, updatedPostBytes, nil)
 		if err != nil {
 			log.Printf("Failed to update post %s in Cosmos DB: %v", post.ID, err)
 			continue
 		}
 	}
-	
+
 	// Convert to regular posts for response
 	var responsePosts []gin.H
 	for _, post := range posts {
@@ -306,18 +305,17 @@ func UpdateCommentCountsDB(c *gin.Context) {
 			"commentCount": post.CommentCount,
 		})
 	}
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "comment counts updated successfully",
-		"posts": responsePosts,
+		"posts":   responsePosts,
 	})
 }
 
 // TrackPostViewDB handles POST /api/posts/:id/view with Cosmos DB storage
 func TrackPostViewDB(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	slug := c.Param("id")
-
 
 	// Find the post by slug or ID
 	var queryStr string
@@ -410,7 +408,7 @@ func TrackPostViewDB(c *gin.Context) {
 
 // CreatePostDB handles POST /api/posts with Cosmos DB storage
 func CreatePostDB(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 
 	var post models.Post
 	if err := c.ShouldBindJSON(&post); err != nil {
@@ -519,7 +517,7 @@ func CreatePostDB(c *gin.Context) {
 
 // UpdatePostDB handles PUT /api/posts/:id with Cosmos DB storage
 func UpdatePostDB(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	idParam := c.Param("id")
 
 	// Find the existing post
@@ -647,7 +645,7 @@ func UpdatePostDB(c *gin.Context) {
 
 // DeletePostDB handles DELETE /api/posts/:id with Cosmos DB cascade deletion
 func DeletePostDB(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	idParam := c.Param("id")
 
 	// Find the existing post
@@ -753,4 +751,3 @@ func GetPopularPostsDB(c *gin.Context) {
 	// Use the main GetPostsDB function
 	GetPostsDB(c)
 }
-

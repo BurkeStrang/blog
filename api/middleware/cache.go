@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
@@ -36,6 +37,11 @@ type Cache interface {
 	ValidateAndCleanCache() map[string]any
 }
 
+type contextCache interface {
+	GetWithContext(context.Context, string) (*CacheEntry, bool)
+	SetWithContext(context.Context, string, []byte, string, int)
+}
+
 // Global cache instances — default to in-memory, replaced with RedisCache in main.
 var (
 	PostsCache     Cache = NewCacheManager(30 * time.Minute)
@@ -57,6 +63,21 @@ func cacheBackendName(cache Cache) string {
 	default:
 		return "unknown"
 	}
+}
+
+func cacheGet(ctx context.Context, cache Cache, key string) (*CacheEntry, bool) {
+	if contextual, ok := cache.(contextCache); ok {
+		return contextual.GetWithContext(ctx, key)
+	}
+	return cache.Get(key)
+}
+
+func cacheSet(ctx context.Context, cache Cache, key string, data []byte, contentType string, statusCode int) {
+	if contextual, ok := cache.(contextCache); ok {
+		contextual.SetWithContext(ctx, key, data, contentType, statusCode)
+		return
+	}
+	cache.Set(key, data, contentType, statusCode)
 }
 
 // generateCacheKey builds a cache key from the request method, path, query, and user.
@@ -264,7 +285,7 @@ func CacheMiddleware(cache Cache, cacheable func(*gin.Context) bool) gin.Handler
 		cacheControl := fmt.Sprintf("public, max-age=%d", int(cache.TTL().Seconds()))
 		c.Set(cacheBackendContextKey, cacheBackendName(cache))
 
-		if entry, exists := cache.Get(cacheKey); exists {
+		if entry, exists := cacheGet(c.Request.Context(), cache, cacheKey); exists {
 			c.Set(cacheStatusContextKey, "HIT")
 			if ifNoneMatch := c.GetHeader("If-None-Match"); ifNoneMatch != "" && ifNoneMatch == entry.ETag {
 				log.Printf("Cache HIT (304 Not Modified): %s", cacheKey)
@@ -290,7 +311,7 @@ func CacheMiddleware(cache Cache, cacheable func(*gin.Context) bool) gin.Handler
 			if contentType == "" {
 				contentType = "application/json"
 			}
-			cache.Set(cacheKey, writer.body, contentType, writer.status)
+			cacheSet(c.Request.Context(), cache, cacheKey, writer.body, contentType, writer.status)
 			c.Header("X-Cache", "MISS")
 			c.Header("Cache-Control", cacheControl)
 		}

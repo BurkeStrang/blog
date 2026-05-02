@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -35,7 +34,7 @@ func usernameFromClaims(c *gin.Context) string {
 
 // GetUserPreferences handles GET /api/users/preferences
 func GetUserPreferences(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	username := usernameFromClaims(c)
 	if username == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
@@ -70,7 +69,7 @@ func GetUserPreferences(c *gin.Context) {
 
 // PutUserPreferences handles PUT /api/users/preferences
 func PutUserPreferences(c *gin.Context) {
-	ctx := context.Background()
+	ctx := c.Request.Context()
 	username := usernameFromClaims(c)
 	if username == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
