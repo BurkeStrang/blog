@@ -16,6 +16,7 @@ jobs:
       api: ${{ steps.changes.outputs.api }}
       ui: ${{ steps.changes.outputs.ui }}
       customredis: ${{ steps.changes.outputs.customredis }}
+      infra: ${{ steps.changes.outputs.infra }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -26,11 +27,12 @@ jobs:
           echo "api=$(git diff --name-only HEAD~1 HEAD | grep -q '^api/' && echo true || echo false)" >> $GITHUB_OUTPUT
           echo "ui=$(git diff --name-only HEAD~1 HEAD | grep -q '^ui/' && echo true || echo false)" >> $GITHUB_OUTPUT
           echo "customredis=$(git diff --name-only HEAD~1 HEAD | grep -q '^customredis/' && echo true || echo false)" >> $GITHUB_OUTPUT
+          echo "infra=$(git diff --name-only HEAD~1 HEAD | grep -Eq '^(k8s/|\\.github/workflows/deploy\\.yml)' && echo true || echo false)" >> $GITHUB_OUTPUT
 
   deploy:
     runs-on: ubuntu-latest
     needs: detect-changes
-    if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ui == 'true' || needs.detect-changes.outputs.customredis == 'true'
+    if: needs.detect-changes.outputs.api == 'true' || needs.detect-changes.outputs.ui == 'true' || needs.detect-changes.outputs.customredis == 'true' || needs.detect-changes.outputs.infra == 'true'
     environment: production
     steps:
       - uses: actions/checkout@v6
@@ -96,6 +98,11 @@ jobs:
         run: |
           kubectl apply -f k8s/namespace.yaml
           kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/observability/namespace.yaml
+          kubectl apply -f k8s/observability/tempo.yaml
+          kubectl apply -f k8s/observability/otel-collector.yaml
+          kubectl apply -f k8s/observability/prometheus.yaml
+          kubectl apply -f k8s/observability/grafana.yaml
           kubectl apply -f k8s/customredis/deployment.yaml
           kubectl apply -f k8s/customredis/service.yaml
           kubectl apply -f k8s/api/deployment.yaml
@@ -123,16 +130,22 @@ jobs:
         if: needs.detect-changes.outputs.customredis == 'true'
         run: |
           kubectl set image deployment/blog-customredis blog-customredis="$ACR_SERVER/blog-customredis:$IMAGE_TAG" -n blog
-          kubectl rollout status deployment/blog-customredis -n blog --timeout=120s
+          kubectl rollout status deployment/blog-customredis -n blog --timeout=300s
 
       - name: Roll out API
         if: needs.detect-changes.outputs.api == 'true'
         run: |
           kubectl set image deployment/blog-api blog-api="$ACR_SERVER/blog-api:$IMAGE_TAG" -n blog
-          kubectl rollout status deployment/blog-api -n blog --timeout=120s
+          kubectl rollout status deployment/blog-api -n blog --timeout=300s || {
+            kubectl get pods -n blog -l app=blog-api -o wide
+            kubectl describe deployment/blog-api -n blog
+            kubectl describe pods -n blog -l app=blog-api
+            kubectl logs -n blog deployment/blog-api --tail=200
+            exit 1
+          }
 
       - name: Roll out UI
         if: needs.detect-changes.outputs.ui == 'true'
         run: |
           kubectl set image deployment/blog-ui blog-ui="$ACR_SERVER/blog-ui:$IMAGE_TAG" -n blog
-          kubectl rollout status deployment/blog-ui -n blog --timeout=120s
+          kubectl rollout status deployment/blog-ui -n blog --timeout=300s
