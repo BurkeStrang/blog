@@ -6,15 +6,15 @@ import { backgroundColor, darkgrey, neon, primary, secondary } from "./colors";
 export const GlobalStyle = createGlobalStyle`
   :root, [data-theme="dark"] {
     --color-bg: #010101;
-    --color-primary: #088;
+    --color-primary: #0aa;
     --color-accent: #099aaa;
     --color-lightgrey: #B0B3C6;
     --color-darkgrey: rgba(13, 155, 125, 0.4);
     --color-neon: #15aa14;
     --color-secondary: #748B55;
     --color-bluish: rgba(0, 128, 255, 1);
-    --color-header-glow: rgba(0, 255, 180, 0.9);
-    --color-header-glow-far: rgba(0, 200, 255, 0.1);
+    --color-header-glow: rgba(0, 220, 200, 0.6);
+    --color-header-glow-far: rgba(0, 200, 200, 0.3);
     --color-header-mobile-shadow: rgba(0, 0, 0, 0.38);
     --color-search-outline: rgba(0, 220, 200, 0.8);
     --color-search-outline-focus: rgba(0, 255, 220, 1);
@@ -60,15 +60,15 @@ export const GlobalStyle = createGlobalStyle`
 
   [data-theme="light"] {
     --color-bg: #f1f1f1;
-    --color-primary: #007a7a;
+    --color-primary: #0aa;
     --color-accent: #005f5f;
     --color-lightgrey: #1c1f2e;
     --color-darkgrey: rgba(0, 100, 90, 0.75);
     --color-neon: #0a7a09;
     --color-secondary: #4a5a35;
     --color-bluish: rgba(0, 80, 200, 1);
-    --color-header-glow: rgba(0, 255, 120, 0.6);
-    --color-header-glow-far: rgba(0, 200, 100, 0.15);
+    --color-header-glow: rgba(0, 220, 220, 0.6);
+    --color-header-glow-far: rgba(0, 100, 100, 0.15);
     --color-header-mobile-shadow: rgba(0, 72, 82, 0.12);
     --color-search-outline: rgba(0, 100, 120, 0.7);
     --color-search-outline-focus: rgba(0, 120, 140, 1);
@@ -101,7 +101,7 @@ export const GlobalStyle = createGlobalStyle`
     --color-cube-bg-end: #b0b0b0;
     --color-cube-accent: #007a7a;
     --color-sidebar-bg: rgba(255, 255, 255, 0.25);
-    --color-sidebar-link: #007a7a;
+    --color-sidebar-link: #00caca;
     --color-sidebar-glow-near: transparent;
     --color-sidebar-glow-far: transparent;
     --color-sidebar-hover-bg: rgba(0, 0, 0, 0.07);
@@ -220,7 +220,7 @@ export const Header = styled.header`
 
     text-shadow:
       0 1px 0 var(--color-header-glow),
-      0 1.5px 0 var(--color-header-far);
+      0 1.5px 0 var(--color-header-glow-far);
   }
 
   @media (max-width: 768px) {
@@ -234,7 +234,7 @@ export const Header = styled.header`
       text-wrap: balance;
       text-shadow:
         0 1px 0 var(--color-header-glow),
-        0 2px 8px var(--color-header-far);
+        0 2px 8px var(--color-header-glow-far);
     }
   }
 
@@ -266,7 +266,7 @@ export const Header = styled.header`
       h1 {
         text-shadow:
           0 1px 0 var(--color-header-glow),
-          0 1.5px 6px var(--color-header-far);
+          0 1.5px 6px var(--color-header-glow-far);
       }
     }
   }
