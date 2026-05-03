@@ -317,14 +317,13 @@ const About: React.FC = () => {
 
               <BodyText $isDark={isDark}>
                 This site is where I document the engineering work I am
-                exploring, from Three.js interfaces to Go services, deployment,
-                caching, and observability.
+                exploring, UI to Go/C# services, deployment,
+                caching, Compilers, GPU rendering, AI, and observability.
               </BodyText>
 
               <FocusList $isDark={isDark} aria-label="Areas of focus">
                 <li>Frontend systems</li>
                 <li>API design</li>
-                <li>3D web interfaces</li>
                 <li>Cloud operations</li>
               </FocusList>
 
