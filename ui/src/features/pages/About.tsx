@@ -74,6 +74,7 @@ const ContentBox = styled.div<{ $isDark: boolean }>`
   transform: translate(-50%, -50%);
   width: min(940px, calc(100vw - 8rem));
   max-height: calc(100vh - 6rem);
+  box-sizing: border-box;
 
   background: ${({ $isDark }) =>
     $isDark
@@ -100,26 +101,124 @@ const ContentBox = styled.div<{ $isDark: boolean }>`
     ease-in-out infinite;
 
   @media (max-width: 768px) {
-    width: calc(100vw - 6rem);
+    width: min(520px, calc(100vw - 5rem));
     max-height: calc(100vh - 10rem);
+    border-radius: 12px;
   }
 
   @media (max-width: 480px) {
-    width: calc(100vw - 2rem);
+    width: min(360px, calc(100vw - 3rem));
     max-height: calc(100vh - 8rem);
-    padding: 1rem;
+    padding: 1.1rem;
+    border-radius: 10px;
+  }
+
+  @media (max-width: 360px) {
+    width: calc(100vw - 2.5rem);
+    padding: 0.9rem;
   }
 `;
 
-const CoffeeIcon = styled.div`
-  font-size: clamp(3rem, 8vw, 5rem);
-  animation: float 3s ease-in-out infinite;
-  margin-bottom: 1rem;
-  filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5));
+const AboutSection = styled.section`
+  max-width: 680px;
+  min-height: 100%;
+  line-height: 1.65;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 0 auto;
+  padding: 0.5rem;
+  box-sizing: border-box;
 
   @media (max-width: 768px) {
-    font-size: clamp(1.5rem, 10vw, 3.5rem);
-    margin-bottom: 0.75rem;
+    gap: 0.85rem;
+    justify-content: flex-start;
+    padding: 0.25rem 0;
+  }
+`;
+
+const RoleLabel = styled.div<{ $isDark: boolean }>`
+  color: ${({ $isDark }) => ($isDark ? "#7ff" : "#006f6f")};
+  font-size: 0.82rem;
+  line-height: 1.3;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  opacity: 0.9;
+`;
+
+const LeadText = styled.p<{ $isDark: boolean }>`
+  color: ${({ $isDark }) => ($isDark ? "#f3f7f7" : "#152626")};
+  font-size: 1.08rem;
+  line-height: 1.65;
+  text-align: center;
+  max-width: 620px;
+  margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 0.98rem;
+    line-height: 1.55;
+    max-width: 38ch;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.92rem;
+    max-width: 31ch;
+  }
+`;
+
+const BodyText = styled.p<{ $isDark: boolean }>`
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: ${({ $isDark }) => ($isDark ? "#d5dddd" : "#263838")};
+  text-align: center;
+  max-width: 600px;
+  margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 0.86rem;
+    line-height: 1.6;
+    max-width: 36ch;
+  }
+
+  @media (max-width: 480px) {
+    max-width: 30ch;
+  }
+`;
+
+const FocusList = styled.ul<{ $isDark: boolean }>`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0.25rem 0;
+  max-width: 620px;
+
+  li {
+    color: ${({ $isDark }) => ($isDark ? "#dcf8f8" : "#143333")};
+    background: ${({ $isDark }) =>
+      $isDark ? "rgba(0, 255, 255, 0.08)" : "rgba(0, 122, 122, 0.08)"};
+    border: 1px solid
+      ${({ $isDark }) =>
+        $isDark ? "rgba(0, 255, 255, 0.2)" : "rgba(0, 122, 122, 0.2)"};
+    border-radius: 8px;
+    padding: 0.45rem 0.65rem;
+    font-size: 0.78rem;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 480px) {
+    gap: 0.4rem;
+
+    li {
+      font-size: 0.72rem;
+      padding: 0.4rem 0.55rem;
+    }
   }
 `;
 
@@ -136,7 +235,7 @@ const CodeSnippet = styled.div<{ $isDark: boolean }>`
   min-width: 0;
   width: 100%;
   min-height: 150px;
-  font-size: clamp(0.75rem, 2vw, 0.9rem);
+  font-size: 0.88rem;
   color: ${({ $isDark }) => ($isDark ? "#0ff" : "#007a7a")};
   text-align: left;
   display: flex;
@@ -144,26 +243,17 @@ const CodeSnippet = styled.div<{ $isDark: boolean }>`
   box-sizing: border-box;
 
   @media (max-width: 768px) {
-    padding: 1rem;
+    padding: 0.85rem;
     min-height: auto;
-    font-size: 0.6rem;
-    margin: 1rem auto;
+    font-size: 0.72rem;
+    margin: 0.75rem auto 0;
   }
 
   @media (max-width: 480px) {
     padding: 0.6rem;
     min-height: 100px;
-    font-size: 0.65rem;
+    font-size: 0.66rem;
   }
-`;
-
-const BodyText = styled.p<{ $isDark: boolean }>`
-  font-size: clamp(0.85rem, 2.5vw, 1.1rem);
-  color: ${({ $isDark }) => ($isDark ? "#e0e0e0" : "#1a2a2a")};
-  text-align: center;
-  max-width: 500px;
-  margin-bottom: 1rem;
-  padding: 0 1rem;
 `;
 
 const Cursor = styled.span<{ $isDark: boolean }>`
@@ -176,12 +266,11 @@ const About: React.FC = () => {
   const isDark = theme === "dark";
 
   const codeLines = [
-    "while (coffee.available) {",
-    "  code();",
-    "  learn();",
-    "  writeAboutIt();",
-    "}",
-    "// TODO: Add sleep functionality",
+    "const work = {",
+    "  focus: 'reliable web systems',",
+    "  stack: ['React', 'Go', 'Three.js'],",
+    "  priority: 'clear, maintainable code',",
+    "};",
   ];
 
   const fullCode = codeLines.join("\n");
@@ -218,27 +307,26 @@ const About: React.FC = () => {
         </FixedHeader>
         <FixedContent>
           <ContentBox $isDark={isDark}>
-            <section
-              style={{
-                maxWidth: "100%",
-                lineHeight: "1.8",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-                padding: "0.5rem",
-              }}
-            >
-              <CoffeeIcon>☕</CoffeeIcon>
+            <AboutSection>
+              <RoleLabel $isDark={isDark}>Software Developer</RoleLabel>
+
+              <LeadText $isDark={isDark}>
+                I build interactive web experiences and backend services with a
+                focus on performance, reliability, and readable systems.
+              </LeadText>
 
               <BodyText $isDark={isDark}>
-                Developer. Coffee-dependent. Amateur sleep schedule.
+                This site is where I document the engineering work I am
+                exploring, from Three.js interfaces to Go services, deployment,
+                caching, and observability.
               </BodyText>
 
-              <BodyText $isDark={isDark} style={{ overflow: "hidden" }}>
-                Too tired to overthink. Just tired enough to ship.
-              </BodyText>
+              <FocusList $isDark={isDark} aria-label="Areas of focus">
+                <li>Frontend systems</li>
+                <li>API design</li>
+                <li>3D web interfaces</li>
+                <li>Cloud operations</li>
+              </FocusList>
 
               <CodeSnippet $isDark={isDark}>
                 <pre style={{ margin: 0, fontFamily: "inherit" }}>
@@ -248,7 +336,7 @@ const About: React.FC = () => {
                   )}
                 </pre>
               </CodeSnippet>
-            </section>
+            </AboutSection>
           </ContentBox>
         </FixedContent>
       </Page>

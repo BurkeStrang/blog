@@ -5,15 +5,12 @@ import styled from 'styled-components';
 import { accent, lightgrey } from '../../shared/theme/colors';
 import { useTheme } from '../../shared/contexts/ThemeContext';
 
-// Start loading immediately when this module is imported, not on first render
-const codeBlockPromise = Promise.all([
-  import('react-syntax-highlighter'),
-  import('react-syntax-highlighter/dist/esm/styles/prism/material-dark'),
-  import('react-syntax-highlighter/dist/esm/styles/prism/material-light'),
-]);
-
 const LazyCodeBlock = lazy(() =>
-  codeBlockPromise.then(([{ Prism }, { default: dark }, { default: materialLight }]) => {
+  Promise.all([
+    import('react-syntax-highlighter'),
+    import('react-syntax-highlighter/dist/esm/styles/prism/a11y-dark'),
+    import('react-syntax-highlighter/dist/esm/styles/prism/material-light'),
+  ]).then(([{ Prism }, { default: dark }, { default: materialLight }]) => {
     function CodeHighlighter({ language, children, isDark }: { language: string; children: string; isDark: boolean }) {
       return (
         <Prism style={isDark ? dark : materialLight} language={language} PreTag="div">
@@ -306,6 +303,12 @@ interface MarkdownContentProps {
   content: string;
 }
 
+interface CodeBlockProps {
+  children: string;
+  isDark: boolean;
+  language: string;
+}
+
 const CodeBlockWrapper = styled.div`
   margin: 2rem 0;
 
@@ -353,6 +356,59 @@ const CodeBlockWrapper = styled.div`
   }
 `;
 
+const PlainCodeBlock = React.memo(function PlainCodeBlock({ children }: { children: string }) {
+  return (
+    <pre>
+      <code>{children}</code>
+    </pre>
+  );
+});
+
+const CodeBlock = React.memo(function CodeBlock({ children, isDark, language }: CodeBlockProps) {
+  const wrapperRef = React.useRef<HTMLDivElement | null>(null);
+  const [shouldHighlight, setShouldHighlight] = React.useState(false);
+
+  React.useEffect(() => {
+    if (shouldHighlight) {
+      return undefined;
+    }
+
+    const wrapper = wrapperRef.current;
+    if (!wrapper || typeof IntersectionObserver === 'undefined') {
+      setShouldHighlight(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setShouldHighlight(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '300px 0px' },
+    );
+
+    observer.observe(wrapper);
+
+    return () => observer.disconnect();
+  }, [shouldHighlight]);
+
+  return (
+    <CodeBlockWrapper ref={wrapperRef}>
+      {shouldHighlight ? (
+        <Suspense fallback={<PlainCodeBlock>{children}</PlainCodeBlock>}>
+          <LazyCodeBlock language={language} isDark={isDark}>
+            {children}
+          </LazyCodeBlock>
+        </Suspense>
+      ) : (
+        <PlainCodeBlock>{children}</PlainCodeBlock>
+      )}
+    </CodeBlockWrapper>
+  );
+});
+
 export const MarkdownContent = React.memo(function MarkdownContent({ content }: MarkdownContentProps) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -367,15 +423,12 @@ export const MarkdownContent = React.memo(function MarkdownContent({ content }: 
         const match = /language-(\w+)/.exec(className || '');
         const language = match ? match[1] : 'text';
         const isInline = !className;
+        const code = String(children).replace(/\n$/, '');
 
         return !isInline ? (
-          <CodeBlockWrapper>
-            <Suspense fallback={<pre><code>{String(children).replace(/\n$/, '')}</code></pre>}>
-              <LazyCodeBlock language={language} isDark={isDark}>
-                {String(children).replace(/\n$/, '')}
-              </LazyCodeBlock>
-            </Suspense>
-          </CodeBlockWrapper>
+          <CodeBlock language={language} isDark={isDark}>
+            {code}
+          </CodeBlock>
         ) : (
           <code className={className}>
             {children}
