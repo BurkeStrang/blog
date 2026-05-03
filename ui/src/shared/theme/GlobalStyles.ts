@@ -54,7 +54,7 @@ export const GlobalStyle = createGlobalStyle`
     --color-sidebar-active-bg: rgba(0, 255, 255, 0.07);
     --color-filter-text: var(--color-darkgrey);
     --color-filter-text-hover: var(--color-secondary);
-    --color-filter-dropdown-bg: rgba(10, 10, 20, 0.75);
+    --color-filter-dropdown-bg: rgba(10, 10, 20, 0.1);
     --color-filter-border: var(--color-darkgrey);
   }
 
@@ -108,7 +108,7 @@ export const GlobalStyle = createGlobalStyle`
     --color-sidebar-active-bg: rgba(0, 80, 80, 0.1);
     --color-filter-text: #007a7a;
     --color-filter-text-hover: #005f5f;
-    --color-filter-dropdown-bg: rgba(255, 255, 255, 0.55);
+    --color-filter-dropdown-bg: rgba(255, 255, 255, 0.1);
     --color-filter-border: rgba(0, 122, 122, 0.35);
   }
 
@@ -362,7 +362,7 @@ export const FilterButton = styled.button`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: ${darkgrey};
+  color: ${primary};
   background: transparent;
   border: none;
   padding: 0.3rem;

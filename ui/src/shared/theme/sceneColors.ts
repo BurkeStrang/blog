@@ -122,7 +122,7 @@ export const LIGHT_SCENE_THEME: SceneTheme = {
   ambientLightColor: 0xaaddff,
   sky: {
     turbidity: 3,
-    rayleigh: 5,
+    rayleigh: 14,
     mieCoefficient: 0.05,
     mieDirectionalG: 0.4,
     elevation: 18,
