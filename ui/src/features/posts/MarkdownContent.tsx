@@ -1,8 +1,31 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
+import bash from 'react-syntax-highlighter/dist/esm/languages/prism/bash';
+import cpp from 'react-syntax-highlighter/dist/esm/languages/prism/cpp';
+import csharp from 'react-syntax-highlighter/dist/esm/languages/prism/csharp';
+import css from 'react-syntax-highlighter/dist/esm/languages/prism/css';
+import go from 'react-syntax-highlighter/dist/esm/languages/prism/go';
+import javascript from 'react-syntax-highlighter/dist/esm/languages/prism/javascript';
+import jsx from 'react-syntax-highlighter/dist/esm/languages/prism/jsx';
+import markup from 'react-syntax-highlighter/dist/esm/languages/prism/markup';
+import tsx from 'react-syntax-highlighter/dist/esm/languages/prism/tsx';
+import typescript from 'react-syntax-highlighter/dist/esm/languages/prism/typescript';
 import remarkGfm from 'remark-gfm';
 import styled from 'styled-components';
 import { accent, lightgrey } from '../../shared/theme/colors';
+
+SyntaxHighlighter.registerLanguage('bash', bash);
+SyntaxHighlighter.registerLanguage('cpp', cpp);
+SyntaxHighlighter.registerLanguage('csharp', csharp);
+SyntaxHighlighter.registerLanguage('css', css);
+SyntaxHighlighter.registerLanguage('go', go);
+SyntaxHighlighter.registerLanguage('html', markup);
+SyntaxHighlighter.registerLanguage('javascript', javascript);
+SyntaxHighlighter.registerLanguage('jsx', jsx);
+SyntaxHighlighter.registerLanguage('markup', markup);
+SyntaxHighlighter.registerLanguage('tsx', tsx);
+SyntaxHighlighter.registerLanguage('typescript', typescript);
 
 const MarkdownWrapper = styled.div`
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', 'Oxygen',
@@ -101,36 +124,102 @@ const MarkdownWrapper = styled.div`
     border-radius: 4px;
   }
 
+  .comment,
+  .prolog,
+  .doctype,
+  .cdata,
   .token-comment {
     color: var(--color-md-code-comment);
     font-style: italic;
   }
 
+  .function,
+  .function-name,
   .token-function {
     color: var(--color-md-code-function);
   }
 
+  .atrule,
+  .important,
+  .keyword,
   .token-keyword {
     color: var(--color-md-code-keyword);
   }
 
+  .builtin {
+    color: var(--color-md-code-builtin);
+  }
+
+  .boolean,
+  .constant,
+  .number,
+  .unit,
   .token-number {
     color: var(--color-md-code-number);
   }
 
-  .token-operator,
+  .punctuation,
   .token-punctuation {
     color: var(--color-md-code-punctuation);
   }
 
+  .operator,
+  .token-operator {
+    color: var(--color-md-code-operator);
+  }
+
+  .attr-name,
+  .property,
+  .symbol,
   .token-property {
     color: var(--color-md-code-property);
   }
 
+  .attr-value,
+  .char,
+  .string,
+  .template-string,
   .token-string {
     color: var(--color-md-code-string);
   }
 
+  .regex {
+    color: var(--color-md-code-regex);
+  }
+
+  .class-name,
+  .maybe-class-name {
+    color: var(--color-md-code-type);
+  }
+
+  .attr-name {
+    color: var(--color-md-code-attribute);
+  }
+
+  .namespace {
+    color: var(--color-md-code-namespace);
+  }
+
+  .parameter,
+  .variable {
+    color: var(--color-md-code-variable);
+  }
+
+  .deleted {
+    color: var(--color-md-code-deleted);
+  }
+
+  .inserted {
+    color: var(--color-md-code-inserted);
+  }
+
+  .entity,
+  .url {
+    color: var(--color-md-code-entity);
+  }
+
+  .selector,
+  .tag,
   .token-tag {
     color: var(--color-md-code-tag);
   }
@@ -320,13 +409,6 @@ interface MarkdownContentProps {
   content: string;
 }
 
-type TokenKind = 'comment' | 'function' | 'keyword' | 'number' | 'operator' | 'property' | 'punctuation' | 'string' | 'tag';
-
-interface HighlightToken {
-  kind?: TokenKind;
-  value: string;
-}
-
 const languageAliases: Record<string, string> = {
   'c#': 'csharp',
   'c++': 'cpp',
@@ -343,57 +425,9 @@ const languageAliases: Record<string, string> = {
   zsh: 'bash',
 };
 
-const tokenPatterns: Record<string, RegExp> = {
-  bash: /#.*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b(?:cd|curl|do|done|echo|elif|else|export|fi|for|function|git|go|if|in|mkdir|npm|pnpm|return|then|while)\b|\b\d+(?:\.\d+)?\b|[{}()[\];,.]|[=|&<>!-]+/g,
-  css: /\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|#[\da-fA-F]{3,8}\b|[#.][A-Za-z_-][\w-]*|--[\w-]+|[a-z-]+(?=\s*:)|\b[A-Za-z_-][\w-]*\b|\b\d+(?:\.\d+)?(?:fr|px|rem|em|vh|vw|%|s|ms)?\b|[{}()[\];:,.]|[>+~*=|^-]+/g,
-  cpp: /\/\/.*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|#\s*(?:define|elif|else|endif|ifdef|ifndef|include|pragma)\b|\b(?:alignas|alignof|auto|bool|break|case|catch|char|class|const|constexpr|continue|default|delete|do|double|else|enum|explicit|extern|false|float|for|friend|if|inline|int|long|namespace|new|nullptr|operator|private|protected|public|return|short|signed|sizeof|static|struct|switch|template|this|throw|true|try|typedef|typename|union|unsigned|using|virtual|void|volatile|while)\b|\b\d+(?:\.\d+)?(?:[uUlLfF]*)\b|\b[A-Za-z_]\w*(?=\s*\()|[{}()[\];,.]|::|[-+*/%=&|^!<>~?:]+/g,
-  csharp: /\/\/.*|\/\*[\s\S]*?\*\/|@"(?:""|[^"])*"|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b(?:abstract|as|async|await|base|bool|break|case|catch|class|const|continue|decimal|default|delegate|do|double|else|enum|event|explicit|extern|false|finally|fixed|float|for|foreach|if|implicit|in|int|interface|internal|is|lock|long|namespace|new|null|object|operator|out|override|params|private|protected|public|readonly|record|ref|required|return|sbyte|sealed|short|sizeof|stackalloc|static|string|struct|switch|this|throw|true|try|typeof|uint|ulong|unchecked|unsafe|ushort|using|var|virtual|void|volatile|while|yield)\b|\b\d+(?:\.\d+)?[mMdDfF]?\b|\b[A-Za-z_]\w*(?=\s*\()|[{}()[\];,.]|[-+*/%=&|^!<>~?:]+/g,
-  go: /\/\/.*|\/\*[\s\S]*?\*\/|`[\s\S]*?`|"(?:\\.|[^"\\])*"|\b(?:break|case|chan|const|continue|default|defer|else|fallthrough|for|func|go|goto|if|import|interface|map|package|range|return|select|struct|switch|type|var)\b|\b(?:false|iota|nil|true)\b|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*(?=\s*\()|[{}()[\];,.]|[:=+\-*/%&|^!<>]+/g,
-  html: /<!--[\s\S]*?-->|<!doctype\b[^>]*>|<\/?[A-Za-z][\w:-]*|[A-Za-z_:][\w:.-]*(?=\s*=)|"(?:&quot;|[^"])*"|'(?:&#39;|[^'])*'|&[A-Za-z#\d]+;|[<>/=]|[{}()[\];,.]/gi,
-  typescript: /\/\/.*|\/\*[\s\S]*?\*\/|`(?:\\[\s\S]|[^`\\])*`|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b(?:abstract|as|async|await|boolean|break|case|catch|class|const|continue|default|do|else|enum|export|extends|finally|for|from|function|if|implements|import|in|interface|let|new|null|number|of|private|protected|public|readonly|return|string|switch|this|throw|try|type|undefined|unknown|var|void|while)\b|\b(?:false|true)\b|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*(?=\s*\()|<\/?[A-Za-z][\w.-]*|[{}()[\];,.]|[:=+\-*/%&|^!<>?]+/g,
-};
-
-const getTokenKind = (language: string, value: string): TokenKind => {
-  if (value.startsWith('<!--')) {
-    return 'comment';
-  }
-  if (value.startsWith('<!') || /^<\/?[A-Za-z]/.test(value)) {
-    return 'tag';
-  }
-  if (language === 'html' && /^[A-Za-z_:][\w:.-]*$/.test(value)) {
-    return 'property';
-  }
-  if (language === 'css' && /^#[\da-fA-F]{3,8}\b/.test(value)) {
-    return 'number';
-  }
-  if (language === 'css' && /^[#.][A-Za-z_-]/.test(value)) {
-    return 'tag';
-  }
-  if (value.startsWith('//') || value.startsWith('/*') || (language === 'bash' && value.startsWith('#'))) {
-    return 'comment';
-  }
-  if (language === 'cpp' && value.startsWith('#')) {
-    return 'keyword';
-  }
-  if (value.startsWith('"') || value.startsWith("'") || value.startsWith('`')) {
-    return 'string';
-  }
-  if (/^(?:--[\w-]+|[a-z-]+)$/.test(value) && language === 'css' && !/^(?:auto|block|border-box|center|flex|grid|inherit|inline|none|repeat|solid|transparent|var)$/.test(value)) {
-    return 'property';
-  }
-  if (/^\d/.test(value) || /^#[\da-fA-F]{3,8}\b/.test(value)) {
-    return 'number';
-  }
-  if (/^[{}()[\];:,.]+$/.test(value)) {
-    return 'punctuation';
-  }
-  if (/^[=|&<>!:+\-*/%^?~]+$/.test(value)) {
-    return 'operator';
-  }
-  if (/^[A-Za-z_$][\w$]*$/.test(value) && !/^(?:auto|block|border-box|center|flex|grid|inherit|inline|none|repeat|solid|transparent|var)$/.test(value)) {
-    return ['cpp', 'csharp', 'go', 'typescript'].includes(language) ? 'function' : 'keyword';
-  }
-  return 'keyword';
+const getNormalizedLanguage = (rawLanguage: string) => {
+  const normalizedLanguage = rawLanguage.toLowerCase();
+  return languageAliases[normalizedLanguage] ?? normalizedLanguage;
 };
 
 const looksLikeInlineCss = (code: string) => (
@@ -402,39 +436,17 @@ const looksLikeInlineCss = (code: string) => (
   || /\{[^}]*[-A-Za-z]+:\s*[^}]+}/.test(code)
 );
 
-const highlightCode = (code: string, rawLanguage: string): HighlightToken[] => {
-  const normalizedLanguage = rawLanguage.toLowerCase();
-  const language = languageAliases[normalizedLanguage] ?? normalizedLanguage;
-  const pattern = tokenPatterns[language];
-
-  if (!pattern) {
-    return [{ value: code }];
-  }
-
-  const tokens: HighlightToken[] = [];
-  let lastIndex = 0;
-
-  for (const match of code.matchAll(pattern)) {
-    const value = match[0];
-    const index = match.index ?? 0;
-
-    if (index > lastIndex) {
-      tokens.push({ value: code.slice(lastIndex, index) });
-    }
-
-    tokens.push({ kind: getTokenKind(language, value), value });
-    lastIndex = index + value.length;
-  }
-
-  if (lastIndex < code.length) {
-    tokens.push({ value: code.slice(lastIndex) });
-  }
-
-  return tokens;
-};
-
 const CodeBlockWrapper = styled.div`
   margin: 2rem 0;
+  background: var(--color-md-code-bg);
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+  border: 1px solid var(--color-md-code-border);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 1px 0 var(--color-md-code-inset),
+    0 10px 26px var(--color-md-code-shadow);
+  overflow: hidden;
 
   code {
     padding: 0 !important;
@@ -442,55 +454,115 @@ const CodeBlockWrapper = styled.div`
   }
 
   pre {
-    background:
-      linear-gradient(135deg, var(--color-md-code-glass-highlight), transparent 42%),
-      var(--color-md-code-bg);
-    backdrop-filter: blur(8px) saturate(120%);
-    -webkit-backdrop-filter: blur(8px) saturate(120%);
+    background: transparent !important;
     color: ${lightgrey};
     padding: 1.5rem !important;
-    border-radius: 8px !important;
-    border: 1px solid var(--color-md-code-border) !important;
-    box-shadow:
-      inset 0 1px 0 var(--color-md-code-inset),
-      0 10px 26px var(--color-md-code-shadow);
-    font-size: 0.9rem !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-size: 0.95rem !important;
     line-height: 1.6;
     overflow-x: auto !important;
     max-width: 100%;
     white-space: pre;
   }
 
+  .comment,
+  .prolog,
+  .doctype,
+  .cdata,
   .token-comment {
     color: var(--color-md-code-comment);
     font-style: italic;
   }
 
+  .function,
+  .function-name,
   .token-function {
     color: var(--color-md-code-function);
   }
 
+  .atrule,
+  .important,
+  .keyword,
   .token-keyword {
     color: var(--color-md-code-keyword);
   }
 
+  .builtin {
+    color: var(--color-md-code-builtin);
+  }
+
+  .boolean,
+  .constant,
+  .number,
+  .unit,
   .token-number {
     color: var(--color-md-code-number);
   }
 
-  .token-operator,
+  .punctuation,
   .token-punctuation {
     color: var(--color-md-code-punctuation);
   }
 
+  .operator,
+  .token-operator {
+    color: var(--color-md-code-operator);
+  }
+
+  .attr-name,
+  .property,
+  .symbol,
   .token-property {
     color: var(--color-md-code-property);
   }
 
+  .attr-value,
+  .char,
+  .string,
+  .template-string,
   .token-string {
     color: var(--color-md-code-string);
   }
 
+  .regex {
+    color: var(--color-md-code-regex);
+  }
+
+  .class-name,
+  .maybe-class-name {
+    color: var(--color-md-code-type);
+  }
+
+  .attr-name {
+    color: var(--color-md-code-attribute);
+  }
+
+  .namespace {
+    color: var(--color-md-code-namespace);
+  }
+
+  .parameter,
+  .variable {
+    color: var(--color-md-code-variable);
+  }
+
+  .deleted {
+    color: var(--color-md-code-deleted);
+  }
+
+  .inserted {
+    color: var(--color-md-code-inserted);
+  }
+
+  .entity,
+  .url {
+    color: var(--color-md-code-entity);
+  }
+
+  .selector,
+  .tag,
   .token-tag {
     color: var(--color-md-code-tag);
   }
@@ -500,36 +572,35 @@ const CodeBlockWrapper = styled.div`
 
     pre {
       padding: 1.25rem !important;
-      font-size: 0.85rem !important;
+      font-size: 0.9rem !important;
     }
   }
 
   @media (max-width: 480px) {
     margin: 1.25rem 0;
+    border-radius: 6px;
 
     pre {
       padding: 1rem !important;
-      font-size: 0.825rem !important;
-      border-radius: 6px !important;
+      font-size: 0.875rem !important;
     }
   }
 
   @media (max-width: 390px) {
     margin: 1rem 0;
+    border-radius: 4px;
 
     pre {
       padding: 0.75rem !important;
-      font-size: 0.8rem !important;
-      border-radius: 4px !important;
+      font-size: 0.85rem !important;
     }
   }
 `;
 
 const InlineCode = React.memo(function InlineCode({ children, className }: { children: React.ReactNode; className?: string }) {
   const code = String(children);
-  const tokens = React.useMemo(() => (looksLikeInlineCss(code) ? highlightCode(code, 'css') : null), [code]);
 
-  if (!tokens) {
+  if (!looksLikeInlineCss(code)) {
     return (
       <code className={className}>
         {children}
@@ -539,39 +610,36 @@ const InlineCode = React.memo(function InlineCode({ children, className }: { chi
 
   return (
     <code className={className}>
-      {tokens.map((token, index) => (
-        token.kind ? (
-          <span className={`token-${token.kind}`} key={`${index}-${token.kind}`}>
-            {token.value}
-          </span>
-        ) : (
-          token.value
-        )
-      ))}
+      <SyntaxHighlighter
+        CodeTag="span"
+        PreTag="span"
+        customStyle={{ background: 'transparent', margin: 0, padding: 0 }}
+        language="css"
+        style={{}}
+        useInlineStyles={false}
+      >
+        {code}
+      </SyntaxHighlighter>
     </code>
   );
 });
 
 const CodeBlock = React.memo(function CodeBlock({ children, language }: { children: string; language: string }) {
-  const normalizedLanguage = React.useMemo(() => language.toLowerCase(), [language]);
+  const normalizedLanguage = React.useMemo(() => getNormalizedLanguage(language), [language]);
   const languageClassName = normalizedLanguage.replace(/[^a-z0-9_-]/g, '-');
-  const tokens = React.useMemo(() => highlightCode(children, normalizedLanguage), [children, normalizedLanguage]);
 
   return (
     <CodeBlockWrapper>
-      <pre className={`language-${languageClassName}`}>
-        <code>
-          {tokens.map((token, index) => (
-            token.kind ? (
-              <span className={`token-${token.kind}`} key={`${index}-${token.kind}`}>
-                {token.value}
-              </span>
-            ) : (
-              token.value
-            )
-          ))}
-        </code>
-      </pre>
+      <SyntaxHighlighter
+        codeTagProps={{ className: `language-${languageClassName}` }}
+        customStyle={{}}
+        language={normalizedLanguage}
+        PreTag="pre"
+        style={{}}
+        useInlineStyles={false}
+      >
+        {children}
+      </SyntaxHighlighter>
     </CodeBlockWrapper>
   );
 });
