@@ -18,6 +18,7 @@ import { usePostsData } from "../shared/contexts/SearchContext";
 import { ThemeProvider } from "../shared/contexts/ThemeContext";
 import { apiService } from "../services/api";
 import { cacheInvalidation } from "../services/cache/CacheManager";
+import { installMobileHapticsListener } from "../services/haptics";
 
 export interface Post {
   id?: number;
@@ -117,6 +118,10 @@ const AppContent: React.FC = memo(() => {
     resourceState.resourcesReady && canvasLoaded && shouldLoadCanvas;
 
   // Only load canvas for posts list, home route, and about page (not for direct post detail navigation)
+  useEffect(() => {
+    return installMobileHapticsListener();
+  }, []);
+
   useEffect(() => {
     const isPostsRoute = location.pathname === "/posts";
     const isHomeRoute = location.pathname === "/";

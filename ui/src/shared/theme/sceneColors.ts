@@ -117,12 +117,12 @@ export const DARK_SCENE_THEME: SceneTheme = {
 
 export const LIGHT_SCENE_THEME: SceneTheme = {
   background: '#fff1f1',
-  fogColor: 0x7ec8e3,
-  clearColor: 0x87ceeb,
+  fogColor: 0xf1ffff,
+  clearColor: 0xf7ceeb,
   ambientLightColor: 0xaaddff,
   sky: {
-    turbidity: 1,
-    rayleigh: 6,
+    turbidity: 3,
+    rayleigh: 5,
     mieCoefficient: 0.05,
     mieDirectionalG: 0.4,
     elevation: 18,

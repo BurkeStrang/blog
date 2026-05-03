@@ -70,7 +70,7 @@ export const GlobalStyle = createGlobalStyle`
     --color-header-glow: rgba(0, 220, 220, 0.6);
     --color-header-glow-far: rgba(0, 100, 100, 0.15);
     --color-header-mobile-shadow: rgba(0, 72, 82, 0.12);
-    --color-search-outline: rgba(0, 100, 120, 0.7);
+    --color-search-outline: rgba(0, 200, 200, 0.7);
     --color-search-outline-focus: rgba(0, 120, 140, 1);
     --color-dropdown-bg: rgba(255, 255, 255, 0.2);
     --color-divider: rgba(0, 0, 0, 0.1);
@@ -398,7 +398,7 @@ export const FilterButton = styled.button`
   }
 
   @media (max-width: 480px) {
-    top: 1rem;
+    top: 1.5rem;
     padding: 0.2rem;
     font-size: 0.7rem;
   }
@@ -520,8 +520,8 @@ export const SearchBar = styled.div`
   }
 
   @media (max-width: 480px) {
-    padding: 0.5rem 0;
-    gap: 0.25rem;
+    padding: 0.9rem 0;
+    gap: 0.9rem;
   }
 
   @media (max-width: 320px) {

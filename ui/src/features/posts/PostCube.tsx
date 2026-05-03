@@ -6,6 +6,7 @@ import type { Font } from "three/examples/jsm/loaders/FontLoader";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { MathUtils } from "three";
 import { materialManager } from "../../engine";
+import { triggerMobileHapticFeedback } from "../../services/haptics";
 import { getSceneTheme } from "../../shared/theme/sceneColors";
 
 // --- 1. Optimized text measurement with caching ---
@@ -595,6 +596,7 @@ function PostBoxCore(props: PostBoxProps) {
   const handleClick = (e: { stopPropagation: () => void }) => {
     e.stopPropagation();
     if (!isVisible || sortingPhase !== "none") return;
+    triggerMobileHapticFeedback();
     onClick(slug);
   };
 
