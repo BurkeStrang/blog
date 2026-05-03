@@ -37,6 +37,7 @@ const MarkdownWrapper = styled.div`
   /* Headings */
   h1, h2, h3, h4, h5, h6 {
     color: ${accent};
+    font-family: 'mega', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-weight: 600;
     margin: 2.5rem 0 1rem 0;
     line-height: 1.3;
@@ -117,6 +118,7 @@ const MarkdownWrapper = styled.div`
 
   /* Code */
   code {
+    color: var(--color-md-code-text);
     font-family: 'Fantasque Sans Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
     font-size: 0.9em;
     font-weight: 500;
@@ -242,7 +244,7 @@ const MarkdownWrapper = styled.div`
 
   th {
     background: var(--color-md-th-bg);
-    color: ${lightgrey};
+    color: var(--color-md-code-text);
     font-weight: 600;
   }
 
@@ -460,7 +462,7 @@ const CodeBlockWrapper = styled.div`
     border: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    font-size: 0.95rem !important;
+    font-size: 1rem !important;
     line-height: 1.6;
     overflow-x: auto !important;
     max-width: 100%;
@@ -572,7 +574,7 @@ const CodeBlockWrapper = styled.div`
 
     pre {
       padding: 1.25rem !important;
-      font-size: 0.9rem !important;
+      font-size: 0.95rem !important;
     }
   }
 
@@ -582,7 +584,7 @@ const CodeBlockWrapper = styled.div`
 
     pre {
       padding: 1rem !important;
-      font-size: 0.875rem !important;
+      font-size: 0.925rem !important;
     }
   }
 
@@ -592,7 +594,7 @@ const CodeBlockWrapper = styled.div`
 
     pre {
       padding: 0.75rem !important;
-      font-size: 0.85rem !important;
+      font-size: 0.9rem !important;
     }
   }
 `;
