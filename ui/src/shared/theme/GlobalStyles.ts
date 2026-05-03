@@ -1,4 +1,5 @@
 import styled, { createGlobalStyle } from "styled-components";
+import fantasqueSansMono from "../../assets/fonts/FantasqueSansMono-Regular.woff2";
 import mega from "../../assets/fonts/MegatransRounded-Regular.otf";
 import { backgroundColor, darkgrey, neon, primary, secondary } from "./colors";
 
@@ -36,6 +37,19 @@ export const GlobalStyle = createGlobalStyle`
     --color-md-th-bg: rgba(255, 255, 255, 0.05);
     --color-md-tr-hover: rgba(255, 255, 255, 0.03);
     --color-md-hr: rgba(255, 255, 255, 0.1);
+    --color-md-code-bg: rgba(40, 42, 54, 0.34);
+    --color-md-code-border: rgba(189, 147, 249, 0.12);
+    --color-md-code-glass-highlight: rgba(255, 255, 255, 0.025);
+    --color-md-code-inset: rgba(255, 255, 255, 0.06);
+    --color-md-code-shadow: rgba(0, 0, 0, 0.14);
+    --color-md-code-comment: #738091;
+    --color-md-code-function: #63cdcf;
+    --color-md-code-keyword: #719cd6;
+    --color-md-code-number: #f4a261;
+    --color-md-code-property: #81b29a;
+    --color-md-code-punctuation: #cdcecf;
+    --color-md-code-string: #dbc074;
+    --color-md-code-tag: #c94f6d;
     --color-btn-bg: rgba(0, 0, 0, 0.5);
     --color-btn-bg-hover: rgba(0, 0, 0, 0.7);
     --color-btn-border: rgba(255, 255, 255, 0.15);
@@ -90,6 +104,19 @@ export const GlobalStyle = createGlobalStyle`
     --color-md-th-bg: rgba(0, 0, 0, 0.05);
     --color-md-tr-hover: rgba(0, 0, 0, 0.03);
     --color-md-hr: rgba(0, 0, 0, 0.1);
+    --color-md-code-bg: rgba(40, 42, 54, 0.07);
+    --color-md-code-border: rgba(98, 114, 164, 0.16);
+    --color-md-code-glass-highlight: rgba(255, 255, 255, 0.18);
+    --color-md-code-inset: rgba(255, 255, 255, 0.36);
+    --color-md-code-shadow: rgba(40, 42, 54, 0.06);
+    --color-md-code-comment: #687789;
+    --color-md-code-function: #2a7f82;
+    --color-md-code-keyword: #2f5f9f;
+    --color-md-code-number: #a45624;
+    --color-md-code-property: #3d755c;
+    --color-md-code-punctuation: #2d3440;
+    --color-md-code-string: #7a651e;
+    --color-md-code-tag: #9d314b;
     --color-btn-bg: rgba(255, 255, 255, 0.5);
     --color-btn-bg-hover: rgba(255, 255, 255, 0.75);
     --color-btn-border: rgba(0, 0, 0, 0.15);
@@ -117,6 +144,14 @@ export const GlobalStyle = createGlobalStyle`
     src: url(${mega}) format('opentype');
     font-display: block;
     font-weight: normal;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Fantasque Sans Mono';
+    src: url(${fantasqueSansMono}) format('woff2');
+    font-display: swap;
+    font-weight: 400 500;
     font-style: normal;
   }
 
