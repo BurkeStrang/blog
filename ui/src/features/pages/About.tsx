@@ -266,43 +266,57 @@ const Cursor = styled.span<{ $isDark: boolean }>`
   color: ${({ $isDark }) => ($isDark ? "#0ff" : "#007a7a")};
 `;
 
-const About: React.FC = () => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+const codeLines = [
+  "const work = {",
+  "  focus: 'reliable web systems',",
+  "  stack: ['React', 'Go', 'C#', 'SQL'],",
+  "  priority: 'clear, maintainable code',",
+  "};",
+];
 
-  const codeLines = [
-    "const work = {",
-    "  focus: 'reliable web systems',",
-    "  stack: ['React', 'Go', 'C#', 'SQL'],",
-    "  priority: 'clear, maintainable code',",
-    "};",
-  ];
+const fullCode = codeLines.join("\n");
 
-  const fullCode = codeLines.join("\n");
+const AnimatedCodeSnippet = React.memo(function AnimatedCodeSnippet({ isDark }: { isDark: boolean }) {
   const [displayedCode, setDisplayedCode] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    document.documentElement.classList.add("about-page");
-    return () => document.documentElement.classList.remove("about-page");
-  }, []);
 
   useEffect(() => {
     setIsMobile(window.innerWidth <= 768);
   }, []);
 
   useEffect(() => {
-    if (currentIndex < fullCode.length) {
-      const typingSpeed = isMobile ? 20 : 30;
-      const timeout = setTimeout(() => {
-        setDisplayedCode(fullCode.slice(0, currentIndex + 1));
-        setCurrentIndex(currentIndex + 1);
-      }, typingSpeed);
+    if (currentIndex >= fullCode.length) return;
 
-      return () => clearTimeout(timeout);
-    }
-  }, [currentIndex, fullCode, isMobile]);
+    const typingSpeed = isMobile ? 20 : 30;
+    const timeout = setTimeout(() => {
+      setDisplayedCode(fullCode.slice(0, currentIndex + 1));
+      setCurrentIndex(currentIndex + 1);
+    }, typingSpeed);
+
+    return () => clearTimeout(timeout);
+  }, [currentIndex, isMobile]);
+
+  return (
+    <CodeSnippet $isDark={isDark}>
+      <pre style={{ margin: 0, fontFamily: "inherit" }}>
+        {displayedCode}
+        {currentIndex < fullCode.length && (
+          <Cursor $isDark={isDark}>|</Cursor>
+        )}
+      </pre>
+    </CodeSnippet>
+  );
+});
+
+const About: React.FC = () => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
+  useEffect(() => {
+    document.documentElement.classList.add("about-page");
+    return () => document.documentElement.classList.remove("about-page");
+  }, []);
 
   return (
     <>
@@ -332,14 +346,7 @@ const About: React.FC = () => {
                 <li>Cloud operations</li>
               </FocusList>
 
-              <CodeSnippet $isDark={isDark}>
-                <pre style={{ margin: 0, fontFamily: "inherit" }}>
-                  {displayedCode}
-                  {currentIndex < fullCode.length && (
-                    <Cursor $isDark={isDark}>|</Cursor>
-                  )}
-                </pre>
-              </CodeSnippet>
+              <AnimatedCodeSnippet isDark={isDark} />
             </AboutSection>
           </ContentBox>
         </FixedContent>
