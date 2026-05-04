@@ -23,7 +23,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@gltf-transform/cli": "^4.2.0",
+    "@gltf-transform/cli": "^4.3.0",
     "@gltf-transform/core": "^4.2.0",
     "@gltf-transform/extensions": "^4.2.0",
     "@gltf-transform/functions": "^4.3.0",
