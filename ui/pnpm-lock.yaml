@@ -18,8 +18,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       '@gltf-transform/core':
-        specifier: ^4.2.0
-        version: 4.2.0
+        specifier: ^4.3.0
+        version: 4.3.0
       '@gltf-transform/extensions':
         specifier: ^4.2.0
         version: 4.2.0
@@ -606,9 +606,6 @@ packages:
     resolution: {integrity: sha512-jt+Kf9048Fu3oOWsODkHh5+h3s0MLjh6Dbg7NrnSasQrqXcftb5aZz2s4qHWfScXciersl0GbAmFAq0o7O+PRA==}
     engines: {node: '>=18'}
     hasBin: true
-
-  '@gltf-transform/core@4.2.0':
-    resolution: {integrity: sha512-43FtHNxMhT+VX/WZeXISorbtknwusdcfwu0qzfrDa1azsk5CBVOaZwM+ul7DsHty47eC49lSPN0g8uNso35WVw==}
 
   '@gltf-transform/core@4.3.0':
     resolution: {integrity: sha512-ZeaQfszGJ9LYwELszu45CuDQCsE26lJNNe36FVmN8xclaT6WDdCj7fwGpQXo0/l/YgAVAHX+uO7YNBW75/SRYw==}
@@ -2862,9 +2859,6 @@ packages:
   prop-types@15.8.1:
     resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
 
-  property-graph@3.0.0:
-    resolution: {integrity: sha512-TnzxUsttmGtw+OiU0LDw+0FlMbJ8vV8pOjyDI7+Kdni4Tj0hW5BFh7TatQu7Y68hcvvFmiFOHilKShsA4R82fA==}
-
   property-graph@4.1.0:
     resolution: {integrity: sha512-AvPcP7XECNWy4LGmFQ77k7un4lSKM4eS29PTvW4ck95uYeLxXPWJM7hLuBqK91FaHqCcgJvIUCuNJjjxKE7VKQ==}
 
@@ -4085,7 +4079,7 @@ snapshots:
   '@gltf-transform/cli@4.2.0':
     dependencies:
       '@donmccurdy/caporal': 0.0.10
-      '@gltf-transform/core': 4.2.0
+      '@gltf-transform/core': 4.3.0
       '@gltf-transform/extensions': 4.2.0
       '@gltf-transform/functions': 4.3.0
       '@types/language-tags': 1.0.4
@@ -4116,17 +4110,13 @@ snapshots:
       tmp: 0.2.3
       watlas: 1.0.0
 
-  '@gltf-transform/core@4.2.0':
-    dependencies:
-      property-graph: 3.0.0
-
   '@gltf-transform/core@4.3.0':
     dependencies:
       property-graph: 4.1.0
 
   '@gltf-transform/extensions@4.2.0':
     dependencies:
-      '@gltf-transform/core': 4.2.0
+      '@gltf-transform/core': 4.3.0
       ktx-parse: 1.0.0
 
   '@gltf-transform/extensions@4.3.0':
@@ -6708,8 +6698,6 @@ snapshots:
       loose-envify: 1.4.0
       object-assign: 4.1.1
       react-is: 16.13.1
-
-  property-graph@3.0.0: {}
 
   property-graph@4.1.0: {}
 
