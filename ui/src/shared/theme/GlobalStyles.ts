@@ -123,11 +123,11 @@ export const GlobalStyle = createGlobalStyle`
     --color-md-th-bg: rgba(0, 0, 0, 0.05);
     --color-md-tr-hover: rgba(0, 0, 0, 0.03);
     --color-md-hr: rgba(0, 0, 0, 0.1);
-    --color-md-code-bg: rgba(236, 238, 236, 0.82);
-    --color-md-code-border: rgba(255, 255, 255, 0.1);
-    --color-md-code-glass-highlight: rgba(255, 255, 255, 0.34);
-    --color-md-code-inset: rgba(255, 255, 255, 0.5);
-    --color-md-code-shadow: rgba(22, 22, 22, 0.08);
+    --color-md-code-bg: rgba(220, 220, 220, 0.22);
+    --color-md-code-border: rgba(222, 222, 222, 0.5);
+    --color-md-code-glass-highlight: rgba(255, 255, 255, 0.1);
+    --color-md-code-inset: rgba(255, 255, 255, 0.1);
+    --color-md-code-shadow: rgba(250, 250, 250, 0.1);
     --color-md-code-text: #696469;
     --color-md-code-comment: #74797a;
     --color-md-code-function: #52738a;
