@@ -40,10 +40,10 @@ export const GlobalStyle = createGlobalStyle`
     --color-md-tr-hover: rgba(255, 255, 255, 0.03);
     --color-md-hr: rgba(255, 255, 255, 0.1);
     --color-md-code-bg: rgba(18, 20, 20, 0.72);
-    --color-md-code-border: rgba(0, 0, 0, 0.9);
-    --color-md-code-glass-highlight: rgba(255, 255, 255, 0.035);
-    --color-md-code-inset: rgba(255, 255, 255, 0.07);
-    --color-md-code-shadow: rgba(0, 0, 0, 0.24);
+    --color-md-code-border: rgba(190, 190, 190, 0.08);
+    --color-md-code-glass-highlight: rgba(20, 20, 20, 0.2);
+    --color-md-code-inset: rgba(200, 200, 200, 0.01);
+    --color-md-code-shadow: rgba(200, 200, 200, 0.09);
     --color-md-code-text: #8E878E;
     --color-md-code-comment: #5E6466;
     --color-md-code-function: #6588A1;
