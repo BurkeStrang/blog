@@ -217,10 +217,6 @@ const LazyOceanCanvas = memo(function LazyOceanCanvas({
         >
           <div style={{ textAlign: 'center' }}>
             <LoadingCubes />
-            <div style={{ marginTop: '16px' }}>Loading Resources...</div>
-            <div style={{ marginTop: '8px', fontSize: '12px', opacity: 0.7 }}>
-              Textures, models, and fonts
-            </div>
           </div>
         </div>
       )}
