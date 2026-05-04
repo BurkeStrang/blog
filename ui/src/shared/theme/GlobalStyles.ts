@@ -255,12 +255,12 @@ export const Header = styled.header`
   position: relative;
   overflow: visible;
   text-align: center;
-  padding-top: 3rem;
+  padding-top: 2.5rem;
   pointer-events: none;
 
   h1 {
     font-family: "mega", "Arial Black", sans-serif;
-    font-size: clamp(2rem, 6vw, 3rem);
+    font-size: clamp(2rem, 5vw, 2.6rem);
     letter-spacing: 0.1em;
     line-height: 0.95;
     margin: 1rem 0;
