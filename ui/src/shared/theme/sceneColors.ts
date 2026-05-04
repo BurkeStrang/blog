@@ -10,6 +10,7 @@ export interface SkyParams {
 }
 
 export interface CloudParams {
+  cloudScale: number;
   cloudCoverage: number;
   cloudDensity: number;
   cloudElevation: number; // 0-1, maps to world Y position (300 + val * 700)
@@ -80,6 +81,7 @@ export const DARK_SCENE_THEME: SceneTheme = {
     showSunDisc: 0,
   },
   clouds: {
+    cloudScale: 0.0001,
     cloudCoverage: 0.4,
     cloudDensity: 0.49,
     cloudElevation: 0.4,
@@ -121,22 +123,23 @@ export const LIGHT_SCENE_THEME: SceneTheme = {
   clearColor: 0xffffff,
   ambientLightColor: 0xffffff,
   sky: {
-    turbidity: 1,
-    rayleigh: 44,
-    mieCoefficient: 0.95,
-    mieDirectionalG: 0.4,
-    elevation: 20,
+    turbidity: 0.45,
+    rayleigh: 18,
+    mieCoefficient: 0.28,
+    mieDirectionalG: 0.28,
+    elevation: 32,
     azimuth: -100,
-    exposure: 1,
+    exposure: 1.18,
     showSunDisc: 0,
   },
   clouds: {
-    cloudCoverage: 0.32,
-    cloudDensity: 0.24,
-    cloudElevation: 0.8,
+    cloudScale: 0.0009,
+    cloudCoverage: 0.42,
+    cloudDensity: 0.48,
+    cloudElevation: 0.92,
   },
-  waterColor: 0xaaf0f0,
-  sunColor: 0xf2ffff,
+  waterColor: 0xd8ffff,
+  sunColor: 0xffffff,
   sceneLightColor: 0xffffff,
   sceneGroundColor: 0xffffff,
   mainLightIntensity: 3.2,

@@ -80,6 +80,7 @@ function ThemeSky({ isDark }: { isDark: boolean }) {
     uniforms['rayleigh'].value = MathUtils.lerp(dark.rayleigh, light.rayleigh, t);
     uniforms['mieCoefficient'].value = MathUtils.lerp(dark.mieCoefficient, light.mieCoefficient, t);
     uniforms['mieDirectionalG'].value = MathUtils.lerp(dark.mieDirectionalG, light.mieDirectionalG, t);
+    uniforms['cloudScale'].value = MathUtils.lerp(dc.cloudScale, lc.cloudScale, t);
     uniforms['cloudCoverage'].value = MathUtils.lerp(dc.cloudCoverage, lc.cloudCoverage, t);
     uniforms['cloudDensity'].value = MathUtils.lerp(dc.cloudDensity, lc.cloudDensity, t);
     uniforms['cloudElevation'].value = MathUtils.lerp(dc.cloudElevation, lc.cloudElevation, t);
