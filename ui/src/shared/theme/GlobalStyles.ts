@@ -105,7 +105,7 @@ export const GlobalStyle = createGlobalStyle`
     --color-header-gradient-bottom: color-mix(in srgb, var(--color-primary) 68%, white);
     --color-search-outline: rgba(0, 200, 200, 0.7);
     --color-search-outline-focus: rgba(0, 120, 140, 1);
-    --color-dropdown-bg: rgba(255, 255, 255, 0.2);
+    --color-dropdown-bg: rgba(255, 255, 255, 0.1);
     --color-divider: rgba(0, 0, 0, 0.1);
     --color-comment-bg: rgba(0, 0, 0, 0.04);
     --color-comment-bg-hover: rgba(0, 0, 0, 0.07);
