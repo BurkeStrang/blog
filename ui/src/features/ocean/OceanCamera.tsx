@@ -22,7 +22,7 @@ function ScrollCamera({
   positions,
   lerpFactor,
   stepSize,
-  aboutModePosition = new THREE.Vector3(-1250, -5, 400),
+  aboutModePosition = new THREE.Vector3(-850, -5, 100),
   aboutModeRotation = new THREE.Euler(0, -0.9, 0),
   scrollToIndex,
   maxPositionIndex,

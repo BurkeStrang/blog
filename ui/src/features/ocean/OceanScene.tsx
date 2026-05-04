@@ -24,7 +24,6 @@ import { PostNavigation } from "../posts";
 import type { Post } from "../../app/AppContent";
 import { memoryProfiler } from "../../engine/memory";
 import { performanceMonitor } from "../../engine";
-import { triggerMobileHapticFeedback } from "../../services/haptics";
 import { usePagination } from "../../shared/contexts/SearchContext";
 
 // TypeScript augmentation for outputEncoding
@@ -536,7 +535,6 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
 
   const handleLeftClick = useCallback(() => {
     if (currentPage > 1) {
-      triggerMobileHapticFeedback();
       const newPage = currentPage - 1;
       setCurrentPage(newPage);
       
@@ -557,7 +555,6 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
 
   const handleRightClick = useCallback(() => {
     if (currentPage < totalPages) {
-      triggerMobileHapticFeedback();
       const newPage = currentPage + 1;
       setCurrentPage(newPage);
       
@@ -642,7 +639,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   const startPos = useMemo(() => {
     // Provide default position when no posts are available
     if (offsetPositions.length === 0) {
-      return new Vector3(-1200, 20, 400);
+      return new Vector3(-1200, 0, 1300);
     }
     return offsetPositions[0].clone().add(new Vector3(-1200, 0, 1300));
   }, [offsetPositions]);

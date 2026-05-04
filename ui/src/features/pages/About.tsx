@@ -78,9 +78,9 @@ const ContentBox = styled.div<{ $isDark: boolean }>`
 
   background: ${({ $isDark }) =>
     $isDark
-      ? "linear-gradient(135deg, rgba(26, 35, 50, 0.55) 0%, rgba(45, 74, 90, 0.65) 50%, rgba(30, 58, 66, 0.55) 100%)"
+      ? "linear-gradient(135deg, rgba(16, 15, 5, 0.6) 0%, rgba(15, 14, 10, 0.7) 50%, rgba(10, 18, 16, 0.6) 100%)"
       : "linear-gradient(135deg, rgba(240, 248, 250, 0.6) 0%, rgba(220, 240, 245, 0.7) 50%, rgba(230, 245, 248, 0.6) 100%)"};
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 1.5rem;
@@ -141,17 +141,19 @@ const AboutSection = styled.section`
 
 const RoleLabel = styled.div<{ $isDark: boolean }>`
   color: ${({ $isDark }) => ($isDark ? "#7ff" : "#006f6f")};
-  font-size: 0.82rem;
+  font-size: 0.96rem;
+  font-weight: 600;
   line-height: 1.3;
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0;
   opacity: 0.9;
+  padding: 0.5rem 0.75rem;
 `;
 
 const LeadText = styled.p<{ $isDark: boolean }>`
   color: ${({ $isDark }) => ($isDark ? "#f3f7f7" : "#152626")};
-  font-size: 1.08rem;
+  font-size: 1.28rem;
   line-height: 1.65;
   text-align: center;
   max-width: 620px;
@@ -170,7 +172,7 @@ const LeadText = styled.p<{ $isDark: boolean }>`
 `;
 
 const BodyText = styled.p<{ $isDark: boolean }>`
-  font-size: 0.95rem;
+  font-size: 1.12rem;
   line-height: 1.7;
   color: ${({ $isDark }) => ($isDark ? "#d5dddd" : "#263838")};
   text-align: center;
@@ -178,7 +180,7 @@ const BodyText = styled.p<{ $isDark: boolean }>`
   margin: 0;
 
   @media (max-width: 768px) {
-    font-size: 0.86rem;
+    font-size: 0.92rem;
     line-height: 1.6;
     max-width: 36ch;
   }
@@ -207,7 +209,7 @@ const FocusList = styled.ul<{ $isDark: boolean }>`
         $isDark ? "rgba(0, 255, 255, 0.2)" : "rgba(0, 122, 122, 0.2)"};
     border-radius: 8px;
     padding: 0.45rem 0.65rem;
-    font-size: 0.78rem;
+    font-size: 0.86rem;
     line-height: 1.2;
     white-space: nowrap;
   }
@@ -234,8 +236,9 @@ const CodeSnippet = styled.div<{ $isDark: boolean }>`
   max-width: 500px;
   min-width: 0;
   width: 100%;
-  min-height: 150px;
-  font-size: 0.88rem;
+  min-height: 180px;
+  height: 180px;
+  font-size: 1.04rem;
   color: ${({ $isDark }) => ($isDark ? "#0ff" : "#007a7a")};
   text-align: left;
   display: flex;
@@ -244,7 +247,8 @@ const CodeSnippet = styled.div<{ $isDark: boolean }>`
 
   @media (max-width: 768px) {
     padding: 0.85rem;
-    min-height: auto;
+    min-height: 120px;
+    height: 120px;
     font-size: 0.72rem;
     margin: 0.75rem auto 0;
   }
@@ -252,6 +256,7 @@ const CodeSnippet = styled.div<{ $isDark: boolean }>`
   @media (max-width: 480px) {
     padding: 0.6rem;
     min-height: 100px;
+    height: 100px;
     font-size: 0.66rem;
   }
 `;
@@ -268,7 +273,7 @@ const About: React.FC = () => {
   const codeLines = [
     "const work = {",
     "  focus: 'reliable web systems',",
-    "  stack: ['React', 'Go', 'Three.js'],",
+    "  stack: ['React', 'Go', 'C#', 'SQL'],",
     "  priority: 'clear, maintainable code',",
     "};",
   ];

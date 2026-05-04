@@ -148,7 +148,7 @@ export const LIGHT_SCENE_THEME: SceneTheme = {
   cubeBodyColor: 0xfffff,
   cubeMetalness: 0.55,
   cubeRoughness: 0.4,
-  cubeEnvMapIntensity: 0.5,
+  cubeEnvMapIntensity: 8.5,
   cubeBackdropColor: 0xffffff,
   cubeBackdropOpacity: 0.9,
   accentColor: 0x00cccc,
