@@ -98,6 +98,7 @@ const AppContent: React.FC = memo(() => {
   const { isLoading, error, resources } = useAssetLoader();
   const [canvasLoaded, setCanvasLoaded] = useState(false);
   const [pendingDetailSlug, setPendingDetailSlug] = useState<string | null>(null);
+  const [pendingRoutePath, setPendingRoutePath] = useState<string | null>(null);
 
   // Memoize resource loading state to prevent unnecessary re-renders
   const resourceState = useMemo(() => {
@@ -241,6 +242,12 @@ const AppContent: React.FC = memo(() => {
     [navigate],
   );
 
+  const handleRouteTransitionStart = useCallback((path: string) => {
+    flushSync(() => {
+      setPendingRoutePath(path);
+    });
+  }, []);
+
   const handleCanvasLoaded = useCallback(() => {
     setCanvasLoaded(true);
   }, []);
@@ -291,13 +298,20 @@ const AppContent: React.FC = memo(() => {
   // Derive detail state directly from URL — no selectedPost state needed
   const isDetail = /^\/posts\/[^/]+$/.test(location.pathname) && !isNewPost;
   const isOpeningDetail = pendingDetailSlug !== null && !isDetail;
-  const hidePostsChrome = isDetail || isOpeningDetail;
+  const isOpeningAbout = pendingRoutePath === "/about" && !isAboutPage;
+  const hidePostsChrome = isDetail || isOpeningDetail || isOpeningAbout;
 
   useEffect(() => {
     if (isDetail) {
       setPendingDetailSlug(null);
     }
   }, [isDetail]);
+
+  useEffect(() => {
+    if (pendingRoutePath === location.pathname) {
+      setPendingRoutePath(null);
+    }
+  }, [location.pathname, pendingRoutePath]);
 
   // Detect posts page to control overflow
   const isPostsPage = location.pathname === "/posts";
@@ -356,7 +370,7 @@ const AppContent: React.FC = memo(() => {
 
       {showUI && (
         <>
-          {!hidePostsChrome && <SideBar />}
+          {!hidePostsChrome && <SideBar onNavigateStart={handleRouteTransitionStart} />}
           <Routes>
             <Route path="/about" element={<About />} />
             <Route path="/posts" element={hidePostsChrome ? null : <Posts />} />

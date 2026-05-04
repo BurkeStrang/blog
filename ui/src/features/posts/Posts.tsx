@@ -160,7 +160,7 @@ const FilterDropdownComponent = React.memo(function FilterDropdownComponent() {
                 sx={{
                   fontSize: "0.8rem",
                   marginRight: "0.5rem",
-                  color: "#0ff",
+                  color: "var(--color-filter-icon-active)",
                 }}
               />
               Sort by: {criteriaDisplay.current}
@@ -186,7 +186,7 @@ const FilterDropdownComponent = React.memo(function FilterDropdownComponent() {
                   sx={{
                     fontSize: "0.8rem",
                     marginRight: "0.5rem",
-                    color: "#0ff",
+                    color: "var(--color-filter-icon-active)",
                   }}
                 />
               ) : (
@@ -194,7 +194,7 @@ const FilterDropdownComponent = React.memo(function FilterDropdownComponent() {
                   sx={{
                     fontSize: "0.8rem",
                     marginRight: "0.5rem",
-                    color: "#0ff",
+                    color: "var(--color-filter-icon-active)",
                   }}
                 />
               )}

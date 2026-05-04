@@ -243,7 +243,11 @@ const LogoutButton = styled(SidebarButton)`
   }
 `;
 
-const SidebarNav: React.FC = React.memo(() => {
+interface SidebarNavProps {
+  onNavigateStart?: (path: string) => void;
+}
+
+const SidebarNav: React.FC<SidebarNavProps> = React.memo(({ onNavigateStart }) => {
   const location = useLocation();
   const { user, loginLoading, logout, loginWithGoogle } = useAuth();
   const [open, setOpen] = useState(false);
@@ -287,12 +291,24 @@ const SidebarNav: React.FC = React.memo(() => {
       <Sidebar ref={sidebarRef} open={open} aria-label="Sidebar navigation">
         <SidebarLinks>
           <SidebarItem>
-            <SidebarLink to="/about" onClick={() => setOpen(false)}>
+            <SidebarLink
+              to="/about"
+              onClick={() => {
+                onNavigateStart?.("/about");
+                setOpen(false);
+              }}
+            >
               ABOUT
             </SidebarLink>
           </SidebarItem>
           <SidebarItem>
-            <SidebarLink to="/posts" onClick={() => setOpen(false)}>
+            <SidebarLink
+              to="/posts"
+              onClick={() => {
+                onNavigateStart?.("/posts");
+                setOpen(false);
+              }}
+            >
               POSTS
             </SidebarLink>
           </SidebarItem>

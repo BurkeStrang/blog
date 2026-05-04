@@ -69,8 +69,8 @@ const Label = styled.label`
 
 const Input = styled.input`
   padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--color-input-bg);
+  border: 1px solid var(--color-input-border-secondary);
   border-radius: 6px;
   color: ${lightgrey};
   font-size: 1rem;
@@ -79,18 +79,18 @@ const Input = styled.input`
   &:focus {
     outline: none;
     border-color: ${accent};
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--color-input-bg-focus);
   }
 
   &::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-md-blockquote-text);
   }
 `;
 
 const TextArea = styled.textarea`
   padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--color-input-bg);
+  border: 1px solid var(--color-input-border-secondary);
   border-radius: 6px;
   color: ${lightgrey};
   font-size: 1rem;
@@ -103,11 +103,11 @@ const TextArea = styled.textarea`
   &:focus {
     outline: none;
     border-color: ${accent};
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--color-input-bg-focus);
   }
 
   &::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--color-md-blockquote-text);
   }
 `;
 
@@ -147,14 +147,14 @@ const CancelButton = styled.button`
   padding: 0.75rem 1.5rem;
   background: transparent;
   color: ${lightgrey};
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--color-input-border-secondary);
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--color-input-bg);
     border-color: ${accent};
     color: ${accent};
     transform: translateY(-1px);
@@ -173,7 +173,7 @@ const ErrorMessage = styled.div`
 `;
 
 const HelpText = styled.div`
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-md-blockquote-text);
   font-size: 0.8rem;
   margin-top: 0.25rem;
 `;
@@ -325,4 +325,3 @@ const NewPost: React.FC<NewPostProps> = ({ onPostsChange }) => {
 };
 
 export default NewPost;
-

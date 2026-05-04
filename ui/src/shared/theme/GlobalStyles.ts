@@ -79,10 +79,14 @@ export const GlobalStyle = createGlobalStyle`
     --color-sidebar-glow-far: rgba(40, 0, 255, 0.18);
     --color-sidebar-hover-bg: rgba(255, 255, 255, 0.05);
     --color-sidebar-active-bg: rgba(0, 255, 255, 0.07);
-    --color-filter-text: var(--color-darkgrey);
-    --color-filter-text-hover: var(--color-secondary);
-    --color-filter-dropdown-bg: rgba(10, 10, 20, 0.1);
-    --color-filter-border: var(--color-darkgrey);
+    --color-filter-text: #8E878E;
+    --color-filter-text-hover: #6DA7A0;
+    --color-filter-icon: #6DA7A0;
+    --color-filter-icon-active: #D0B96A;
+    --color-filter-dropdown-bg: rgba(18, 24, 26, 0.72);
+    --color-filter-border: rgba(109, 167, 160, 0.34);
+    --color-filter-hover-bg: rgba(109, 167, 160, 0.11);
+    --color-filter-divider: rgba(104, 104, 94, 0.28);
   }
 
   [data-theme="light"] {
@@ -161,8 +165,12 @@ export const GlobalStyle = createGlobalStyle`
     --color-sidebar-active-bg: rgba(0, 80, 80, 0.1);
     --color-filter-text: #007a7a;
     --color-filter-text-hover: #005f5f;
+    --color-filter-icon: #007a7a;
+    --color-filter-icon-active: #007a7a;
     --color-filter-dropdown-bg: rgba(255, 255, 255, 0.1);
     --color-filter-border: rgba(0, 122, 122, 0.35);
+    --color-filter-hover-bg: rgba(128, 128, 128, 0.08);
+    --color-filter-divider: var(--color-divider);
   }
 
   @font-face {
@@ -423,7 +431,7 @@ export const FilterButton = styled.button`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: ${primary};
+  color: var(--color-filter-icon);
   background: transparent;
   border: none;
   padding: 0.3rem;
@@ -433,8 +441,8 @@ export const FilterButton = styled.button`
   pointer-events: auto;
 
   &:hover {
-    color: ${secondary};
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-filter-text-hover);
+    background: var(--color-filter-hover-bg);
   }
 
   @media (max-height: 800px) {
@@ -479,6 +487,10 @@ export const FilterDropdown = styled.div<{ $isOpen: boolean }>`
   transition: all 0.2s ease;
   z-index: 100;
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 28px rgba(0, 0, 0, 0.18);
   top: ${(p) => (p.$isOpen ? "1rem" : "0")};
   pointer-events: auto;
 
@@ -515,11 +527,11 @@ export const FilterOption = styled.button`
 
   &:hover {
     color: var(--color-filter-text-hover);
-    background: rgba(128, 128, 128, 0.08);
+    background: var(--color-filter-hover-bg);
   }
 
   &:first-child {
-    border-bottom: 1px solid var(--color-divider);
+    border-bottom: 1px solid var(--color-filter-divider);
   }
 
   /* Enhanced styling for icon layout */
