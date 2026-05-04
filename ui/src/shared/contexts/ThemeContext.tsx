@@ -16,9 +16,24 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 const STORAGE_KEY = 'theme';
 
-function readLocalTheme(): Theme {
+function readLocalTheme(): Theme | null {
   const saved = localStorage.getItem(STORAGE_KEY);
-  return saved === 'light' || saved === 'dark' ? saved : 'dark';
+  return saved === 'light' || saved === 'dark' ? saved : null;
+}
+
+function readSystemTheme(): Theme {
+  if (
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-color-scheme: light)').matches
+  ) {
+    return 'light';
+  }
+
+  return 'dark';
+}
+
+function resolveInitialTheme(): Theme {
+  return readLocalTheme() ?? readSystemTheme();
 }
 
 interface ThemeProviderProps {
@@ -28,7 +43,7 @@ interface ThemeProviderProps {
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const userEmail = useAuth().user?.email;
   const [theme, setTheme] = useState<Theme>(() => {
-    const resolved = readLocalTheme();
+    const resolved = resolveInitialTheme();
     document.documentElement.setAttribute('data-theme', resolved);
     return resolved;
   });
