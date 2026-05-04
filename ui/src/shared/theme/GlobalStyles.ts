@@ -17,6 +17,8 @@ export const GlobalStyle = createGlobalStyle`
     --color-header-glow: rgba(0, 220, 200, 0.6);
     --color-header-glow-far: rgba(0, 200, 200, 0.3);
     --color-header-mobile-shadow: rgba(0, 0, 0, 0.38);
+    --color-header-gradient-top: color-mix(in srgb, var(--color-primary) 88%, white);
+    --color-header-gradient-bottom: color-mix(in srgb, var(--color-primary) 88%, black);
     --color-search-outline: rgba(0, 220, 200, 0.8);
     --color-search-outline-focus: rgba(0, 255, 220, 1);
     --color-dropdown-bg: rgba(0, 0, 0, 0.1);
@@ -70,7 +72,7 @@ export const GlobalStyle = createGlobalStyle`
     --color-input-border-secondary: rgba(255, 255, 255, 0.2);
     --color-cube-bg-start: #222;
     --color-cube-bg-end: #444;
-    --color-cube-accent: #0ff;
+    --color-cube-accent: #099;
     --color-sidebar-bg: rgba(0, 0, 0, 0.35);
     --color-sidebar-link: #088;
     --color-sidebar-glow-near: #088;
@@ -92,9 +94,11 @@ export const GlobalStyle = createGlobalStyle`
     --color-neon: #0a7a09;
     --color-secondary: #4a5a35;
     --color-bluish: rgba(0, 80, 200, 1);
-    --color-header-glow: rgba(0, 220, 220, 0.6);
-    --color-header-glow-far: rgba(0, 100, 100, 0.15);
-    --color-header-mobile-shadow: rgba(0, 72, 82, 0.12);
+    --color-header-glow: rgba(210, 250, 250, 0.055);
+    --color-header-glow-far: rgba(130, 205, 205, 0.008);
+    --color-header-mobile-shadow: rgba(150, 210, 215, 0.035);
+    --color-header-gradient-top: color-mix(in srgb, var(--color-primary) 80%, white);
+    --color-header-gradient-bottom: color-mix(in srgb, var(--color-primary) 68%, white);
     --color-search-outline: rgba(0, 200, 200, 0.7);
     --color-search-outline-focus: rgba(0, 120, 140, 1);
     --color-dropdown-bg: rgba(255, 255, 255, 0.2);
@@ -268,9 +272,9 @@ export const Header = styled.header`
     color: transparent;
     background: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--color-primary) 88%, white) 0%,
+      var(--color-header-gradient-top) 0%,
       var(--color-primary) 50%,
-      color-mix(in srgb, var(--color-primary) 88%, black) 100%
+      var(--color-header-gradient-bottom) 100%
     );
     -webkit-background-clip: text;
     background-clip: text;

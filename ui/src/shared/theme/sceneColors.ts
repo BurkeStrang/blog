@@ -154,7 +154,7 @@ export const LIGHT_SCENE_THEME: SceneTheme = {
   cubeEnvMapIntensity: 8.5,
   cubeBackdropColor: 0xffffff,
   cubeBackdropOpacity: 0.9,
-  accentColor: 0x00cccc,
+  accentColor: 0x009999,
   sphereBodyColor: 0xffffff,
   sphereMetalness: 0.55,
   sphereRoughness: 0.4,
