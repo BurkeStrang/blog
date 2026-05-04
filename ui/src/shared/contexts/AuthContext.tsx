@@ -26,63 +26,6 @@ const isMobileUA = () =>
     navigator.userAgent,
   );
 
-const showSessionExpiredNotification = (message: string) => {
-  const notification = document.createElement("div");
-  notification.style.cssText = `
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background: rgba(40, 40, 40, 0.95);
-    color: white;
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    z-index: 10000;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: 12px;
-    max-width: 200px;
-    animation: slideIn 0.3s ease-out;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  `;
-
-  const style = document.createElement("style");
-  style.textContent = `
-    @keyframes slideIn {
-      from { transform: translateY(-20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 0.6; }
-    }
-    @keyframes slideOut {
-      from { transform: translateY(0); opacity: 0.6; }
-      to { transform: translateY(-20px); opacity: 0; }
-    }
-
-    @media (max-width: 768px) {
-      div[style*="session-notification"] {
-        top: 8px !important;
-        right: 8px !important;
-        font-size: 11px !important;
-        padding: 0.4rem 0.6rem !important;
-        max-width: 160px !important;
-      }
-    }
-  `;
-  document.head.appendChild(style);
-
-  notification.textContent = message;
-  notification.setAttribute("data-notification", "session-notification");
-  document.body.appendChild(notification);
-
-  setTimeout(() => {
-    notification.style.animation = "slideOut 0.3s ease-in";
-    setTimeout(() => {
-      document.body.removeChild(notification);
-      document.head.removeChild(style);
-    }, 300);
-  }, 3000);
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -203,14 +146,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       );
   }, []);
 
-  // Auth error event — clear user and surface a notification
+  // Auth error event — clear user silently.
   useEffect(() => {
-    const handleAuthError = (event: CustomEvent) => {
+    const handleAuthError = () => {
       setUser(null);
-      const message =
-        event.detail?.message ||
-        "Your session has expired. Please sign in again.";
-      showSessionExpiredNotification(message);
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("user");
     };
     window.addEventListener("auth-error", handleAuthError as EventListener);
     return () =>

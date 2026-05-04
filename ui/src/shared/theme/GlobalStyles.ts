@@ -146,9 +146,9 @@ export const GlobalStyle = createGlobalStyle`
     --color-input-bg-focus: rgba(0, 0, 0, 0.09);
     --color-input-border: rgba(0, 0, 0, 0.2);
     --color-input-border-secondary: rgba(0, 0, 0, 0.25);
-    --color-cube-bg-start: #d0d0d0;
-    --color-cube-bg-end: #b0b0b0;
-    --color-cube-accent: #007a7a;
+    --color-cube-bg-start: #f8f8f8;
+    --color-cube-bg-end: #ffffff;
+    --color-cube-accent: #0ff;
     --color-sidebar-bg: rgba(255, 255, 255, 0.25);
     --color-sidebar-link: #00caca;
     --color-sidebar-glow-near: transparent;
