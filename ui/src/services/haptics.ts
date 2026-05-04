@@ -32,13 +32,11 @@ function supportsIOSSwitchHaptics(): boolean {
     /iPad|iPhone|iPod/.test(ua) ||
     (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
   const isWebKit = /WebKit/i.test(ua);
-  const isExcludedBrowser = /CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua);
 
   return (
     window.matchMedia(MOBILE_HAPTIC_QUERY).matches &&
     isIOSDevice &&
-    isWebKit &&
-    !isExcludedBrowser
+    isWebKit
   );
 }
 

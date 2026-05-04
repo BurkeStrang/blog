@@ -54,7 +54,7 @@ const MarkdownWrapper = styled.div`
 
   h2 {
     font-size: 1.875rem;
-    border-bottom: 1px solid var(--color-md-h2-border);
+    border-bottom: 2px solid var(--color-md-h2-border);
     padding-bottom: 0.5rem;
   }
 
@@ -255,7 +255,7 @@ const MarkdownWrapper = styled.div`
   /* Horizontal Rule */
   hr {
     border: none;
-    border-top: 1px solid var(--color-md-hr);
+    border-top: 2px solid var(--color-md-hr);
     margin: 3rem 0;
   }
 

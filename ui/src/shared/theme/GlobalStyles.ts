@@ -38,7 +38,7 @@ export const GlobalStyle = createGlobalStyle`
     --color-md-tr-hover: rgba(255, 255, 255, 0.03);
     --color-md-hr: rgba(255, 255, 255, 0.1);
     --color-md-code-bg: rgba(18, 20, 20, 0.72);
-    --color-md-code-border: rgba(94, 100, 102, 0.5);
+    --color-md-code-border: rgba(0, 0, 0, 0.9);
     --color-md-code-glass-highlight: rgba(255, 255, 255, 0.035);
     --color-md-code-inset: rgba(255, 255, 255, 0.07);
     --color-md-code-shadow: rgba(0, 0, 0, 0.24);
@@ -116,7 +116,7 @@ export const GlobalStyle = createGlobalStyle`
     --color-md-tr-hover: rgba(0, 0, 0, 0.03);
     --color-md-hr: rgba(0, 0, 0, 0.1);
     --color-md-code-bg: rgba(236, 238, 236, 0.82);
-    --color-md-code-border: rgba(94, 100, 102, 0.28);
+    --color-md-code-border: rgba(255, 255, 255, 0.1);
     --color-md-code-glass-highlight: rgba(255, 255, 255, 0.34);
     --color-md-code-inset: rgba(255, 255, 255, 0.5);
     --color-md-code-shadow: rgba(22, 22, 22, 0.08);

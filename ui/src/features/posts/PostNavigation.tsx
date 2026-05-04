@@ -4,7 +4,6 @@ import { BufferGeometry, Vector3, Group, Mesh, MeshBasicMaterial, MeshStandardMa
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 import type { Font } from "three/examples/jsm/loaders/FontLoader";
-import { triggerMobileHapticFeedback } from "../../services/haptics";
 import { DARK_SCENE_THEME, LIGHT_SCENE_THEME } from "../../shared/theme/sceneColors";
 
 interface FollowerSphereProps {
@@ -336,11 +335,9 @@ export default function FollowerSphere({
     e.stopPropagation();
     const name = e.object.name;
     if (name === "leftArrow" || name === "leftArrow-outline") {
-      triggerMobileHapticFeedback();
       onLeftClick?.();
     }
     if (name === "rightArrow" || name === "rightArrow-outline") {
-      triggerMobileHapticFeedback();
       onRightClick?.();
     }
   };
