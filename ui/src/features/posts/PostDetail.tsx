@@ -855,12 +855,31 @@ const PostDetailComponent = function PostDetail({
   }, []);
 
   // Optimize handleClose to prevent re-renders
+  const closePostDetail = React.useCallback(() => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    handleClose();
+  }, [handleClose]);
+
   const handleClick = React.useCallback(
-    (e: React.MouseEvent) => {
+    (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
-      handleClose();
+      e.stopPropagation();
+      closePostDetail();
     },
-    [handleClose],
+    [closePostDetail],
+  );
+
+  const handleBackKeyDown = React.useCallback(
+    (e: React.KeyboardEvent<HTMLButtonElement>) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      closePostDetail();
+    },
+    [closePostDetail],
   );
 
   // Toggle comments expanded state
@@ -984,7 +1003,9 @@ const PostDetailComponent = function PostDetail({
         )}
 
         <BackButtonContainer>
-          <BackButton onClick={handleClick}>← back</BackButton>
+          <BackButton onClick={handleClick} onKeyDown={handleBackKeyDown}>
+            ← back
+          </BackButton>
           {isAdmin(user) && !isEditing && (
             <>
               <EditButton onClick={handleEdit}>
