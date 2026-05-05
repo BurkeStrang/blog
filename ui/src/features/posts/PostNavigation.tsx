@@ -339,11 +339,11 @@ export default function FollowerSphere({
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     const name = e.object.name;
-    if (name === "leftArrow" || name === "leftArrow-outline") {
+    if (showLeftArrow && (name === "leftArrow" || name === "leftArrow-outline")) {
       triggerMobileHapticFeedback();
       onLeftClick?.();
     }
-    if (name === "rightArrow" || name === "rightArrow-outline") {
+    if (showRightArrow && (name === "rightArrow" || name === "rightArrow-outline")) {
       triggerMobileHapticFeedback();
       onRightClick?.();
     }
