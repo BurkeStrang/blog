@@ -147,6 +147,10 @@ function PostBoxCore(props: PostBoxProps) {
   const manualHoverRef = useRef(false); // Track if user is hovering with mouse
   const autoHoverEnabledRef = useRef(false); // Track if auto-hover is enabled (after initial delay)
   const toCameraRef = useRef(new THREE.Vector3());
+  const hoverAnchorRef = useRef(new THREE.Vector3());
+  const manualHoverOffsetRef = useRef(new THREE.Vector3());
+  const manualHoverOffsetReadyRef = useRef(false);
+  const manualHoverAmountRef = useRef(0);
 
   // Enable auto-hover after 1 second delay on first load
   useEffect(() => {
@@ -484,13 +488,31 @@ function PostBoxCore(props: PostBoxProps) {
       baseTargetZ = (basePos[2] + hoverLift + indexOffset);
     }
 
-    if (manualHoverRef.current) {
-      // Mouse hover: slide toward camera (additive — works alone or on top of lift)
-      toCameraRef.current.subVectors(camera.position, g.position).normalize();
+    manualHoverAmountRef.current = MathUtils.lerp(
+      manualHoverAmountRef.current,
+      manualHoverRef.current ? 1 : 0,
+      0.18,
+    );
+
+    if (manualHoverRef.current && !manualHoverOffsetReadyRef.current) {
+      // Latch the hover direction once. Recomputing it while the cube eases
+      // toward the camera makes the path bend into a second direction.
+      hoverAnchorRef.current.set(baseTargetX, baseTargetY + 28, baseTargetZ);
+      toCameraRef.current
+        .subVectors(camera.position, hoverAnchorRef.current)
+        .normalize();
       const hoverDist = hovered ? 12 : 16;
-      baseTargetX += toCameraRef.current.x * hoverDist;
-      baseTargetY += toCameraRef.current.y * hoverDist;
-      baseTargetZ += toCameraRef.current.z * hoverDist;
+      manualHoverOffsetRef.current.copy(toCameraRef.current).multiplyScalar(hoverDist);
+      manualHoverOffsetReadyRef.current = true;
+    }
+
+    if (manualHoverAmountRef.current > 0.001) {
+      baseTargetX += manualHoverOffsetRef.current.x * manualHoverAmountRef.current;
+      baseTargetY += manualHoverOffsetRef.current.y * manualHoverAmountRef.current;
+      baseTargetZ += manualHoverOffsetRef.current.z * manualHoverAmountRef.current;
+    } else if (!manualHoverRef.current) {
+      manualHoverAmountRef.current = 0;
+      manualHoverOffsetReadyRef.current = false;
     }
 
     // Handle sorting animation phases
@@ -582,6 +604,7 @@ function PostBoxCore(props: PostBoxProps) {
   const handlePointerOver = () => {
     if (!isVisible || sortingPhase !== "none") return;
     manualHoverRef.current = true;
+    manualHoverOffsetReadyRef.current = false;
     // Don't steal slug from a centered (auto-hovered) box
     if (!hoveredPost.isAuto) hoveredPost.slug = slug;
     if (gl.domElement) gl.domElement.style.setProperty("cursor", "pointer");
