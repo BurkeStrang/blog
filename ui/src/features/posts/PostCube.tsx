@@ -100,6 +100,16 @@ function wrapLines(
 // Shared mutable object — written by useFrame (synchronous), read by keydown handler
 export const hoveredPost = { slug: null as string | null, isAuto: false };
 
+let initialPostWaveStart: number | null = null;
+
+const INITIAL_WAVE_DELAY = 0.85;
+const INITIAL_WAVE_STAGGER = 0.16;
+const INITIAL_WAVE_DURATION = 0.82;
+const INITIAL_WAVE_LIFT = 20.5;
+const INITIAL_WAVE_DRIFT = 1.25;
+const INITIAL_WAVE_TILT = 0.52;
+const INITIAL_WAVE_SPIN = Math.PI * 2;
+
 // --- 3. Actual PostBox component ---
 interface PostBoxProps {
   title: string;
@@ -430,6 +440,9 @@ function PostBoxCore(props: PostBoxProps) {
   useFrame(({ clock, camera }) => {
     const g = groupRef.current;
     const t = clock.getElapsedTime();
+    if (initialPostWaveStart === null) {
+      initialPostWaveStart = t + INITIAL_WAVE_DELAY;
+    }
 
     // Auto-hover when cube is in center of screen (only when not manually hovering)
     if (!manualHoverRef.current && autoHoverEnabledRef.current && isVisible && sortingPhase === "none") {
@@ -511,12 +524,48 @@ function PostBoxCore(props: PostBoxProps) {
       baseTargetX = basePos[0] - 8 - Math.pow(index / 10, 4) * 0.9;
     }
 
+    const waveElapsed =
+      t - initialPostWaveStart - (index - 1) * INITIAL_WAVE_STAGGER;
+    const waveProgress = MathUtils.clamp(
+      waveElapsed / INITIAL_WAVE_DURATION,
+      0,
+      1,
+    );
+    const isInitialWaveActive =
+      isVisible &&
+      index > 0 &&
+      sortingPhase === "none" &&
+      !manualHoverRef.current &&
+      waveElapsed >= 0 &&
+      waveProgress < 1;
+    const wavePulse = isInitialWaveActive
+      ? Math.sin(waveProgress * Math.PI)
+      : 0;
+    const waveSpinProgress = isInitialWaveActive
+      ? MathUtils.smoothstep(waveProgress, 0, 1)
+      : 0;
+    const waveSpin = waveSpinProgress * INITIAL_WAVE_SPIN;
+
+    if (wavePulse > 0) {
+      baseTargetY += wavePulse * INITIAL_WAVE_LIFT;
+      baseTargetZ += wavePulse * INITIAL_WAVE_DRIFT;
+      baseTargetX -= wavePulse * (INITIAL_WAVE_DRIFT * 0.35);
+    }
+
     const wiggleDelta = 0.02 + (Math.sin(index) + 0.1) * 0.15;
-    const targetRotX = hovered ? 0 : -0.01 + Math.cos(t) * 0.01 + wiggleDelta;
+    const targetRotX = hovered
+      ? 0
+      : -0.01 + Math.cos(t) * 0.01 + wiggleDelta - wavePulse * INITIAL_WAVE_TILT;
     const targetRotY = hovered
       ? -0.8 - Math.pow(index / 10, 2) * 0.1
-      : Math.sin(t) * 0.03 - 0.5 - wiggleDelta;
-    const targetRotZ = hovered ? 0 : Math.sin(t) * 0.04 + wiggleDelta;
+      : Math.sin(t) * 0.03 -
+        0.5 -
+        wiggleDelta -
+        wavePulse * INITIAL_WAVE_TILT +
+        waveSpin;
+    const targetRotZ = hovered
+      ? 0
+      : Math.sin(t) * 0.04 + wiggleDelta + wavePulse * (INITIAL_WAVE_TILT * 0.5);
 
     // Set target position directly without collision detection
     const targetX = baseTargetX;
