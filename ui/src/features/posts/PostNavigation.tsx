@@ -139,7 +139,7 @@ export default function FollowerSphere({
   const rightArrowHitMesh = useMemo(() => {
     const m = new Mesh(new PlaneGeometry(1.5, 1.5), hitboxMat);
     m.name = "rightArrow";
-    m.position.set(1.9, 0.1, 0.5);
+    m.position.set(1.9, -0.08, 0.35);
     m.rotation.set(1.43, 1.27, 1.42);
     return m;
   }, [hitboxMat]);
@@ -174,7 +174,7 @@ export default function FollowerSphere({
   const rightArrowOutlineMesh = useMemo(() => {
     const m = new Mesh(rightGeo, greenOutlineMat);
     m.name = "rightArrow-outline";
-    m.position.set(1.9, 0.1, 0.5);
+    m.position.set(1.9, -0.08, 0.35);
     m.rotation.set(1.43, 1.27, 1.42);
     m.visible = false;
     return m;
@@ -183,7 +183,7 @@ export default function FollowerSphere({
   const rightArrowMesh = useMemo(() => {
     const m = new Mesh(rightGeo, greyOutlineMat);
     m.name = "rightArrow";
-    m.position.set(1.9, 0.1, 0.5);
+    m.position.set(1.9, -0.08, 0.35);
     m.rotation.set(1.43, 1.27, 1.42);
     m.scale.set(1.1, 1.1, 1.1);
     return m;
@@ -325,7 +325,7 @@ export default function FollowerSphere({
     leftArrowMesh.scale.setScalar(ls);
     leftArrowOutlineMesh.scale.setScalar(ls);
     leftArrowHitMesh.scale.setScalar(ls);
-    const leftHoverY = -0.27 - 0.08 * leftHoverT.current;
+    const leftHoverY = -0.32 - 0.08 * leftHoverT.current;
     leftArrowMesh.position.set(-1.4, leftHoverY, -1.29);
     leftArrowOutlineMesh.position.set(-1.4, leftHoverY, -1.29);
     leftArrowHitMesh.position.set(-1.4, leftHoverY, -1.29);
