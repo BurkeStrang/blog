@@ -189,6 +189,15 @@ export const GlobalStyle = createGlobalStyle`
     font-style: normal;
   }
 
+  @keyframes headerLayerWarmup {
+    from {
+      transform: translate3d(0, 0, 0) scale(1.0001);
+    }
+    to {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+  }
+
   html {
     height: 100%;
     margin: 0;
@@ -269,26 +278,31 @@ export const Header = styled.header`
   text-align: center;
   padding-top: 2.5rem;
   pointer-events: none;
+  isolation: isolate;
+  contain: layout paint style;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  will-change: transform;
 
   h1 {
+    display: inline-block;
     font-family: "mega", "Arial Black", sans-serif;
     font-size: clamp(2rem, 5vw, 2.6rem);
     letter-spacing: 0.1em;
     line-height: 0.95;
     margin: 1rem 0;
-
-    color: transparent;
-    background: linear-gradient(
-      180deg,
-      var(--color-header-gradient-top) 0%,
-      var(--color-primary) 50%,
-      var(--color-header-gradient-bottom) 100%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
+    color: var(--color-primary);
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    will-change: transform;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+    animation: headerLayerWarmup 1ms linear both;
 
     text-shadow:
+      0 -0.45px 0 var(--color-header-gradient-top),
       0 1px 0 var(--color-header-glow),
+      0 1.25px 0 var(--color-header-gradient-bottom),
       0 1.5px 0 var(--color-header-glow-far);
   }
 
@@ -437,8 +451,13 @@ export const FilterButton = styled.button`
   padding: 0.3rem;
   font-family: "mega", sans-serif;
   font-size: 0.8rem;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
   pointer-events: auto;
+  backface-visibility: hidden;
+  will-change: color, background-color;
 
   &:hover {
     color: var(--color-filter-text-hover);
@@ -473,40 +492,64 @@ export const FilterButton = styled.button`
   }
 `;
 
-export const FilterDropdown = styled.div<{ $isOpen: boolean }>`
+export const FilterDropdown = styled.div`
   position: absolute;
   top: 100%;
   left: 50%;
-  transform: translateX(-50%) translateY(${(p) => (p.$isOpen ? "55px" : "0")});
+  transform: translateX(-50%) translateY(0);
   min-width: 240px;
   background: var(--color-filter-dropdown-bg);
   border: 2px solid var(--color-filter-border);
   border-radius: 8px 8px 8px 8px;
-  opacity: ${(p) => (p.$isOpen ? 1 : 0)};
-  visibility: ${(p) => (p.$isOpen ? "visible" : "hidden")};
-  transition: all 0.2s ease;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease,
+    transform 0.2s ease,
+    top 0.2s ease;
   z-index: 100;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  contain: paint;
+  isolation: isolate;
+  backface-visibility: hidden;
+  will-change: opacity, transform;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 12px 28px rgba(0, 0, 0, 0.18);
-  top: ${(p) => (p.$isOpen ? "1rem" : "0")};
+  top: 0;
   pointer-events: auto;
+
+  &[data-open="true"] {
+    opacity: 1;
+    visibility: visible;
+    top: 1rem;
+    transform: translateX(-50%) translateY(55px);
+  }
 
   @media (max-width: 768px) {
     min-width: 200px;
-    transform: translateX(-50%) translateY(${(p) => (p.$isOpen ? "45px" : "0")});
+
+    &[data-open="true"] {
+      transform: translateX(-50%) translateY(45px);
+    }
   }
 
   @media (max-width: 480px) {
     min-width: 180px;
-    transform: translateX(-50%) translateY(${(p) => (p.$isOpen ? "35px" : "0")});
+
+    &[data-open="true"] {
+      transform: translateX(-50%) translateY(35px);
+    }
   }
 
   @media (max-width: 320px) {
     min-width: 160px;
-    transform: translateX(-50%) translateY(${(p) => (p.$isOpen ? "30px" : "0")});
+
+    &[data-open="true"] {
+      transform: translateX(-50%) translateY(30px);
+    }
   }
 `;
 

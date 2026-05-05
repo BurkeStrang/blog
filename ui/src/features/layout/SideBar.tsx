@@ -9,7 +9,7 @@ import { useTheme } from "../../shared/contexts/ThemeContext";
 import { useAuth } from "../../shared/contexts/AuthContext";
 
 // Sidebar container
-const Sidebar = styled.nav<{ open: boolean }>`
+const Sidebar = styled.nav`
   position: fixed;
   background: var(--color-sidebar-bg);
   backdrop-filter: blur(20px) saturate(1.4);
@@ -23,9 +23,17 @@ const Sidebar = styled.nav<{ open: boolean }>`
   z-index: 200;
   padding: 4rem;
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateX(${(p) => (p.open ? "0" : "-110%")});
+  transform: translateX(-110%);
+  contain: paint;
+  isolation: isolate;
+  backface-visibility: hidden;
+  will-change: transform;
   display: flex;
   flex-direction: column;
+
+  &[data-open="true"] {
+    transform: translateX(0);
+  }
 
   /* Responsive width */
   @media (max-width: 768px) {
@@ -69,8 +77,13 @@ const HamburgerBtn = styled.button`
   cursor: pointer;
   font-size: 2rem;
   padding: 0.5rem;
-  transition: all 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
   border-radius: 50%;
+  backface-visibility: hidden;
 
   &:hover {
     background: var(--color-sidebar-glow-far);
@@ -288,7 +301,7 @@ const SidebarNav: React.FC<SidebarNavProps> = React.memo(({ onNavigateStart }) =
         </HamburgerBtn>
       </HamburgerContainer>
 
-      <Sidebar ref={sidebarRef} open={open} aria-label="Sidebar navigation">
+      <Sidebar ref={sidebarRef} data-open={open} aria-label="Sidebar navigation">
         <SidebarLinks>
           <SidebarItem>
             <SidebarLink

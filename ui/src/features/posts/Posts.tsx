@@ -146,7 +146,7 @@ const FilterDropdownComponent = React.memo(function FilterDropdownComponent() {
           }}
         />
       </FilterButton>
-      <FilterDropdown $isOpen={isOpen}>
+      <FilterDropdown data-open={isOpen}>
         <FilterOption onClick={() => handleOptionClick(cycleSortCriteria)}>
           <div
             style={{
