@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "pnpm run type-check && pnpm run lint:check && vite build --mode production",
+    "audit": "pnpm audit --prod",
+    "build": "pnpm run type-check && pnpm run lint:check && pnpm run audit && vite build --mode production",
     "build:fast": "vite build",
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
@@ -23,10 +24,6 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@gltf-transform/cli": "^4.2.0",
-    "@gltf-transform/core": "^4.2.0",
-    "@gltf-transform/extensions": "^4.2.0",
-    "@gltf-transform/functions": "^4.3.0",
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
     "@react-three/drei": "^10.0.8",
@@ -39,7 +36,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^7.6.0",
+    "react-router-dom": "^7.14.2",
     "react-syntax-highlighter": "^16.1.1",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
@@ -51,6 +48,10 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.27.0",
+    "@gltf-transform/cli": "^4.3.0",
+    "@gltf-transform/core": "^4.3.0",
+    "@gltf-transform/extensions": "^4.3.0",
+    "@gltf-transform/functions": "^4.3.0",
     "@types/node": "^22.15.20",
     "@types/react": "^19.1.4",
     "@types/react-dom": "^19.1.5",
@@ -66,5 +67,10 @@
     "typescript-eslint": "^8.59.1",
     "vite": "^6.3.5",
     "vite-plugin-eslint": "^1.8.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "yaml": "1.10.3"
+    }
   }
 }

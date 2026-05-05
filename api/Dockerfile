@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.26-alpine AS builder
+FROM golang:1.25.9-alpine AS builder
 
 WORKDIR /app
 
@@ -12,6 +12,10 @@ RUN go mod download
 
 # Copy source code
 COPY . .
+
+# Check Go dependencies and reachable code paths for known vulnerabilities
+RUN go install golang.org/x/vuln/cmd/govulncheck@latest
+RUN /go/bin/govulncheck ./...
 
 # Build the application (CGO disabled since we're using Cosmos DB, not SQLite)
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-w -s" -o main .
