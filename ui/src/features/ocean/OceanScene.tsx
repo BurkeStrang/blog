@@ -868,7 +868,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
           // Use consistent starting position based on renderIndex instead of original index
           // This ensures consistent lighting regardless of which post is in which position
           const startPosX = renderIndex * 50 - (postsPerPage - 1) * 25;
-          const startPosY = -250;
+          const startPosY = -100;
           const startPosZ = renderIndex * 40;
 
           // Safety check: ensure positions exist
