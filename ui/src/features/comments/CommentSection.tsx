@@ -9,6 +9,9 @@ import {
   type CreateCommentRequest,
 } from "../../services/commentService";
 
+const readableAccent = `color-mix(in srgb, ${accent} 65%, black)`;
+const readableLightgrey = `color-mix(in srgb, ${lightgrey} 65%, black)`;
+
 const SectionContainer = styled.section`
   width: 100%;
   border-top: 1px solid var(--color-comment-border);
@@ -29,7 +32,7 @@ const SectionContainer = styled.section`
 `;
 
 const SectionTitle = styled.h2`
-  color: ${accent};
+  color: ${readableAccent};
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 2rem;
@@ -69,7 +72,7 @@ const CommentsList = styled.div`
 const EmptyState = styled.div`
   text-align: center;
   padding: 3rem 2rem;
-  color: ${lightgrey};
+  color: ${readableLightgrey};
   opacity: 0.7;
   font-size: 0.95rem;
 
@@ -107,7 +110,7 @@ const LoadingSpinner = styled.div`
   display: flex;
   justify-content: center;
   padding: 2rem;
-  color: ${lightgrey};
+  color: ${readableLightgrey};
   opacity: 0.7;
 `;
 

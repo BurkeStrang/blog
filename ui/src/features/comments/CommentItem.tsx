@@ -10,6 +10,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { User } from '../../shared/types/user';
 
+const readableAccent = `color-mix(in srgb, ${accent} 65%, black)`;
+const readableLightgrey = `color-mix(in srgb, ${lightgrey} 65%, black)`;
+
 const CommentContainer = styled.div`
   background: var(--color-comment-bg);
   border: 1px solid var(--color-comment-border);
@@ -64,7 +67,7 @@ const CommentHeader = styled.div`
 `;
 
 const AuthorName = styled.span`
-  color: ${accent};
+  color: ${readableAccent};
   font-weight: 600;
   font-size: 0.9rem;
   word-wrap: break-word;
@@ -77,13 +80,13 @@ const AuthorName = styled.span`
 `;
 
 const CommentTime = styled.span`
-  color: ${lightgrey};
+  color: ${readableLightgrey};
   font-size: 0.8rem;
   opacity: 0.7;
 `;
 
 const CommentContent = styled.div`
-  color: ${lightgrey};
+  color: ${readableLightgrey};
   line-height: 1.6;
   font-size: 0.95rem;
   white-space: pre-wrap;
@@ -124,7 +127,7 @@ const CommentActions = styled.div`
 const ActionButton = styled.button<{ $active?: boolean }>`
   background: none;
   border: none;
-  color: ${props => props.$active ? accent : lightgrey};
+  color: ${props => props.$active ? readableAccent : readableLightgrey};
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -135,7 +138,7 @@ const ActionButton = styled.button<{ $active?: boolean }>`
   transition: all 0.2s ease;
   
   &:hover {
-    color: ${accent};
+    color: ${readableAccent};
     background: rgba(255, 255, 255, 0.05);
   }
   
@@ -205,7 +208,7 @@ const EditTextArea = styled.textarea`
   background: var(--color-input-bg);
   border: 1px solid var(--color-input-border);
   border-radius: 6px;
-  color: var(--color-lightgrey);
+  color: ${readableLightgrey};
   font-size: 1rem;
   font-family: inherit;
   line-height: 1.5;
@@ -252,7 +255,7 @@ const SaveButton = styled.button`
 const CancelButton = styled.button`
   padding: 0.5rem 1rem;
   background: transparent;
-  color: ${lightgrey};
+  color: ${readableLightgrey};
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   font-weight: 600;
@@ -262,7 +265,7 @@ const CancelButton = styled.button`
   &:hover {
     background: rgba(255, 255, 255, 0.05);
     border-color: ${accent};
-    color: ${accent};
+    color: ${readableAccent};
   }
 `;
 
@@ -302,7 +305,7 @@ const DeleteConfirmTitle = styled.h3`
 `;
 
 const DeleteConfirmMessage = styled.p`
-  color: ${lightgrey};
+  color: ${readableLightgrey};
   margin-bottom: 1.5rem;
   line-height: 1.5;
 `;

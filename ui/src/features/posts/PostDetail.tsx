@@ -641,7 +641,7 @@ const CommentsToggleButton = styled.button`
   background: var(--color-comment-bg);
   border: 1px solid var(--color-comment-border);
   border-radius: 8px;
-  color: ${accent};
+  color: color-mix(in srgb, ${accent} 65%, black);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;

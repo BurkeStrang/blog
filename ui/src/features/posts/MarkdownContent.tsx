@@ -15,6 +15,9 @@ import remarkGfm from 'remark-gfm';
 import styled from 'styled-components';
 import { accent, lightgrey } from '../../shared/theme/colors';
 
+const readableAccent = `color-mix(in srgb, ${accent} 65%, black)`;
+const readableLightgrey = `color-mix(in srgb, ${lightgrey} 65%, black)`;
+
 SyntaxHighlighter.registerLanguage('bash', bash);
 SyntaxHighlighter.registerLanguage('cpp', cpp);
 SyntaxHighlighter.registerLanguage('csharp', csharp);
@@ -32,11 +35,11 @@ const MarkdownWrapper = styled.div`
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 1.125rem;
   line-height: 1.8;
-  color: ${lightgrey};
+  color: ${readableLightgrey};
 
   /* Headings */
-  h1, h2, h3, h4, h5, h6 {
-    color: ${accent};
+  && h1, && h2, && h3, && h4, && h5, && h6 {
+    color: ${readableAccent};
     font-family: 'mega', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-weight: 600;
     margin: 2.5rem 0 1rem 0;
@@ -270,13 +273,18 @@ const MarkdownWrapper = styled.div`
 
   /* Strong and Emphasis */
   strong {
-    color: ${lightgrey};
+    color: ${readableLightgrey};
     font-weight: 600;
   }
 
   em {
-    color: ${lightgrey};
+    color: ${readableLightgrey};
     font-style: italic;
+  }
+
+  && h1 *, && h2 *, && h3 *, && h4 *, && h5 *, && h6 * {
+    color: inherit;
+    border-bottom-color: currentColor;
   }
 
   /* Responsive */

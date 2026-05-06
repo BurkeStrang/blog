@@ -1,14 +1,12 @@
-import React, { useEffect, useState, useCallback, useMemo, memo, useRef } from "react";
+import React, { lazy, Suspense, useEffect, useState, useCallback, useMemo, memo, useRef } from "react";
 import { flushSync } from "react-dom";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { SideBar } from "../features/layout";
-import { Posts, PostDetail, NewPost } from "../features/posts";
-import { About, NotFound } from "../features/pages";
 import { CanvasBackground, GlobalStyle } from "../shared/theme/GlobalStyles";
 import { LazyOceanCanvas } from "../features/ocean";
 import styled from "styled-components";
 import { LoadingCubes } from "../shared/components";
-import { Vector3 } from "three";
+import type { Vector3 } from "three";
 import { backgroundColor } from "../shared/theme/colors";
 import { useAssetLoader, usePostsApi } from "../shared/hooks";
 import { memoryTracker } from "../engine/memory/MemoryTracker";
@@ -19,6 +17,16 @@ import { ThemeProvider } from "../shared/contexts/ThemeContext";
 import { apiService } from "../services/api";
 import { cacheInvalidation } from "../services/cache/CacheManager";
 import { installMobileHapticsListener } from "../services/haptics";
+
+const About = lazy(() => import("../features/pages/About"));
+const Posts = lazy(() => import("../features/posts/Posts"));
+const NewPost = lazy(() => import("../features/posts/NewPost"));
+const PostDetail = lazy(() => import("../features/posts/PostDetail"));
+const NotFound = lazy(() =>
+  import("../features/pages/NotFound").then((module) => ({
+    default: module.NotFound,
+  })),
+);
 
 export interface Post {
   id?: number;
@@ -371,26 +379,28 @@ const AppContent: React.FC = memo(() => {
       {showUI && (
         <>
           {!hidePostsChrome && <SideBar onNavigateStart={handleRouteTransitionStart} />}
-          <Routes>
-            <Route path="/about" element={<About />} />
-            <Route path="/posts" element={hidePostsChrome ? null : <Posts />} />
-            <Route
-              path="/posts/new"
-              element={<NewPost onPostsChange={refreshPostsImmediate} />}
-            />
-            <Route
-              path="/posts/:slug"
-              element={
-                <PostDetail
-                  allPosts={detailPosts}
-                  handleClose={handleClose}
-                  onPostsChange={refreshPostsImmediate}
-                  onCommentCountChange={updatePostCommentCount}
-                />
-              }
-            />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={null}>
+            <Routes>
+              <Route path="/about" element={<About />} />
+              <Route path="/posts" element={hidePostsChrome ? null : <Posts />} />
+              <Route
+                path="/posts/new"
+                element={<NewPost onPostsChange={refreshPostsImmediate} />}
+              />
+              <Route
+                path="/posts/:slug"
+                element={
+                  <PostDetail
+                    allPosts={detailPosts}
+                    handleClose={handleClose}
+                    onPostsChange={refreshPostsImmediate}
+                    onCommentCountChange={updatePostCommentCount}
+                  />
+                }
+              />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </>
       )}
     </ThemeProvider>

@@ -3,6 +3,9 @@ import styled from 'styled-components';
 import { lightgrey, accent, backgroundColor} from '../../shared/theme/colors';
 import type { CreateCommentRequest } from '../../services/commentService';
 
+const readableAccent = `color-mix(in srgb, ${accent} 65%, black)`;
+const readableLightgrey = `color-mix(in srgb, ${lightgrey} 65%, black)`;
+
 const FormContainer = styled.div`
   background: var(--color-comment-bg);
   border: 0.1rem solid var(--color-comment-border);
@@ -31,7 +34,7 @@ const FormContainer = styled.div`
 `;
 
 const FormTitle = styled.h3`
-  color: ${accent};
+  color: ${readableAccent};
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 1rem;
@@ -44,7 +47,7 @@ const TextArea = styled.textarea`
   background: var(--color-input-bg);
   border: 1px solid var(--color-input-border);
   border-radius: 6px;
-  color: ${lightgrey};
+  color: ${readableLightgrey};
   font-size: 0.95rem;
   line-height: 1.5;
   resize: vertical;
@@ -52,7 +55,7 @@ const TextArea = styled.textarea`
   box-sizing: border-box;
 
   &::placeholder {
-    color: ${lightgrey};
+    color: ${readableLightgrey};
     opacity: 0.6;
   }
 
@@ -102,7 +105,7 @@ const Button = styled.button<{ $variant?: 'primary' | 'secondary' }>`
   border: 1px solid ${props => props.$variant === 'primary' ? accent : 'var(--color-input-border-secondary)'};
   border-radius: 6px;
   background: ${props => props.$variant === 'primary' ? accent : 'transparent'};
-  color: ${props => props.$variant === 'primary' ? backgroundColor : lightgrey};
+  color: ${props => props.$variant === 'primary' ? backgroundColor : readableLightgrey};
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -143,11 +146,11 @@ const Button = styled.button<{ $variant?: 'primary' | 'secondary' }>`
 const LoginPrompt = styled.div`
   text-align: center;
   padding: 2rem;
-  color: ${lightgrey};
+  color: ${readableLightgrey};
   font-size: 0.95rem;
   
   a {
-    color: ${accent};
+    color: ${readableAccent};
     text-decoration: none;
     font-weight: 500;
     
