@@ -287,6 +287,7 @@ export const Header = styled.header`
   h1 {
     display: inline-block;
     font-family: "mega", "Arial Black", sans-serif;
+    font-weight: 400;
     font-size: clamp(2rem, 5vw, 2.6rem);
     letter-spacing: 0.1em;
     line-height: 0.95;
@@ -300,10 +301,10 @@ export const Header = styled.header`
     animation: headerLayerWarmup 1ms linear both;
 
     text-shadow:
-      0 -0.45px 0 var(--color-header-gradient-top),
-      0 1px 0 var(--color-header-glow),
-      0 1.25px 0 var(--color-header-gradient-bottom),
-      0 1.5px 0 var(--color-header-glow-far);
+      0 -0.3px 0 var(--color-header-gradient-top),
+      0 0.65px 0 var(--color-header-glow),
+      0 0.85px 0 var(--color-header-gradient-bottom),
+      0 1.1px 0 var(--color-header-glow-far);
   }
 
   @media (max-width: 768px) {
@@ -316,8 +317,8 @@ export const Header = styled.header`
       margin: 0.65rem 0;
       text-wrap: balance;
       text-shadow:
-        0 1px 0 var(--color-header-glow),
-        0 1.25px 5px var(--color-header-glow-far);
+        0 0.65px 0 var(--color-header-glow),
+        0 0.9px 3px var(--color-header-glow-far);
     }
   }
 
@@ -330,6 +331,9 @@ export const Header = styled.header`
       line-height: 1.05;
       margin: 0.45rem 0;
       max-width: 95vw;
+      text-shadow:
+        0 0.45px 0 var(--color-header-glow),
+        0 0.7px 2px var(--color-header-glow-far);
     }
   }
 
@@ -341,6 +345,9 @@ export const Header = styled.header`
       letter-spacing: 0;
       line-height: 1.08;
       margin: 0.35rem 0;
+      text-shadow:
+        0 0.35px 0 var(--color-header-glow),
+        0 0.55px 1.5px var(--color-header-glow-far);
     }
   }
 
@@ -348,8 +355,8 @@ export const Header = styled.header`
     @media (max-width: 768px) {
       h1 {
         text-shadow:
-          0 1px 0 var(--color-header-glow),
-          0 1.25px 5px var(--color-header-glow-far);
+          0 0.55px 0 var(--color-header-glow),
+          0 0.8px 2.5px var(--color-header-glow-far);
       }
     }
   }
