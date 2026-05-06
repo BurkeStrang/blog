@@ -110,7 +110,7 @@ async function main() {
     await import('@gltf-transform/functions');
   } catch {
     console.error('❌ gltf-transform is required for GLTF optimization.');
-    console.error('Install it with: npm install @gltf-transform/core @gltf-transform/functions @gltf-transform/cli');
+    console.error('Install it with: pnpm add -D @gltf-transform/core @gltf-transform/functions');
     process.exit(1);
   }
   

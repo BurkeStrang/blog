@@ -33,12 +33,7 @@ pnpm lint:check             # ESLint with zero warnings
 pnpm lint:fix               # Auto-fix ESLint issues
 
 # Asset Optimization
-pnpm optimize:textures      # Compress textures to WebP
 pnpm optimize:gltf          # Compress GLTF models with Draco
-pnpm optimize:models        # Optimize 3D models (standard quality)
-pnpm optimize:models:high   # High quality optimization (512px textures)  
-pnpm optimize:models:mobile # Mobile optimization (256px textures, JPG)
-pnpm optimize:assets        # Run all optimizations
 ```
 
 ### Backend (API)
