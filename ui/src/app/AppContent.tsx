@@ -306,8 +306,7 @@ const AppContent: React.FC = memo(() => {
   // Derive detail state directly from URL — no selectedPost state needed
   const isDetail = /^\/posts\/[^/]+$/.test(location.pathname) && !isNewPost;
   const isOpeningDetail = pendingDetailSlug !== null && !isDetail;
-  const isOpeningAbout = pendingRoutePath === "/about" && !isAboutPage;
-  const hidePostsChrome = isDetail || isOpeningDetail || isOpeningAbout;
+  const hidePostsChrome = isDetail || isOpeningDetail;
 
   useEffect(() => {
     if (isDetail) {
@@ -341,7 +340,8 @@ const AppContent: React.FC = memo(() => {
 
   // Show UI immediately for direct post navigation, with loading state for canvas routes
   const showUI =
-    resourceState.resourcesReady && (shouldLoadCanvas ? canvasLoaded : true);
+    resourceState.resourcesReady &&
+    (shouldLoadCanvas && !isAboutPage ? canvasLoaded : true);
 
   return (
     <ThemeProvider>
@@ -379,7 +379,13 @@ const AppContent: React.FC = memo(() => {
       {showUI && (
         <>
           {!hidePostsChrome && <SideBar onNavigateStart={handleRouteTransitionStart} />}
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={
+              <LoaderOverlay>
+                <LoadingCubes size={80} />
+              </LoaderOverlay>
+            }
+          >
             <Routes>
               <Route path="/about" element={<About />} />
               <Route path="/posts" element={hidePostsChrome ? null : <Posts />} />
