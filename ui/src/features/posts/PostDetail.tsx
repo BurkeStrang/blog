@@ -18,12 +18,12 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { MarkdownContent } from "./MarkdownContent";
 
 const Article = styled.article<{ $scrollbarVisible: boolean }>`
-  width: calc(100vw - 1.5rem);
+  width: calc(100vw - 0.75rem);
   height: 100vh;
   height: 100svh;
-  padding: 3rem 2rem 3rem 2rem;
+  padding: 1.75rem 1rem 3rem 2rem;
   padding-right: 2.75rem;
-  margin: 0 1.5rem 0 0;
+  margin: 0 0.75rem 0 0;
   background: ${backgroundColor};
   position: relative;
   box-sizing: border-box;
@@ -32,8 +32,12 @@ const Article = styled.article<{ $scrollbarVisible: boolean }>`
   overscroll-behavior-y: contain;
   touch-action: pan-y;
   scrollbar-width: auto;
-  scrollbar-color: ${({ $scrollbarVisible }) =>
-    $scrollbarVisible ? "var(--color-post-scrollbar-thumb)" : "transparent"} transparent;
+  scrollbar-color: auto;
+
+  @supports not selector(::-webkit-scrollbar) {
+    scrollbar-color: ${({ $scrollbarVisible }) =>
+      $scrollbarVisible ? "var(--color-post-scrollbar-thumb)" : "transparent"} transparent;
+  }
 
   &::-webkit-scrollbar {
     width: 1.1rem;
@@ -44,16 +48,16 @@ const Article = styled.article<{ $scrollbarVisible: boolean }>`
   }
 
   &::-webkit-scrollbar-thumb {
-    background: ${({ $scrollbarVisible }) =>
+    background-color: ${({ $scrollbarVisible }) =>
       $scrollbarVisible ? "var(--color-post-scrollbar-thumb)" : "transparent"};
     border: 0.14rem solid ${backgroundColor};
     border-radius: 999px;
     min-height: 3rem;
-    transition: background-color 0.25s ease;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: var(--color-post-scrollbar-thumb-hover);
+    background-color: ${({ $scrollbarVisible }) =>
+      $scrollbarVisible ? "var(--color-post-scrollbar-thumb-hover)" : "transparent"};
   }
 
   /* Center the content within the full-width container */
@@ -69,9 +73,9 @@ const Article = styled.article<{ $scrollbarVisible: boolean }>`
   }
 
   @media (max-width: 768px) {
-    width: calc(100vw - 1.25rem);
-    margin-right: 1.25rem;
-    padding: 3rem 1.5rem 5rem 1.5rem;
+    width: calc(100vw - 0.65rem);
+    margin-right: 0.65rem;
+    padding: 1.5rem 1.5rem 5rem 1.5rem;
     padding-right: 2.25rem;
 
     > * {
@@ -80,18 +84,18 @@ const Article = styled.article<{ $scrollbarVisible: boolean }>`
   }
 
   @media (max-width: 480px) {
-    width: calc(100vw - 1rem);
-    margin-right: 1rem;
-    padding: 2.5rem 1.25rem 4.5rem 1.25rem;
+    width: calc(100vw - 0.55rem);
+    margin-right: 0.55rem;
+    padding: 1.25rem 1.25rem 4.5rem 1.25rem;
     padding-right: 2rem;
   }
 
   /* iPhone 12 and similar devices */
   @media (max-width: 390px) {
-    padding: 2rem 1rem 4rem 1rem;
+    padding: 1rem 1rem 4rem 1rem;
     padding-right: 1.75rem;
-    width: calc(100vw - 0.75rem);
-    margin-right: 0.75rem;
+    width: calc(100vw - 0.45rem);
+    margin-right: 0.45rem;
 
     > * {
       max-width: 100%;
@@ -105,7 +109,7 @@ const PostMetadata = styled.div`
   align-items: center;
   justify-content: flex-start;
   gap: 1.5rem;
-  margin: 0 0 2.5rem 0;
+  margin: 0 0 0.35rem 0;
   padding: 0;
   background: ${backgroundColor};
   border: none;
@@ -116,18 +120,18 @@ const PostMetadata = styled.div`
 
   @media (max-width: 1200px) {
     gap: 1.25rem;
-    margin-bottom: 2rem;
+    margin-bottom: 0.3rem;
   }
 
   @media (max-width: 768px) {
     gap: 1rem;
-    margin-bottom: 1.75rem;
+    margin-bottom: 0.25rem;
     max-width: 100%;
   }
 
   @media (max-width: 480px) {
     gap: 0.875rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.2rem;
   }
 `;
 
@@ -173,14 +177,14 @@ const Content = styled.div`
   font-size: 1.125rem;
   text-align: left;
   max-width: 1000px;
-  margin: 0 auto 3rem auto;
+  margin: 0 auto 1rem auto;
   width: 100%;
   box-sizing: border-box;
   overflow-wrap: break-word;
   word-wrap: break-word;
 
   > * + * {
-    margin-top: 1.5em;
+    margin-top: 1em;
   }
 
   p {
@@ -753,7 +757,7 @@ const PostDetailComponent = function PostDetail({
     scrollbarTimeoutRef.current = setTimeout(() => {
       setScrollbarVisible(false);
       scrollbarTimeoutRef.current = null;
-    }, 3000);
+    }, 1100);
   }, []);
 
   // Reset local comment count when post changes
