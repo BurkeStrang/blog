@@ -757,7 +757,7 @@ const PostDetailComponent = function PostDetail({
     scrollbarTimeoutRef.current = setTimeout(() => {
       setScrollbarVisible(false);
       scrollbarTimeoutRef.current = null;
-    }, 1100);
+    }, 3000);
   }, []);
 
   // Reset local comment count when post changes

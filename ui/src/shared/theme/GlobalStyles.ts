@@ -70,9 +70,9 @@ export const GlobalStyle = createGlobalStyle`
     --color-input-bg-focus: rgba(255, 255, 255, 0.08);
     --color-input-border: rgba(255, 255, 255, 0.15);
     --color-input-border-secondary: rgba(255, 255, 255, 0.2);
-    --color-post-scrollbar-track: rgba(255, 255, 255, 0.10);
-    --color-post-scrollbar-thumb: rgba(205, 210, 218, 0.20);
-    --color-post-scrollbar-thumb-hover: rgba(245, 247, 250, .30);
+    --color-post-scrollbar-track: transparent;
+    --color-post-scrollbar-thumb: rgba(78, 82, 90, 0.36);
+    --color-post-scrollbar-thumb-hover: rgba(110, 115, 124, 0.48);
     --color-cube-bg-start: #222;
     --color-cube-bg-end: #444;
     --color-cube-accent: #099;
@@ -157,9 +157,9 @@ export const GlobalStyle = createGlobalStyle`
     --color-input-bg-focus: rgba(0, 0, 0, 0.09);
     --color-input-border: rgba(0, 0, 0, 0.2);
     --color-input-border-secondary: rgba(0, 0, 0, 0.25);
-    --color-post-scrollbar-track: rgba(0, 0, 0, 0.1);
-    --color-post-scrollbar-thumb: rgba(70, 75, 84, 0.2);
-    --color-post-scrollbar-thumb-hover: rgba(35, 40, 48, 0.3);
+    --color-post-scrollbar-track: transparent;
+    --color-post-scrollbar-thumb: rgba(185, 190, 198, 0.44);
+    --color-post-scrollbar-thumb-hover: rgba(150, 156, 166, 0.58);
     --color-cube-bg-start: #f8f8f8;
     --color-cube-bg-end: #ffffff;
     --color-cube-accent: #0ff;
