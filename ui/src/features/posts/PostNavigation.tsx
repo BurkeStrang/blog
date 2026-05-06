@@ -325,7 +325,7 @@ export default function FollowerSphere({
     leftArrowMesh.scale.setScalar(ls);
     leftArrowOutlineMesh.scale.setScalar(ls);
     leftArrowHitMesh.scale.setScalar(ls);
-    const leftHoverY = -0.32 - 0.08 * leftHoverT.current;
+    const leftHoverY = -0.30 - 0.20 * leftHoverT.current;
     leftArrowMesh.position.set(-1.4, leftHoverY, -1.29);
     leftArrowOutlineMesh.position.set(-1.4, leftHoverY, -1.29);
     leftArrowHitMesh.position.set(-1.4, leftHoverY, -1.29);
