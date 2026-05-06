@@ -93,7 +93,7 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   [data-theme="light"] {
-    --color-bg: #f1f1f1;
+    --color-bg: #e6e6e6;
     --color-primary: #0aa;
     --color-accent: #005f5f;
     --color-lightgrey: #1c1f2e;
@@ -126,7 +126,7 @@ export const GlobalStyle = createGlobalStyle`
     --color-md-th-bg: rgba(0, 0, 0, 0.05);
     --color-md-tr-hover: rgba(0, 0, 0, 0.03);
     --color-md-hr: rgba(0, 0, 0, 0.1);
-    --color-md-code-bg: rgba(220, 220, 220, 0.22);
+    --color-md-code-bg: rgba(190, 190, 190, 0.32);
     --color-md-code-border: rgba(222, 222, 222, 0.5);
     --color-md-code-glass-highlight: rgba(255, 255, 255, 0.1);
     --color-md-code-inset: rgba(255, 255, 255, 0.1);
