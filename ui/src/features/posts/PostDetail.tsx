@@ -17,12 +17,13 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { MarkdownContent } from "./MarkdownContent";
 
-const Article = styled.article`
-  width: 100vw;
+const Article = styled.article<{ $scrollbarVisible: boolean }>`
+  width: calc(100vw - 1.5rem);
   height: 100vh;
   height: 100svh;
   padding: 3rem 2rem 3rem 2rem;
-  margin: 0 auto;
+  padding-right: 2.75rem;
+  margin: 0 1.5rem 0 0;
   background: ${backgroundColor};
   position: relative;
   box-sizing: border-box;
@@ -30,10 +31,29 @@ const Article = styled.article`
   overflow-x: hidden;
   overscroll-behavior-y: contain;
   touch-action: pan-y;
-  scrollbar-width: none;
+  scrollbar-width: auto;
+  scrollbar-color: ${({ $scrollbarVisible }) =>
+    $scrollbarVisible ? "var(--color-post-scrollbar-thumb)" : "transparent"} transparent;
 
   &::-webkit-scrollbar {
-    display: none;
+    width: 1.1rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: ${({ $scrollbarVisible }) =>
+      $scrollbarVisible ? "var(--color-post-scrollbar-thumb)" : "transparent"};
+    border: 0.14rem solid ${backgroundColor};
+    border-radius: 999px;
+    min-height: 3rem;
+    transition: background-color 0.25s ease;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--color-post-scrollbar-thumb-hover);
   }
 
   /* Center the content within the full-width container */
@@ -49,8 +69,10 @@ const Article = styled.article`
   }
 
   @media (max-width: 768px) {
-    width: 100%;
+    width: calc(100vw - 1.25rem);
+    margin-right: 1.25rem;
     padding: 3rem 1.5rem 5rem 1.5rem;
+    padding-right: 2.25rem;
 
     > * {
       max-width: 100%;
@@ -58,13 +80,18 @@ const Article = styled.article`
   }
 
   @media (max-width: 480px) {
+    width: calc(100vw - 1rem);
+    margin-right: 1rem;
     padding: 2.5rem 1.25rem 4.5rem 1.25rem;
+    padding-right: 2rem;
   }
 
   /* iPhone 12 and similar devices */
   @media (max-width: 390px) {
     padding: 2rem 1rem 4rem 1rem;
-    width: 100%;
+    padding-right: 1.75rem;
+    width: calc(100vw - 0.75rem);
+    margin-right: 0.75rem;
 
     > * {
       max-width: 100%;
@@ -707,6 +734,7 @@ const PostDetailComponent = function PostDetail({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [commentsExpanded, setCommentsExpanded] = useState(false);
+  const [scrollbarVisible, setScrollbarVisible] = useState(false);
   const [localCommentCount, setLocalCommentCount] = useState<
     number | undefined
   >(undefined);
@@ -715,11 +743,32 @@ const PostDetailComponent = function PostDetail({
   }, [allPosts, slug]);
   const hasTrackedRef = useRef<string | null>(null);
   const articleRef = useRef<HTMLElement>(null);
+  const scrollbarTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showScrollbarTemporarily = React.useCallback(() => {
+    setScrollbarVisible(true);
+    if (scrollbarTimeoutRef.current) {
+      clearTimeout(scrollbarTimeoutRef.current);
+    }
+    scrollbarTimeoutRef.current = setTimeout(() => {
+      setScrollbarVisible(false);
+      scrollbarTimeoutRef.current = null;
+    }, 3000);
+  }, []);
 
   // Reset local comment count when post changes
   React.useEffect(() => {
     setLocalCommentCount(undefined);
+    setScrollbarVisible(false);
   }, [post?.id]);
+
+  useEffect(() => {
+    return () => {
+      if (scrollbarTimeoutRef.current) {
+        clearTimeout(scrollbarTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Track post view when component mounts - optimize to prevent unnecessary rerenders
   useEffect(() => {
@@ -750,12 +799,20 @@ const PostDetailComponent = function PostDetail({
     if (!el) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === 'ArrowDown') { e.preventDefault(); el.scrollBy({ top: 120, behavior: 'smooth' }); }
-      if (e.key === 'ArrowUp')   { e.preventDefault(); el.scrollBy({ top: -120, behavior: 'smooth' }); }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        showScrollbarTemporarily();
+        el.scrollBy({ top: 120, behavior: 'smooth' });
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        showScrollbarTemporarily();
+        el.scrollBy({ top: -120, behavior: 'smooth' });
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [showScrollbarTemporarily]);
 
   if (!post) {
     if (allPosts.length === 0) {
@@ -900,7 +957,13 @@ const PostDetailComponent = function PostDetail({
 
   return (
     <>
-      <Article ref={articleRef}>
+      <Article
+        ref={articleRef}
+        $scrollbarVisible={scrollbarVisible}
+        onScroll={showScrollbarTemporarily}
+        onTouchMove={showScrollbarTemporarily}
+        onWheel={showScrollbarTemporarily}
+      >
         {isEditing ? (
           <EditForm onSubmit={handleSave}>
             <FormGroup>
