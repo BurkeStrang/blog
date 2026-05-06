@@ -770,7 +770,7 @@ const PostDetailComponent = function PostDetail({
 
   // Calculate reading time (average reading speed: 120 words per minute)
   const calculateReadingTime = (text: string): number => {
-    const wordsPerMinute = 120;
+    const wordsPerMinute = 180;
     const wordCount = text.trim().split(/\s+/).length;
     const minutes = Math.ceil(wordCount / wordsPerMinute);
     return minutes;
