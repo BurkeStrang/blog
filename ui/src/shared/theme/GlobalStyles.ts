@@ -17,7 +17,7 @@ export const GlobalStyle = createGlobalStyle`
     --color-header-glow-far: rgba(0, 200, 200, 0.3);
     --color-header-mobile-shadow: rgba(0, 0, 0, 0.38);
     --color-header-gradient-top: color-mix(in srgb, var(--color-primary) 88%, white);
-    --color-header-gradient-bottom: color-mix(in srgb, var(--color-primary) 88%, black);
+    --color-header-gradient-bottom: color-mix(in srgb, var(--color-primary) 35%, black);
     --color-search-outline: rgba(0, 220, 200, 0.8);
     --color-search-outline-focus: rgba(0, 255, 220, 1);
     --color-dropdown-bg: rgba(0, 0, 0, 0.1);
@@ -352,13 +352,81 @@ export const Header = styled.header`
     }
   }
 
-  [data-theme="light"] & {
-    @media (max-width: 768px) {
-      h1 {
-        text-shadow:
-          0 0.55px 0 var(--color-header-glow),
-          0 0.8px 2.5px var(--color-header-glow-far);
-      }
+  /* Light-mode-only: lighter 3D extrusion */
+  [data-theme="light"] & h1 {
+    color: color-mix(in srgb, var(--color-primary) 75%, white);
+    text-shadow:
+      /* top highlight - bright white */
+      0 -1px 0 rgba(255, 255, 255, 0.9),
+      /* diagonal extrusion stack — staying in lighter teal range */
+      1px 1px 0 color-mix(in srgb, var(--color-primary) 65%, white),
+      2px 2px 0 color-mix(in srgb, var(--color-primary) 50%, white),
+      3px 3px 0 color-mix(in srgb, var(--color-primary) 35%, white),
+      4px 4px 0 color-mix(in srgb, var(--color-primary) 22%, white),
+      /* very soft drop shadow */
+      5px 8px 14px rgba(0, 0, 0, 0.12),
+      /* subtle teal bloom */
+      0 0 14px rgba(0, 180, 180, 0.18);
+  }
+
+  @media (max-width: 768px) {
+    [data-theme="light"] & h1 {
+      text-shadow:
+        0 -0.5px 0 rgba(255, 255, 255, 0.9),
+        1px 1px 0 color-mix(in srgb, var(--color-primary) 60%, white),
+        2px 2px 0 color-mix(in srgb, var(--color-primary) 42%, white),
+        3px 3px 0 color-mix(in srgb, var(--color-primary) 25%, white),
+        3px 5px 10px rgba(0, 0, 0, 0.1),
+        0 0 10px rgba(0, 180, 180, 0.15);
+    }
+  }
+
+  @media (max-width: 480px) {
+    [data-theme="light"] & h1 {
+      text-shadow:
+        1px 1px 0 color-mix(in srgb, var(--color-primary) 55%, white),
+        2px 2px 0 color-mix(in srgb, var(--color-primary) 35%, white),
+        2px 4px 8px rgba(0, 0, 0, 0.09),
+        0 0 8px rgba(0, 180, 180, 0.12);
+    }
+  }
+
+  /* Dark-mode-only: 3D extrusion + soft cyan glow */
+  [data-theme="dark"] & h1 {
+    color: color-mix(in srgb, var(--color-primary) 65%, black);
+    text-shadow:
+      /* top highlight */
+      0 -1px 0 var(--color-header-gradient-top),
+      /* diagonal extrusion stack — each step darker, building 3D depth */
+      1px 1px 0 color-mix(in srgb, var(--color-primary) 40%, black),
+      2px 2px 0 color-mix(in srgb, var(--color-primary) 22%, black),
+      3px 3px 0 color-mix(in srgb, var(--color-primary) 10%, black),
+      4px 4px 0 color-mix(in srgb, var(--color-primary) 4%, black),
+      /* deep drop shadow under the stack */
+      5px 8px 14px rgba(0, 0, 0, 0.85),
+      /* atmospheric cyan glow */
+      0 0 18px var(--color-header-glow);
+  }
+
+  @media (max-width: 768px) {
+    [data-theme="dark"] & h1 {
+      text-shadow:
+        0 -0.5px 0 var(--color-header-gradient-top),
+        1px 1px 0 color-mix(in srgb, var(--color-primary) 32%, black),
+        2px 2px 0 color-mix(in srgb, var(--color-primary) 16%, black),
+        3px 3px 0 color-mix(in srgb, var(--color-primary) 6%, black),
+        3px 5px 10px rgba(0, 0, 0, 0.8),
+        0 0 12px var(--color-header-glow);
+    }
+  }
+
+  @media (max-width: 480px) {
+    [data-theme="dark"] & h1 {
+      text-shadow:
+        1px 1px 0 color-mix(in srgb, var(--color-primary) 25%, black),
+        2px 2px 0 color-mix(in srgb, var(--color-primary) 10%, black),
+        2px 4px 8px rgba(0, 0, 0, 0.75),
+        0 0 10px var(--color-header-glow);
     }
   }
 `;

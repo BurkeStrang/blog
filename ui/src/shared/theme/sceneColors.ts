@@ -97,7 +97,7 @@ export const DARK_SCENE_THEME: SceneTheme = {
   ambientSceneIntensity: 10.0,
   hemisphereLightIntensity: 10.0,
   cubeBodyColor: 0x6a8a6a,
-  cubeMetalness: 0.9,
+  cubeMetalness: 0.95,
   cubeRoughness: 0.7,
   cubeEnvMapIntensity: 0.9,
   cubeBackdropColor: 0x202020,
