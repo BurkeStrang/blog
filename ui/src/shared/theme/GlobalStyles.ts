@@ -173,9 +173,9 @@ export const GlobalStyle = createGlobalStyle`
     --color-sidebar-hover-bg: rgba(0, 0, 0, 0.07);
     --color-sidebar-active-bg: rgba(0, 80, 80, 0.1);
     --color-filter-text: #007a7a;
-    --color-filter-text-hover: #005f5f;
-    --color-filter-icon: #007a7a;
-    --color-filter-icon-active: #007a7a;
+    --color-filter-text-hover: #00afaf;
+    --color-filter-icon: #009a9a;
+    --color-filter-icon-active: #00baba;
     --color-filter-dropdown-bg: rgba(255, 255, 255, 0.1);
     --color-filter-border: rgba(0, 122, 122, 0.35);
     --color-filter-hover-bg: rgba(128, 128, 128, 0.08);
