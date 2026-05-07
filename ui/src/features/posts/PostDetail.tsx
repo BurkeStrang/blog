@@ -1089,7 +1089,7 @@ const PostDetailComponent = function PostDetail({
 
         <BackButtonContainer>
           <BackButton onClick={handleClick} onKeyDown={handleBackKeyDown}>
-            ← back
+            ← home
           </BackButton>
           {isAdmin(user) && !isEditing && (
             <>

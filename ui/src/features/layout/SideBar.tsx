@@ -241,9 +241,6 @@ const LogoutButton = styled(SidebarButton)`
 
   &:hover {
     color: #ff5252;
-    text-shadow:
-      0 0 2px #ff5252,
-      0 0 5px #ff5252;
   }
 `;
 
