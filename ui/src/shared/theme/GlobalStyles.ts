@@ -130,10 +130,10 @@ export const GlobalStyle = createGlobalStyle`
     --color-md-tr-hover: rgba(0, 0, 0, 0.03);
     --color-md-hr: rgba(0, 0, 0, 0.1);
     --color-md-code-bg: rgba(190, 190, 190, 0.32);
-    --color-md-code-border: rgba(222, 222, 222, 0.5);
-    --color-md-code-glass-highlight: rgba(255, 255, 255, 0.1);
-    --color-md-code-inset: rgba(255, 255, 255, 0.1);
-    --color-md-code-shadow: rgba(250, 250, 250, 0.1);
+    --color-md-code-border: rgba(0, 0, 0, 0.12);
+    --color-md-code-glass-highlight: rgba(255, 255, 255, 0.15);
+    --color-md-code-inset: rgba(255, 255, 255, 0.15);
+    --color-md-code-shadow: rgba(0, 0, 0, 0.08);
     --color-md-code-text: #696469;
     --color-md-code-comment: #74797a;
     --color-md-code-function: #52738a;
