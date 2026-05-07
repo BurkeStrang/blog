@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { Page, Header, Content } from "../../shared/theme/GlobalStyles";
 import { useTheme } from "../../shared/contexts/ThemeContext";
 import styled from "styled-components";
@@ -238,7 +238,7 @@ const CodeSnippet = styled.div<{ $isDark: boolean }>`
   width: 100%;
   min-height: 180px;
   height: 180px;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: var(--font-family-mono);
   font-size: 1.04rem;
   color: ${({ $isDark }) => ($isDark ? "#0ff" : "#007a7a")};
   text-align: left;
@@ -314,7 +314,7 @@ const About: React.FC = () => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.classList.add("about-page");
     return () => document.documentElement.classList.remove("about-page");
   }, []);

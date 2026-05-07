@@ -31,7 +31,7 @@ const Cube = styled.div<{ $size: number; $delay: number }>`
   animation-delay: ${props => props.$delay}s;
 `;
 
-const LoadingCubes: React.FC<LoadingCubesProps> = ({ size = 100 }) => (
+const LoadingCubes: React.FC<LoadingCubesProps> = ({ size = 120 }) => (
   <LoaderContainer $size={size}>
     {Array.from({ length: 3 }, (_, i) => (
       <Cube key={i} $size={size} $delay={i * 0.3} />

@@ -1,14 +1,6 @@
 import styled, { createGlobalStyle } from "styled-components";
-import jetbrainsMonoRegular from "../../assets/fonts/JetBrainsMono-Regular.woff2";
-import jetbrainsMonoItalic from "../../assets/fonts/JetBrainsMono-Italic.woff2";
-import jetbrainsMonoMedium from "../../assets/fonts/JetBrainsMono-Medium.woff2";
-import jetbrainsMonoMediumItalic from "../../assets/fonts/JetBrainsMono-MediumItalic.woff2";
-import jetbrainsMonoSemiBold from "../../assets/fonts/JetBrainsMono-SemiBold.woff2";
-import jetbrainsMonoSemiBoldItalic from "../../assets/fonts/JetBrainsMono-SemiBoldItalic.woff2";
-import jetbrainsMonoBold from "../../assets/fonts/JetBrainsMono-Bold.woff2";
-import jetbrainsMonoBoldItalic from "../../assets/fonts/JetBrainsMono-BoldItalic.woff2";
 import mega from "../../assets/fonts/MegatransRounded-Regular.otf";
-import { backgroundColor, darkgrey, neon, primary, secondary } from "./colors";
+import { backgroundColor, darkgrey, primary, secondary } from "./colors";
 
 // ——— global styles ———
 export const GlobalStyle = createGlobalStyle`
@@ -97,6 +89,10 @@ export const GlobalStyle = createGlobalStyle`
     --color-filter-border: rgba(0, 220, 200, 0.32);
     --color-filter-hover-bg: rgba(0, 220, 200, 0.10);
     --color-filter-divider: rgba(0, 220, 200, 0.18);
+
+    /* Site fonts. --font-family for general text, --font-family-mono for code. */
+    --font-family: ui-monospace, SFMono-Regular, 'Cascadia Mono', 'Cascadia Code', Consolas, 'Ubuntu Mono', 'DejaVu Sans Mono', Menlo, Monaco, 'Liberation Mono', 'Courier New', monospace;
+    --font-family-mono: ui-monospace, SFMono-Regular, 'Cascadia Mono', 'Cascadia Code', Consolas, 'Ubuntu Mono', 'DejaVu Sans Mono', Menlo, Monaco, 'Liberation Mono', 'Courier New', monospace;
   }
 
   [data-theme="light"] {
@@ -167,9 +163,9 @@ export const GlobalStyle = createGlobalStyle`
     --color-post-scrollbar-track: transparent;
     --color-post-scrollbar-thumb: rgba(185, 190, 198, 0.44);
     --color-post-scrollbar-thumb-hover: rgba(150, 156, 166, 0.58);
-    --color-cube-bg-start: #f8f8f8;
-    --color-cube-bg-end: #ffffff;
-    --color-cube-accent: #0ff;
+    --color-cube-bg-start: #c8c8c8;
+    --color-cube-bg-end: #f1f1f1;
+    --color-cube-accent: #0cc;
     --color-sidebar-bg: rgba(255, 255, 255, 0.25);
     --color-sidebar-link: #00caca;
     --color-sidebar-glow-near: transparent;
@@ -194,70 +190,6 @@ export const GlobalStyle = createGlobalStyle`
     font-style: normal;
   }
 
-  @font-face {
-    font-family: 'JetBrains Mono';
-    src: url(${jetbrainsMonoRegular}) format('woff2');
-    font-display: swap;
-    font-weight: 400;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'JetBrains Mono';
-    src: url(${jetbrainsMonoItalic}) format('woff2');
-    font-display: swap;
-    font-weight: 400;
-    font-style: italic;
-  }
-
-  @font-face {
-    font-family: 'JetBrains Mono';
-    src: url(${jetbrainsMonoMedium}) format('woff2');
-    font-display: swap;
-    font-weight: 500;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'JetBrains Mono';
-    src: url(${jetbrainsMonoMediumItalic}) format('woff2');
-    font-display: swap;
-    font-weight: 500;
-    font-style: italic;
-  }
-
-  @font-face {
-    font-family: 'JetBrains Mono';
-    src: url(${jetbrainsMonoSemiBold}) format('woff2');
-    font-display: swap;
-    font-weight: 600;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'JetBrains Mono';
-    src: url(${jetbrainsMonoSemiBoldItalic}) format('woff2');
-    font-display: swap;
-    font-weight: 600;
-    font-style: italic;
-  }
-
-  @font-face {
-    font-family: 'JetBrains Mono';
-    src: url(${jetbrainsMonoBold}) format('woff2');
-    font-display: swap;
-    font-weight: 700;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'JetBrains Mono';
-    src: url(${jetbrainsMonoBoldItalic}) format('woff2');
-    font-display: swap;
-    font-weight: 700;
-    font-style: italic;
-  }
-
   @keyframes headerLayerWarmup {
     from {
       transform: translate3d(0, 0, 0) scale(1.0001);
@@ -272,7 +204,7 @@ export const GlobalStyle = createGlobalStyle`
     margin: 0;
     padding: 0;
     background: ${backgroundColor};
-    font-family: 'mega', sans-serif;
+    font-family: var(--font-family);
     overflow: auto;
   }
 
@@ -355,7 +287,7 @@ export const Header = styled.header`
 
   h1 {
     display: inline-block;
-    font-family: "mega", "Arial Black", sans-serif;
+    font-family: 'mega', var(--font-family);
     font-weight: 400;
     font-size: clamp(2rem, 5vw, 2.6rem);
     letter-spacing: 0.1em;
@@ -445,7 +377,7 @@ export const SortButton = styled.button`
   border: 2px solid ${darkgrey};
   border-radius: 8px;
   padding: 0.5rem 1rem;
-  font-family: "mega", sans-serif;
+  font-family: var(--font-family);
   font-size: 0.9rem;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -525,7 +457,7 @@ export const FilterButton = styled.button`
   background: transparent;
   border: none;
   padding: 0.3rem;
-  font-family: "mega", sans-serif;
+  font-family: var(--font-family);
   font-size: 0.8rem;
   transition:
     background-color 0.2s ease,
@@ -636,7 +568,7 @@ export const FilterOption = styled.button`
   border: none;
   background: transparent;
   color: var(--color-filter-text);
-  font-family: "mega", sans-serif;
+  font-family: var(--font-family);
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -810,7 +742,7 @@ export const SearchInput = styled.input`
   font-size: 1rem;
   background: transparent;
   color: ${primary};
-  font-family: "mega", sans-serif;
+  font-family: var(--font-family);
 
   &::placeholder {
     color: ${primary};
@@ -927,49 +859,3 @@ export const Content = styled.main`
   }
 `;
 
-// ——— post card ———
-export const PostCard = styled.article`
-  max-height: 80vh;
-  overflow-y: auto;
-  border: 4px solid ${darkgrey};
-  background: ${backgroundColor};
-
-  h2 {
-    margin-top: 0;
-    color: ${darkgrey};
-  }
-
-  div {
-    color: ${darkgrey};
-    line-height: 1.6;
-    font-face: bold;
-    font-size: 1.5rem;
-    font-family: "Orbitron", monospace;
-    overflow-y: auto;
-  }
-`;
-
-export const MinimalButton = styled.button`
-  margin-left: auto;
-  display: block;
-  background: transparent;
-  border: 1px solid ${darkgrey};
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  font-family: "tourner", monospace;
-  color: ${darkgrey};
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  backdrop-filter: blur(4px);
-
-  &:hover {
-    border-color: ${neon};
-    color: ${neon};
-    background-color: ${backgroundColor};
-  }
-
-  &:active {
-    transform: scale(0.97);
-  }
-`;

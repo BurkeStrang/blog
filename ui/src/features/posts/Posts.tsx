@@ -18,7 +18,6 @@ import CheckIcon from "@mui/icons-material/Check";
 import AddIcon from "@mui/icons-material/Add";
 import { useSort, useSearchQuery } from "../../shared/contexts/SearchContext";
 import { useAuth } from "../../shared/contexts/AuthContext";
-import { useFontLoaded } from "../../shared/hooks";
 import { isAdmin } from "../../shared/types/user";
 import { useNavigate } from "react-router-dom";
 import { accent, backgroundColor } from "../../shared/theme/colors";
@@ -252,11 +251,6 @@ const SearchBarMemo = React.memo(function SearchBarMemo() {
 });
 
 const PostsHeader = React.memo(function PostsHeader() {
-  // Wait for the mega font to load before showing the title
-  const isFontLoaded = useFontLoaded("mega");
-
-  if (!isFontLoaded) return null;
-
   return (
     <>
       <Header>

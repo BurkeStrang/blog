@@ -31,7 +31,7 @@ SyntaxHighlighter.registerLanguage('tsx', tsx);
 SyntaxHighlighter.registerLanguage('typescript', typescript);
 
 const MarkdownWrapper = styled.div`
-  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: var(--font-family);
   font-size: 1.125rem;
   line-height: 1.8;
   color: ${readableLightgrey};
@@ -39,7 +39,7 @@ const MarkdownWrapper = styled.div`
   /* Headings */
   && h1, && h2, && h3, && h4, && h5, && h6 {
     color: ${readableAccent};
-    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-family: var(--font-family);
     font-weight: 600;
     margin: 2.5rem 0 1rem 0;
     line-height: 1.3;
@@ -121,7 +121,7 @@ const MarkdownWrapper = styled.div`
   /* Code */
   code {
     color: var(--color-md-code-text);
-    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-family: var(--font-family-mono);
     font-size: 0.9em;
     font-weight: 500;
     padding: 0.2em 0.4em;
@@ -456,6 +456,7 @@ const CodeBlockWrapper = styled.div`
     inset 0 1px 0 var(--color-md-code-inset),
     0 10px 26px var(--color-md-code-shadow);
   overflow: hidden;
+  font-family: var(--font-family-mono);
 
   code {
     padding: 0 !important;

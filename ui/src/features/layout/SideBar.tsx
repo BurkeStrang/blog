@@ -149,32 +149,24 @@ const sidebarLinkBase = css`
   margin:1rem auto;
   padding: 0.75rem 1.25rem;
   color: var(--color-sidebar-link);
+  font-family: 'mega', var(--font-family);
   text-decoration: none;
   font-weight: 600;
   font-size: 1.08rem;
 
   &:hover {
     color: var(--color-sidebar-link);
-    text-shadow:
-      0 0 2px var(--color-sidebar-glow-near),
-      0 0 5px var(--color-sidebar-glow-near),
-      0 0 10px var(--color-sidebar-glow-near);
     background: var(--color-sidebar-hover-bg);
     border-radius: 6px;
-    transform: scale(1.04);
   }
 
   &.active {
     color: var(--color-sidebar-link);
     text-shadow:
-      0 0 2px var(--color-sidebar-glow-near),
-      0 0 5px var(--color-sidebar-glow-near),
-      0 0 15px var(--color-sidebar-glow-near),
-      0 0 24px var(--color-sidebar-glow-far),
-      0 0 40px var(--color-sidebar-glow-far);
+      0 0 8px var(--color-sidebar-glow-near),
+      0 0 24px var(--color-sidebar-glow-far);
     background: var(--color-sidebar-active-bg);
     border-radius: 6px;
-    transform: scale(1.025);
   }
 
   @media (max-height: 800px) {
@@ -207,7 +199,6 @@ const SidebarButton = styled.button`
   cursor: pointer;
   width: 100%;
   text-align: left;
-  font-family: inherit;
 
   &:disabled {
     opacity: 0.7;

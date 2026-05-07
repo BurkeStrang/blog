@@ -17,7 +17,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { MarkdownContent } from "./MarkdownContent";
 
-const Article = styled.article<{ $scrollbarVisible: boolean }>`
+const Article = styled.article`
   width: calc(100vw - 0.75rem);
   height: 100vh;
   height: 100svh;
@@ -25,19 +25,24 @@ const Article = styled.article<{ $scrollbarVisible: boolean }>`
   padding-right: 2.75rem;
   margin: 0 0.75rem 0 0;
   background: ${backgroundColor};
-  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-family: var(--font-family);
   position: relative;
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior-y: contain;
   touch-action: pan-y;
+  scrollbar-gutter: stable;
   scrollbar-width: auto;
   scrollbar-color: auto;
 
   @supports not selector(::-webkit-scrollbar) {
-    scrollbar-color: ${({ $scrollbarVisible }) =>
-      $scrollbarVisible ? "var(--color-post-scrollbar-thumb)" : "transparent"} transparent;
+    scrollbar-color: transparent transparent;
+  }
+  &.scrollbar-visible {
+    @supports not selector(::-webkit-scrollbar) {
+      scrollbar-color: var(--color-post-scrollbar-thumb) transparent;
+    }
   }
 
   &::-webkit-scrollbar {
@@ -49,16 +54,18 @@ const Article = styled.article<{ $scrollbarVisible: boolean }>`
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: ${({ $scrollbarVisible }) =>
-      $scrollbarVisible ? "var(--color-post-scrollbar-thumb)" : "transparent"};
+    background-color: transparent;
     border: 0.14rem solid ${backgroundColor};
     border-radius: 999px;
     min-height: 3rem;
   }
 
-  &::-webkit-scrollbar-thumb:hover {
-    background-color: ${({ $scrollbarVisible }) =>
-      $scrollbarVisible ? "var(--color-post-scrollbar-thumb-hover)" : "transparent"};
+  &.scrollbar-visible::-webkit-scrollbar-thumb {
+    background-color: var(--color-post-scrollbar-thumb);
+  }
+
+  &.scrollbar-visible::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-post-scrollbar-thumb-hover);
   }
 
   /* Center the content within the full-width container */
@@ -669,6 +676,11 @@ const ConfirmDeleteButton = styled.button`
   }
 `;
 
+const CommentsCollapse = styled.div<{ $expanded: boolean }>`
+  width: 100%;
+  display: ${({ $expanded }) => ($expanded ? 'block' : 'none')};
+`;
+
 const CommentsToggleButton = styled.button`
   width: 100%;
   padding: 1rem 1.5rem;
@@ -743,7 +755,6 @@ const PostDetailComponent = function PostDetail({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [commentsExpanded, setCommentsExpanded] = useState(false);
-  const [scrollbarVisible, setScrollbarVisible] = useState(false);
   const [localCommentCount, setLocalCommentCount] = useState<
     number | undefined
   >(undefined);
@@ -754,13 +765,17 @@ const PostDetailComponent = function PostDetail({
   const articleRef = useRef<HTMLElement>(null);
   const scrollbarTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Toggle scrollbar visibility imperatively via a class on the Article so
+  // scroll/touch/wheel events don't trigger React re-renders of PostDetail.
   const showScrollbarTemporarily = React.useCallback(() => {
-    setScrollbarVisible(true);
+    const el = articleRef.current;
+    if (!el) return;
+    el.classList.add('scrollbar-visible');
     if (scrollbarTimeoutRef.current) {
       clearTimeout(scrollbarTimeoutRef.current);
     }
     scrollbarTimeoutRef.current = setTimeout(() => {
-      setScrollbarVisible(false);
+      articleRef.current?.classList.remove('scrollbar-visible');
       scrollbarTimeoutRef.current = null;
     }, 3000);
   }, []);
@@ -768,7 +783,7 @@ const PostDetailComponent = function PostDetail({
   // Reset local comment count when post changes
   React.useEffect(() => {
     setLocalCommentCount(undefined);
-    setScrollbarVisible(false);
+    articleRef.current?.classList.remove('scrollbar-visible');
   }, [post?.id]);
 
   useEffect(() => {
@@ -798,7 +813,7 @@ const PostDetailComponent = function PostDetail({
     };
   }, [slug]);
 
-  useEffect(() => {
+  React.useLayoutEffect(() => {
     document.documentElement.classList.add('detail-page');
     return () => document.documentElement.classList.remove('detail-page');
   }, []);
@@ -834,15 +849,12 @@ const PostDetailComponent = function PostDetail({
   // No need to sanitize markdown - react-markdown handles it safely
   const markdownContent = post.body;
 
-  // Calculate reading time (average reading speed: 120 words per minute)
-  const calculateReadingTime = (text: string): number => {
-    const wordsPerMinute = 180;
-    const wordCount = text.trim().split(/\s+/).length;
-    const minutes = Math.ceil(wordCount / wordsPerMinute);
-    return minutes;
-  };
-
-  const readingTime = calculateReadingTime(post.body);
+  // Reading time: ~180 wpm. Memoized so post-reference changes (e.g. comment
+  // count updates causing a new post object) don't re-split the body.
+  const readingTime = React.useMemo(() => {
+    const wordCount = post.body.trim().split(/\s+/).length;
+    return Math.ceil(wordCount / 180);
+  }, [post.body]);
 
   // Edit functionality
   const handleEdit = React.useCallback(() => {
@@ -968,7 +980,6 @@ const PostDetailComponent = function PostDetail({
     <>
       <Article
         ref={articleRef}
-        $scrollbarVisible={scrollbarVisible}
         onScroll={showScrollbarTemporarily}
         onTouchMove={showScrollbarTemporarily}
         onWheel={showScrollbarTemporarily}
@@ -1061,8 +1072,10 @@ const PostDetailComponent = function PostDetail({
               </span>
             </CommentsToggleButton>
 
-            {/* Conditionally render comments section */}
-            {commentsExpanded && (
+            {/* Mount comments once on post load so styles inject + fetch
+                happen during the initial render. Toggle is then just a
+                visibility change, avoiding the first-open repaint. */}
+            <CommentsCollapse $expanded={commentsExpanded}>
               <CommentSection
                 postId={post.id || 0}
                 isAuthenticated={!!user}
@@ -1070,7 +1083,7 @@ const PostDetailComponent = function PostDetail({
                 onLogin={loginWithGoogle}
                 onCommentsLoad={handleCommentsLoad}
               />
-            )}
+            </CommentsCollapse>
           </>
         )}
 
