@@ -31,8 +31,7 @@ SyntaxHighlighter.registerLanguage('tsx', tsx);
 SyntaxHighlighter.registerLanguage('typescript', typescript);
 
 const MarkdownWrapper = styled.div`
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
   font-size: 1.125rem;
   line-height: 1.8;
   color: ${readableLightgrey};
@@ -40,7 +39,7 @@ const MarkdownWrapper = styled.div`
   /* Headings */
   && h1, && h2, && h3, && h4, && h5, && h6 {
     color: ${readableAccent};
-    font-family: 'mega', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
     font-weight: 600;
     margin: 2.5rem 0 1rem 0;
     line-height: 1.3;
@@ -51,7 +50,7 @@ const MarkdownWrapper = styled.div`
     font-size: 2.25rem;
     border-bottom: 2px solid var(--color-md-h1-border);
     padding-bottom: 0.5rem;
-    margin-top: 0;
+    margin-top: 1.5rem;
     margin-bottom: 1.5rem;
   }
 
@@ -122,7 +121,7 @@ const MarkdownWrapper = styled.div`
   /* Code */
   code {
     color: var(--color-md-code-text);
-    font-family: 'Fantasque Sans Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
     font-size: 0.9em;
     font-weight: 500;
     padding: 0.2em 0.4em;
@@ -321,7 +320,7 @@ const MarkdownWrapper = styled.div`
 
     h1 {
       font-size: 1.5rem;
-      margin: 0 0 1rem 0;
+      margin: 1rem 0;
     }
 
     h2 {
@@ -368,7 +367,7 @@ const MarkdownWrapper = styled.div`
 
     h1 {
       font-size: 1.375rem;
-      margin: 0 0 0.75rem 0;
+      margin: 0.75rem 0;
     }
 
     h2 {

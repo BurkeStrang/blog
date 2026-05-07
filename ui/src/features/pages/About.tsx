@@ -238,6 +238,7 @@ const CodeSnippet = styled.div<{ $isDark: boolean }>`
   width: 100%;
   min-height: 180px;
   height: 180px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
   font-size: 1.04rem;
   color: ${({ $isDark }) => ($isDark ? "#0ff" : "#007a7a")};
   text-align: left;

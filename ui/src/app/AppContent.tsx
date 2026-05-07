@@ -371,7 +371,7 @@ const AppContent: React.FC = memo(() => {
               </div>
             </div>
           ) : (
-            <LoadingCubes size={120} />
+            <LoadingCubes size={100} />
           )}
         </LoaderOverlay>
       )}
@@ -382,7 +382,7 @@ const AppContent: React.FC = memo(() => {
           <Suspense
             fallback={
               <LoaderOverlay>
-                <LoadingCubes size={80} />
+                <LoadingCubes size={100} />
               </LoaderOverlay>
             }
           >

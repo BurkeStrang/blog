@@ -132,6 +132,7 @@ const ActionButton = styled.button<{ $active?: boolean }>`
   display: flex;
   align-items: center;
   gap: 0.3rem;
+  font-family: inherit;
   font-size: 0.8rem;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;

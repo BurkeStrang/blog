@@ -25,6 +25,7 @@ const Article = styled.article<{ $scrollbarVisible: boolean }>`
   padding-right: 2.75rem;
   margin: 0 0.75rem 0 0;
   background: ${backgroundColor};
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
   position: relative;
   box-sizing: border-box;
   overflow-y: auto;
@@ -344,6 +345,7 @@ const BackButtonContainer = styled.div`
 
 const BackButton = styled.button`
   padding: 0.5rem 1rem;
+  font-family: inherit;
   font-size: 0.875rem;
   background: var(--color-btn-bg);
   color: ${lightgrey};
@@ -378,6 +380,7 @@ const BackButton = styled.button`
 
 const EditButton = styled.button`
   padding: 0.5rem 1rem;
+  font-family: inherit;
   font-size: 0.875rem;
   background: var(--color-btn-bg);
   color: ${lightgrey};
@@ -429,6 +432,7 @@ const EditButton = styled.button`
 
 const DeleteButton = styled.button`
   padding: 0.5rem 1rem;
+  font-family: inherit;
   font-size: 0.875rem;
   background: var(--color-btn-bg);
   color: ${lightgrey};
@@ -673,6 +677,7 @@ const CommentsToggleButton = styled.button`
   border: 1px solid var(--color-comment-border);
   border-radius: 8px;
   color: color-mix(in srgb, ${accent} 65%, black);
+  font-family: inherit;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;

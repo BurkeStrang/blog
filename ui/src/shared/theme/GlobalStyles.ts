@@ -1,5 +1,12 @@
 import styled, { createGlobalStyle } from "styled-components";
-import fantasqueSansMono from "../../assets/fonts/FantasqueSansMono-Regular.woff2";
+import jetbrainsMonoRegular from "../../assets/fonts/JetBrainsMono-Regular.woff2";
+import jetbrainsMonoItalic from "../../assets/fonts/JetBrainsMono-Italic.woff2";
+import jetbrainsMonoMedium from "../../assets/fonts/JetBrainsMono-Medium.woff2";
+import jetbrainsMonoMediumItalic from "../../assets/fonts/JetBrainsMono-MediumItalic.woff2";
+import jetbrainsMonoSemiBold from "../../assets/fonts/JetBrainsMono-SemiBold.woff2";
+import jetbrainsMonoSemiBoldItalic from "../../assets/fonts/JetBrainsMono-SemiBoldItalic.woff2";
+import jetbrainsMonoBold from "../../assets/fonts/JetBrainsMono-Bold.woff2";
+import jetbrainsMonoBoldItalic from "../../assets/fonts/JetBrainsMono-BoldItalic.woff2";
 import mega from "../../assets/fonts/MegatransRounded-Regular.otf";
 import { backgroundColor, darkgrey, neon, primary, secondary } from "./colors";
 
@@ -82,14 +89,14 @@ export const GlobalStyle = createGlobalStyle`
     --color-sidebar-glow-far: rgba(40, 0, 255, 0.18);
     --color-sidebar-hover-bg: rgba(255, 255, 255, 0.05);
     --color-sidebar-active-bg: rgba(0, 255, 255, 0.07);
-    --color-filter-text: #8E878E;
-    --color-filter-text-hover: #6DA7A0;
+    --color-filter-text: #6a8a8a;
+    --color-filter-text-hover: #00cccc;
     --color-filter-icon: #6DA7A0;
-    --color-filter-icon-active: #D0B96A;
-    --color-filter-dropdown-bg: rgba(18, 24, 26, 0.72);
-    --color-filter-border: rgba(109, 167, 160, 0.34);
-    --color-filter-hover-bg: rgba(109, 167, 160, 0.11);
-    --color-filter-divider: rgba(104, 104, 94, 0.28);
+    --color-filter-icon-active: #00e5e5;
+    --color-filter-dropdown-bg: rgba(0, 26, 28, 0.82);
+    --color-filter-border: rgba(0, 220, 200, 0.32);
+    --color-filter-hover-bg: rgba(0, 220, 200, 0.10);
+    --color-filter-divider: rgba(0, 220, 200, 0.18);
   }
 
   [data-theme="light"] {
@@ -188,11 +195,67 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   @font-face {
-    font-family: 'Fantasque Sans Mono';
-    src: url(${fantasqueSansMono}) format('woff2');
+    font-family: 'JetBrains Mono';
+    src: url(${jetbrainsMonoRegular}) format('woff2');
     font-display: swap;
-    font-weight: 400 500;
+    font-weight: 400;
     font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url(${jetbrainsMonoItalic}) format('woff2');
+    font-display: swap;
+    font-weight: 400;
+    font-style: italic;
+  }
+
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url(${jetbrainsMonoMedium}) format('woff2');
+    font-display: swap;
+    font-weight: 500;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url(${jetbrainsMonoMediumItalic}) format('woff2');
+    font-display: swap;
+    font-weight: 500;
+    font-style: italic;
+  }
+
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url(${jetbrainsMonoSemiBold}) format('woff2');
+    font-display: swap;
+    font-weight: 600;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url(${jetbrainsMonoSemiBoldItalic}) format('woff2');
+    font-display: swap;
+    font-weight: 600;
+    font-style: italic;
+  }
+
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url(${jetbrainsMonoBold}) format('woff2');
+    font-display: swap;
+    font-weight: 700;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url(${jetbrainsMonoBoldItalic}) format('woff2');
+    font-display: swap;
+    font-weight: 700;
+    font-style: italic;
   }
 
   @keyframes headerLayerWarmup {
