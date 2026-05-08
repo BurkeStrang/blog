@@ -120,6 +120,7 @@ const fontSize = 0.2;
 const wordScale = 13;
 const textMargin = 0.8;
 const textWrapWidthRatio = 0.76;
+const textBoldOffset = 0.18;
 
 const postTitleTextColor = {
   dark: 0x9ca3aa,
@@ -669,6 +670,8 @@ function PostBoxCore(props: PostBoxProps) {
           {textGeometries.map((geo, i) => {
             const zBase = bbox.max.z + textMargin - 0.02 + 27;
             const leftEdgeX = frontCenterX + 2 - (textWrapWidth * wordScale) / 2;
+            const textX = leftEdgeX + (lineWidths[i] * wordScale) / 2;
+            const textY = frontCenterY + lineOffsets[i];
             return (
               <React.Fragment key={i}>
                 <mesh
@@ -676,8 +679,18 @@ function PostBoxCore(props: PostBoxProps) {
                   material={neonMat}
                   scale={[wordScale, wordScale, 0.01]}
                   position={[
-                    leftEdgeX + (lineWidths[i] * wordScale) / 2,
-                    frontCenterY + lineOffsets[i],
+                    textX - textBoldOffset,
+                    textY,
+                    zBase - 0.01,
+                  ]}
+                />
+                <mesh
+                  geometry={geo}
+                  material={neonMat}
+                  scale={[wordScale, wordScale, 0.01]}
+                  position={[
+                    textX,
+                    textY,
                     zBase,
                   ]}
                 />
