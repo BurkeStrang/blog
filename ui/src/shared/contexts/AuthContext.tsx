@@ -134,6 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const handleOAuthSuccess = (event: CustomEvent) => {
       setUser(event.detail.user);
+      setLoginLoading(false);
     };
     window.addEventListener(
       "oauth-success",
@@ -173,21 +174,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const loginWithGoogle = useCallback(async () => {
     if (loginLoading) return;
 
+    const useRedirectFlow = isMobileUA();
+    const popup = useRedirectFlow
+      ? null
+      : window.open(
+          "about:blank",
+          "google-oauth",
+          "width=500,height=600,scrollbars=yes,resizable=yes",
+        );
+
     try {
       setLoginLoading(true);
       const response = await apiService.getGoogleAuthUrl();
 
-      if (isMobileUA()) {
+      if (useRedirectFlow) {
         localStorage.setItem("returnTo", pathnameRef.current);
         window.location.href = response.url;
         return;
       }
-
-      const popup = window.open(
-        response.url,
-        "google-oauth",
-        "width=500,height=600,scrollbars=yes,resizable=yes",
-      );
 
       if (!popup) {
         // Popup blocked — fall back to redirect
@@ -195,6 +199,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         window.location.href = response.url;
         return;
       }
+
+      popup.location.href = response.url;
 
       const cleanup = () => {
         if (loginIntervalRef.current) {
@@ -208,16 +214,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       };
 
       const messageListener = (event: MessageEvent) => {
-        if (event.origin !== window.location.origin) return;
+        if (event.source !== popup) return;
+        if (!event.data || typeof event.data !== "object") return;
 
         if (event.data.type === "OAUTH_SUCCESS") {
-          cleanup();
+          cleanupWithStorage();
           setLoginLoading(false);
           login(event.data.user, event.data.token);
         }
 
         if (event.data.type === "OAUTH_ERROR") {
-          cleanup();
+          cleanupWithStorage();
           setLoginLoading(false);
           console.error("OAuth error:", event.data.error);
         }
@@ -226,13 +233,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       loginListenerRef.current = messageListener;
       window.addEventListener("message", messageListener);
 
+      const storageListener = (event: StorageEvent) => {
+        if (event.key !== "authToken" && event.key !== "user") return;
+        const token = localStorage.getItem("authToken");
+        const savedUser = localStorage.getItem("user");
+        if (!token || !savedUser) return;
+
+        cleanupWithStorage();
+        setLoginLoading(false);
+        try {
+          login(JSON.parse(savedUser), token);
+        } catch {
+          // ignore parse error
+        }
+      };
+
+      window.addEventListener("storage", storageListener);
+      const originalCleanup = cleanup;
+      const cleanupWithStorage = () => {
+        originalCleanup();
+        window.removeEventListener("storage", storageListener);
+      };
+
       // localStorage polling fallback (popup.closed unreliable under COOP)
       const popupStartTime = Date.now();
       loginIntervalRef.current = setInterval(() => {
         const token = localStorage.getItem("authToken");
         const savedUser = localStorage.getItem("user");
         if (token && savedUser) {
-          cleanup();
+          cleanupWithStorage();
           setLoginLoading(false);
           try {
             login(JSON.parse(savedUser), token);
@@ -243,7 +272,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
 
         if (Date.now() - popupStartTime > 300000) {
-          cleanup();
+          cleanupWithStorage();
           setLoginLoading(false);
           console.warn(
             "OAuth popup timeout - authentication may have failed",
@@ -252,6 +281,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }, 1000);
     } catch (error) {
       console.error("Failed to initiate Google login:", error);
+      popup?.close();
       setLoginLoading(false);
     }
   }, [loginLoading, login]);

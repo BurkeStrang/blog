@@ -78,12 +78,12 @@ const ContentBox = styled.div<{ $isDark: boolean }>`
 
   background: ${({ $isDark }) =>
     $isDark
-      ? "linear-gradient(135deg, rgba(16, 15, 5, 0.6) 0%, rgba(15, 14, 10, 0.7) 50%, rgba(10, 18, 16, 0.6) 100%)"
-      : "linear-gradient(135deg, rgba(240, 248, 250, 0.6) 0%, rgba(220, 240, 245, 0.7) 50%, rgba(230, 245, 248, 0.6) 100%)"};
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 1.5rem;
+      ? "rgba(1, 1, 1, 0.66)"
+      : "rgba(230, 230, 230, 0.68)"};
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 8px;
+  padding: clamp(1.4rem, 3vw, 2.4rem);
   overflow-y: auto;
   scrollbar-width: none;
   &::-webkit-scrollbar {
@@ -92,13 +92,11 @@ const ContentBox = styled.div<{ $isDark: boolean }>`
 
   box-shadow: ${({ $isDark }) =>
     $isDark
-      ? "0 8px 32px rgba(0, 255, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
-      : "0 8px 32px rgba(0, 122, 122, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.6)"};
+      ? "0 0 0 1px rgba(0, 220, 200, 0.06)"
+      : "0 0 0 1px rgba(0, 120, 120, 0.08)"};
   border: 1px solid
     ${({ $isDark }) =>
-      $isDark ? "rgba(0, 255, 255, 0.3)" : "rgba(0, 122, 122, 0.3)"};
-  animation: ${({ $isDark }) => ($isDark ? "glowDark" : "glowLight")} 2s
-    ease-in-out infinite;
+      $isDark ? "var(--color-md-blockquote-border)" : "rgba(0, 0, 0, 0.12)"};
 
   @media (max-width: 768px) {
     width: min(520px, calc(100vw - 5rem));
@@ -122,14 +120,15 @@ const ContentBox = styled.div<{ $isDark: boolean }>`
 const AboutSection = styled.section`
   max-width: 680px;
   min-height: 100%;
-  line-height: 1.65;
+  font-family: var(--font-family);
+  line-height: 1.8;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  gap: 1rem;
+  gap: 0;
   margin: 0 auto;
-  padding: 0.5rem;
+  padding: 0.5rem 0;
   box-sizing: border-box;
 
   @media (max-width: 768px) {
@@ -140,24 +139,29 @@ const AboutSection = styled.section`
 `;
 
 const RoleLabel = styled.div<{ $isDark: boolean }>`
-  color: ${({ $isDark }) => ($isDark ? "#7ff" : "#006f6f")};
-  font-size: 0.96rem;
-  font-weight: 600;
+  color: ${({ $isDark }) =>
+    $isDark
+      ? "color-mix(in srgb, var(--color-accent) 65%, black)"
+      : "var(--color-accent)"};
+  font-family: var(--font-family-display);
+  font-size: 1.22rem;
+  font-weight: 700;
   line-height: 1.3;
-  text-align: center;
+  text-align: left;
   text-transform: uppercase;
-  letter-spacing: 0;
+  letter-spacing: 0.04em;
   opacity: 0.9;
-  padding: 0.5rem 0.75rem;
+  padding: 0;
+  margin: 0 0 0.4rem 0;
 `;
 
 const LeadText = styled.p<{ $isDark: boolean }>`
-  color: ${({ $isDark }) => ($isDark ? "#f3f7f7" : "#152626")};
-  font-size: 1.28rem;
-  line-height: 1.65;
-  text-align: center;
+  color: var(--color-readable-lightgrey);
+  font-size: 1.125rem;
+  line-height: 1.8;
+  text-align: left;
   max-width: 620px;
-  margin: 0;
+  margin: 1.2rem 0;
 
   @media (max-width: 768px) {
     font-size: 0.98rem;
@@ -172,12 +176,12 @@ const LeadText = styled.p<{ $isDark: boolean }>`
 `;
 
 const BodyText = styled.p<{ $isDark: boolean }>`
-  font-size: 1.12rem;
-  line-height: 1.7;
-  color: ${({ $isDark }) => ($isDark ? "#d5dddd" : "#263838")};
-  text-align: center;
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--color-readable-lightgrey);
+  text-align: left;
   max-width: 600px;
-  margin: 0;
+  margin: 1.2rem 0;
 
   @media (max-width: 768px) {
     font-size: 0.92rem;
@@ -191,60 +195,58 @@ const BodyText = styled.p<{ $isDark: boolean }>`
 `;
 
 const FocusList = styled.ul<{ $isDark: boolean }>`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
-  list-style: none;
-  padding: 0;
-  margin: 0.25rem 0;
+  display: block;
+  list-style: disc;
+  padding-left: 2rem;
+  margin: 1.5rem 0;
   max-width: 620px;
+  text-align: left;
 
   li {
-    color: ${({ $isDark }) => ($isDark ? "#dcf8f8" : "#143333")};
-    background: ${({ $isDark }) =>
-      $isDark ? "rgba(0, 255, 255, 0.08)" : "rgba(0, 122, 122, 0.08)"};
-    border: 1px solid
-      ${({ $isDark }) =>
-        $isDark ? "rgba(0, 255, 255, 0.2)" : "rgba(0, 122, 122, 0.2)"};
-    border-radius: 8px;
-    padding: 0.45rem 0.65rem;
-    font-size: 0.86rem;
-    line-height: 1.2;
-    white-space: nowrap;
+    color: var(--color-readable-lightgrey);
+    padding: 0;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin: 0.5rem 0;
+    white-space: normal;
+  }
+
+  li::marker {
+    color: var(--color-primary);
   }
 
   @media (max-width: 480px) {
-    gap: 0.4rem;
+    padding-left: 1.25rem;
 
     li {
-      font-size: 0.72rem;
-      padding: 0.4rem 0.55rem;
+      font-size: 0.9rem;
     }
   }
 `;
 
 const CodeSnippet = styled.div<{ $isDark: boolean }>`
   background: ${({ $isDark }) =>
-    $isDark ? "rgba(0, 0, 0, 0.4)" : "rgba(0, 0, 0, 0.06)"};
-  border: 1px solid
-    ${({ $isDark }) =>
-      $isDark ? "rgba(0, 255, 255, 0.3)" : "rgba(0, 122, 122, 0.3)"};
+    $isDark ? "var(--color-md-code-bg)" : "rgba(255, 255, 255, 0.72)"};
+  border: 1px solid var(--color-md-code-border);
   border-radius: 8px;
   padding: 1rem;
-  margin: 1.5rem auto;
+  margin: 1.5rem 0 0;
   max-width: 500px;
   min-width: 0;
   width: 100%;
   min-height: 180px;
   height: 180px;
   font-family: var(--font-family-mono);
-  font-size: 1.04rem;
-  color: ${({ $isDark }) => ($isDark ? "#0ff" : "#007a7a")};
+  font-size: 0.95rem;
+  color: var(--color-md-code-text);
   text-align: left;
   display: flex;
   align-items: flex-start;
   box-sizing: border-box;
+  box-shadow:
+    inset 0 1px 0 var(--color-md-code-glass-highlight),
+    0 0 0 1px var(--color-md-code-inset),
+    0 18px 40px rgba(0, 0, 0, 0.16);
 
   @media (max-width: 768px) {
     padding: 0.85rem;
@@ -264,7 +266,7 @@ const CodeSnippet = styled.div<{ $isDark: boolean }>`
 
 const Cursor = styled.span<{ $isDark: boolean }>`
   animation: blink 1s step-end infinite;
-  color: ${({ $isDark }) => ($isDark ? "#0ff" : "#007a7a")};
+  color: var(--color-primary);
 `;
 
 const codeLines = [

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { lightgrey, accent, backgroundColor} from '../../shared/theme/colors';
+import { readableLightgrey, accent, backgroundColor} from '../../shared/theme/colors';
 import type { CreateCommentRequest } from '../../services/commentService';
 
 const readableAccent = `color-mix(in srgb, ${accent} 65%, black)`;
-const readableLightgrey = `color-mix(in srgb, ${lightgrey} 65%, black)`;
 
 const FormContainer = styled.div`
   background: var(--color-comment-bg);

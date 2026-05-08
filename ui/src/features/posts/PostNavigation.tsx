@@ -7,6 +7,11 @@ import type { Font } from "three/examples/jsm/loaders/FontLoader";
 import { triggerMobileHapticFeedback } from "../../services/haptics";
 import { DARK_SCENE_THEME, LIGHT_SCENE_THEME } from "../../shared/theme/sceneColors";
 
+const navigationLabelColor = {
+  dark: 0x9ca3aa,
+  light: 0x707070,
+};
+
 interface FollowerSphereProps {
   offset: [number, number, number];
   onLeftClick?: () => void;
@@ -49,7 +54,7 @@ export default function FollowerSphere({
   }, [currentPage, totalPosts]);
 
   const labelGeo = useMemo(() => {
-    const geo = new TextGeometry(labelText, { font, size: 0.25, depth: 0.08 });
+    const geo = new TextGeometry(labelText, { font, size: 0.2, depth: 0.06 });
     if (typeof window !== "undefined") {
       const w = window as Window & { assetDisposalManager?: { registerAsset: (id: string, asset: BufferGeometry, priority: string) => void } };
       w.assetDisposalManager?.registerAsset(`nav-label-${labelText}`, geo, "low");
@@ -67,18 +72,15 @@ export default function FollowerSphere({
     };
   }, [labelGeo, labelText]);
 
-  const leftGeo = useMemo(() => new TextGeometry("<", { font, size: 0.78, depth: 0.25 }), [font]);
-  const rightGeo = useMemo(() => new TextGeometry(">", { font, size: 0.84, depth: 0.25 }), [font]);
+  const leftGeo = useMemo(() => new TextGeometry("<", { font, size: 0.62, depth: 0.18 }), [font]);
+  const rightGeo = useMemo(() => new TextGeometry(">", { font, size: 0.67, depth: 0.18 }), [font]);
 
   const primarySolidMat = useMemo(
-    () => new MeshStandardMaterial({
-      color: colors.accentColor,
-      emissive: isDark ? colors.accentColor : 0x000000,
-      emissiveIntensity: isDark ? 3.4 : 0,
-      roughness: 0.28,
-      metalness: 0.05,
+    () => new MeshBasicMaterial({
+      color: isDark ? navigationLabelColor.dark : navigationLabelColor.light,
+      toneMapped: false,
     }),
-    [isDark, colors.accentColor],
+    [isDark],
   );
   const labelBackdropMat = useMemo(
     () => new MeshBasicMaterial({
@@ -185,7 +187,7 @@ export default function FollowerSphere({
     m.name = "rightArrow";
     m.position.set(1.9, -0.08, 0.35);
     m.rotation.set(1.43, 1.27, 1.42);
-    m.scale.set(1.1, 1.1, 1.1);
+    m.scale.set(1.04, 1.04, 1.04);
     return m;
   }, [rightGeo, greyOutlineMat]);
 
@@ -321,7 +323,7 @@ export default function FollowerSphere({
     rightHoverT.current += ((rightHoveredRef.current ? 1 : 0) - rightHoverT.current) * 0.12;
 
     // Scale arrows up on hover
-    const ls = 1 + 0.35 * leftHoverT.current;
+    const ls = 0.92 + 0.24 * leftHoverT.current;
     leftArrowMesh.scale.setScalar(ls);
     leftArrowOutlineMesh.scale.setScalar(ls);
     leftArrowHitMesh.scale.setScalar(ls);
@@ -330,7 +332,7 @@ export default function FollowerSphere({
     leftArrowOutlineMesh.position.set(-1.4, leftHoverY, -1.29);
     leftArrowHitMesh.position.set(-1.4, leftHoverY, -1.29);
 
-    const rs = 1.1 + 0.35 * rightHoverT.current;
+    const rs = 1.04 + 0.24 * rightHoverT.current;
     rightArrowMesh.scale.setScalar(rs);
     rightArrowOutlineMesh.scale.setScalar(rs);
     rightArrowHitMesh.scale.setScalar(rs);

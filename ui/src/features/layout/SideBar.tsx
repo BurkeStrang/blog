@@ -11,11 +11,11 @@ import { useAuth } from "../../shared/contexts/AuthContext";
 // Sidebar container
 const Sidebar = styled.nav`
   position: fixed;
-  background: var(--color-sidebar-bg);
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
+  background: color-mix(in srgb, var(--color-bg) 72%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-right: 1px solid var(--color-md-blockquote-border);
+  box-shadow: 0 0 0 1px rgba(0, 220, 200, 0.06);
   top: 0;
   left: 0;
   height: 100vh;
@@ -73,7 +73,7 @@ const HamburgerBtn = styled.button`
   left: 1.1rem;
   background: none;
   border: none;
-  color: var(--color-sidebar-link);
+  color: var(--color-readable-lightgrey);
   cursor: pointer;
   font-size: 2rem;
   padding: 0.5rem;
@@ -86,10 +86,10 @@ const HamburgerBtn = styled.button`
   backface-visibility: hidden;
 
   &:hover {
-    background: var(--color-sidebar-glow-far);
-    color: var(--color-sidebar-link);
+    background: rgba(0, 220, 200, 0.07);
+    color: var(--color-primary);
     transform: scale(1.1);
-    box-shadow: 0 0 10px var(--color-sidebar-glow-near);
+    box-shadow: 0 0 18px rgba(0, 220, 200, 0.24);
   }
 
   @media (max-height: 800px) {
@@ -117,7 +117,7 @@ const HamburgerBtn = styled.button`
 const SidebarLinks = styled.ul`
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5rem;
   padding: 1rem;
   margin: 1rem;
   list-style: none;
@@ -146,27 +146,36 @@ const SidebarItem = styled.li``;
 const sidebarLinkBase = css`
   display: block;
   width: 90%;
-  margin:1rem auto;
-  padding: 0.75rem 1.25rem;
-  color: var(--color-sidebar-link);
-  font-family: 'mega', var(--font-family);
+  margin: 0.35rem auto;
+  padding: 0.8rem 1rem;
+  color: var(--color-readable-lightgrey);
+  font-family: var(--font-family-display);
   text-decoration: none;
-  font-weight: 600;
-  font-size: 1.08rem;
+  font-weight: 800;
+  font-size: 1.05rem;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    text-shadow 0.2s ease;
 
   &:hover {
-    color: var(--color-sidebar-link);
-    background: var(--color-sidebar-hover-bg);
-    border-radius: 6px;
+    color: color-mix(in srgb, var(--color-accent) 65%, black);
+    background: rgba(0, 220, 200, 0.07);
+    border-color: rgba(0, 220, 200, 0.16);
   }
 
   &.active {
-    color: var(--color-sidebar-link);
+    color: var(--color-primary);
     text-shadow:
-      0 0 8px var(--color-sidebar-glow-near),
-      0 0 24px var(--color-sidebar-glow-far);
-    background: var(--color-sidebar-active-bg);
-    border-radius: 6px;
+      0 0 18px rgba(0, 220, 200, 0.35);
+    background: rgba(0, 220, 200, 0.08);
+    border-color: rgba(0, 220, 200, 0.18);
   }
 
   @media (max-height: 800px) {
@@ -228,19 +237,23 @@ const ProfilePicture = styled.img`
 `;
 
 const UserName = styled.span`
+  font-family: var(--font-family);
   font-weight: 500;
-  color: ${primary};
+  color: var(--color-readable-lightgrey);
   font-size: 0.9rem;
+  line-height: 1.3;
 `;
 
 const LogoutButton = styled(SidebarButton)`
-  color: #ff6b6b;
+  color: #b06e6e;
   font-size: 1rem;
   margin-top: 0.5rem;
-  font-weight: 600;
+  font-weight: 800;
 
   &:hover {
-    color: #ff5252;
+    color: #b06e6e;
+    border-color: rgba(176, 110, 110, 0.32);
+    background: rgba(176, 110, 110, 0.08);
   }
 `;
 

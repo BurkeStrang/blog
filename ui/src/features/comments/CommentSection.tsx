@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import { lightgrey, accent } from "../../shared/theme/colors";
+import { readableLightgrey, accent } from "../../shared/theme/colors";
 import { CommentItem } from "./CommentItem";
 import { CommentForm } from "./CommentForm";
 import {
@@ -10,7 +10,6 @@ import {
 } from "../../services/commentService";
 
 const readableAccent = `color-mix(in srgb, ${accent} 65%, black)`;
-const readableLightgrey = `color-mix(in srgb, ${lightgrey} 65%, black)`;
 
 const SectionContainer = styled.section`
   width: 100%;

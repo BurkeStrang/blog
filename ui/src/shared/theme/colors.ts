@@ -1,6 +1,7 @@
 export const neon = "var(--color-neon)";
 export const darkgrey = "var(--color-darkgrey)";
 export const lightgrey = "var(--color-lightgrey)";
+export const readableLightgrey = "var(--color-readable-lightgrey)";
 export const backgroundColor = "var(--color-bg)";
 export const primary = "var(--color-primary)";
 export const accent = "var(--color-accent)";

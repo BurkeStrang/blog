@@ -16,7 +16,7 @@ interface ResourceCache {
     rubiksCube?: import('three/examples/jsm/loaders/GLTFLoader').GLTF;
   };
   fonts: {
-    gentilis?: import('three/examples/jsm/loaders/FontLoader').Font;
+    inter?: import('three/examples/jsm/loaders/FontLoader').Font;
   };
 }
 
@@ -175,13 +175,13 @@ const LazyOceanCanvas = memo(function LazyOceanCanvas({
       resources.textures.waterNormals &&
       resources.models.sphere &&
       resources.models.rubiksCube &&
-      resources.fonts.gentilis
+      resources.fonts.inter
     );
   }, [
     resources.textures.waterNormals,
     resources.models.sphere,
     resources.models.rubiksCube,
-    resources.fonts.gentilis,
+    resources.fonts.inter,
   ]);
 
   return (

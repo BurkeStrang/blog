@@ -13,10 +13,9 @@ import tsx from 'react-syntax-highlighter/dist/esm/languages/prism/tsx';
 import typescript from 'react-syntax-highlighter/dist/esm/languages/prism/typescript';
 import remarkGfm from 'remark-gfm';
 import styled from 'styled-components';
-import { accent, lightgrey } from '../../shared/theme/colors';
+import { accent, readableLightgrey } from '../../shared/theme/colors';
 
 const readableAccent = `color-mix(in srgb, ${accent} 65%, black)`;
-const readableLightgrey = `color-mix(in srgb, ${lightgrey} 65%, black)`;
 
 SyntaxHighlighter.registerLanguage('bash', bash);
 SyntaxHighlighter.registerLanguage('cpp', cpp);
@@ -594,7 +593,7 @@ const CodeBlockWrapper = styled.div`
 
   pre {
     background: transparent !important;
-    color: ${lightgrey};
+    color: ${readableLightgrey};
     padding: 1.2rem !important;
     border: 0 !important;
     border-radius: 0 !important;
@@ -603,6 +602,25 @@ const CodeBlockWrapper = styled.div`
     line-height: 1.6;
     overflow-x: auto !important;
     max-width: 100%;
+
+    /* Match the Article's scrollbar — slim cyan-tinted thumb */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-post-scrollbar-thumb) transparent;
+
+    &::-webkit-scrollbar {
+      height: 0.6rem;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--color-post-scrollbar-thumb);
+      border-radius: 999px;
+      min-width: 3rem;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background-color: var(--color-post-scrollbar-thumb-hover);
+    }
     white-space: pre;
   }
 

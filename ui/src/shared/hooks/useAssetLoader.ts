@@ -7,7 +7,9 @@ import { TextureCompressor } from '../../engine/rendering';
 import waterNormalsUrl from '../../assets/textures/waternormals.avif?url';
 import sphereUrl from '../../assets/models/sphere/scene.gltf?url';
 import blockModelUrl from '../../assets/models/rubikscube/scene.gltf?url';
-import fontJson from '../../assets/fonts/gentilis_regular.typeface.json';
+import fontJson from '../../assets/fonts/Noto Sans_Regular.json';
+
+type FontData = Parameters<FontLoader['parse']>[0];
 
 interface ResourceCache {
   textures: {
@@ -18,7 +20,7 @@ interface ResourceCache {
     rubiksCube?: GLTF;
   };
   fonts: {
-    gentilis?: Font;
+    inter?: Font;
   };
 }
 
@@ -69,7 +71,7 @@ export function useResourcePreloader() {
         
         // Load font
         if (!cancelled) {
-          resourcesRef.current.fonts.gentilis = fontLoader.parse(fontJson);
+          resourcesRef.current.fonts.inter = fontLoader.parse(fontJson as unknown as FontData);
         }
         
         // Load all resources in parallel with adaptive compression

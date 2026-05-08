@@ -119,6 +119,12 @@ interface PostBoxProps {
 const fontSize = 0.2;
 const wordScale = 13;
 const textMargin = 0.8;
+const textWrapWidthRatio = 0.76;
+
+const postTitleTextColor = {
+  dark: 0x9ca3aa,
+  light: 0x707070,
+};
 
 function PostBoxCore(props: PostBoxProps) {
   const {
@@ -137,6 +143,7 @@ function PostBoxCore(props: PostBoxProps) {
   } = props;
   const { gl } = useThree();
   const colors = getSceneTheme(isDark);
+  const displayTitle = useMemo(() => title.toUpperCase(), [title]);
 
   const groupRef = useRef<THREE.Group>(null!);
   const [hovered, setHovered] = useState(false);
@@ -237,11 +244,12 @@ function PostBoxCore(props: PostBoxProps) {
   const frontHeight = bbox.max.y - bbox.min.y;
   const frontCenterX = bbox.min.x + frontWidth / 2;
   const frontCenterY = bbox.min.y + frontHeight / 2;
+  const textWrapWidth = frontWidth * textWrapWidthRatio;
 
   // --- Efficient line wrapping ---
   const lines = useMemo(
-    () => wrapLines(title, font, fontSize, frontWidth),
-    [title, font, frontWidth],
+    () => wrapLines(displayTitle, font, fontSize, textWrapWidth),
+    [displayTitle, font, textWrapWidth],
   );
 
   // --- Create all text geometries ONCE with caching ---
@@ -293,6 +301,13 @@ function PostBoxCore(props: PostBoxProps) {
       ),
     [textGeometries],
   );
+  const lineWidths = useMemo(
+    () =>
+      textGeometries.map(
+        (g) => g.boundingBox!.max.x - g.boundingBox!.min.x || 0,
+      ),
+    [textGeometries],
+  );
   const lineGap = 50 / wordScale;
   const totalTextHeight = useMemo(
     () =>
@@ -331,15 +346,12 @@ function PostBoxCore(props: PostBoxProps) {
     });
   }, [isDark]);
   const neonMat = useMemo(() => {
-    return new THREE.MeshStandardMaterial({
-      color: colors.accentColor,
-      emissive: isDark ? colors.accentColor : 0x000000,
-      emissiveIntensity: isDark ? 3.4 : 0,
-      roughness: 0.28,
-      metalness: 0.05,
+    return new THREE.MeshBasicMaterial({
+      color: isDark ? postTitleTextColor.dark : postTitleTextColor.light,
       transparent: true,
+      toneMapped: false,
     });
-  }, [isDark, colors.accentColor]);
+  }, [isDark]);
   // --- Signal ready when geometries are created ---
   useEffect(() => {
     if (textGeometries.length > 0) {
@@ -656,6 +668,7 @@ function PostBoxCore(props: PostBoxProps) {
           {/* Text lines - always render text geometry when in extended frustum for pre-loading */}
           {textGeometries.map((geo, i) => {
             const zBase = bbox.max.z + textMargin - 0.02 + 27;
+            const leftEdgeX = frontCenterX + 2 - (textWrapWidth * wordScale) / 2;
             return (
               <React.Fragment key={i}>
                 <mesh
@@ -663,7 +676,7 @@ function PostBoxCore(props: PostBoxProps) {
                   material={neonMat}
                   scale={[wordScale, wordScale, 0.01]}
                   position={[
-                    frontCenterX + 2,
+                    leftEdgeX + (lineWidths[i] * wordScale) / 2,
                     frontCenterY + lineOffsets[i],
                     zBase,
                   ]}

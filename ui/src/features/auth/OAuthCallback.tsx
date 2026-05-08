@@ -48,11 +48,14 @@ export const OAuthCallback: React.FC = () => {
           // This is a popup - send message to parent and close
           try {
             // Send success message to parent window
-            window.opener.postMessage({
-              type: 'OAUTH_SUCCESS',
-              token: decodeURIComponent(token),
-              user: user
-            }, window.location.origin);
+          const successMessage = {
+            type: 'OAUTH_SUCCESS',
+            token: decodeURIComponent(token),
+            user: user
+          };
+
+          window.opener.postMessage(successMessage, window.location.origin);
+          window.opener.postMessage(successMessage, '*');
             
             // Close popup after sending message
             setTimeout(() => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { lightgrey, accent, backgroundColor } from '../../shared/theme/colors';
+import { readableLightgrey, accent, backgroundColor } from '../../shared/theme/colors';
 import { commentService, type Comment } from '../../services/commentService';
 import { CommentForm } from './CommentForm';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
@@ -11,7 +11,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { User } from '../../shared/types/user';
 
 const readableAccent = `color-mix(in srgb, ${accent} 65%, black)`;
-const readableLightgrey = `color-mix(in srgb, ${lightgrey} 65%, black)`;
 
 const CommentContainer = styled.div`
   background: var(--color-comment-bg);

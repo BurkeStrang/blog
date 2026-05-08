@@ -427,7 +427,7 @@ interface ResourceCache {
     rubiksCube?: import("three/examples/jsm/loaders/GLTFLoader").GLTF;
   };
   fonts: {
-    gentilis?: import("three/examples/jsm/loaders/FontLoader").Font;
+    inter?: import("three/examples/jsm/loaders/FontLoader").Font;
   };
 }
 
@@ -807,7 +807,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     !resources.textures.waterNormals ||
     !resources.models.sphere ||
     !resources.models.rubiksCube ||
-    !resources.fonts.gentilis ||
+    !resources.fonts.inter ||
     !posts ||
     !Array.isArray(posts)
   ) {
@@ -853,7 +853,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
           onLeftClick={handleLeftClick}
           onRightClick={handleRightClick}
           sphereModel={resources.models.sphere!}
-          font={resources.fonts.gentilis!}
+          font={resources.fonts.inter!}
           currentPage={currentPage}
           totalPosts={totalPosts}
           showLeftArrow={currentPage > 1}
@@ -884,7 +884,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
               targetPosition={[targetPos.x, targetPos.y, targetPos.z]}
               onClick={handlePostCubeClick}
               rubiksCubeModel={resources.models.rubiksCube!}
-              font={resources.fonts.gentilis!}
+              font={resources.fonts.inter!}
               isVisible={true}
               sortingActive={isSorting}
               isDark={isDark}
