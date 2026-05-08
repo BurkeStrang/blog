@@ -8,9 +8,6 @@ import { useAuth } from "../../shared/contexts/AuthContext";
 import { CommentSection } from "../comments";
 import { apiService } from "../../services/api";
 import { isAdmin } from "../../shared/types/user";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import CommentIcon from "@mui/icons-material/Comment";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -24,7 +21,7 @@ const Article = styled.article`
   padding: 1.75rem 1rem 3rem 2rem;
   padding-right: 2.75rem;
   margin: 0 0.75rem 0 0;
-  background: ${backgroundColor};
+  background: transparent;
   font-family: var(--font-family);
   position: relative;
   box-sizing: border-box;
@@ -112,126 +109,46 @@ const Article = styled.article`
   }
 `;
 
-const PostMetadata = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 1.5rem;
-  margin: 0 0 0.35rem 0;
-  padding: 0;
-  background: ${backgroundColor};
-  border: none;
-  width: 100%;
-  max-width: 1000px;
-  box-sizing: border-box;
-  opacity: 0.5;
-
-  @media (max-width: 1200px) {
-    gap: 1.25rem;
-    margin-bottom: 0.3rem;
-  }
-
-  @media (max-width: 768px) {
-    gap: 1rem;
-    margin-bottom: 0.25rem;
-    max-width: 100%;
-  }
-
-  @media (max-width: 480px) {
-    gap: 0.875rem;
-    margin-bottom: 0.2rem;
-  }
-`;
-
-const MetadataItem = styled.div`
-  display: flex;
-  align-items: center;
-  color: ${lightgrey};
-  font-size: 0.75rem;
-  font-weight: 400;
-  gap: 0.35rem;
-
-  svg {
-    color: ${lightgrey};
-    font-size: 0.85rem;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 0.7rem;
-
-    svg {
-      font-size: 0.8rem;
-    }
-  }
-
-  @media (max-width: 480px) {
-    font-size: 0.65rem;
-    gap: 0.3rem;
-
-    svg {
-      font-size: 0.75rem;
-    }
-  }
-`;
-
-const MetadataValue = styled.span`
-  color: ${lightgrey};
-  font-weight: 400;
-`;
-
 const PostFrame = styled.div`
   position: relative;
-  max-width: 1000px;
   width: 100%;
   margin: 0.5rem auto 1rem auto;
-  border-radius: 18px;
-  border: 1px solid var(--color-md-code-border);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent),
-    var(--color-md-code-bg);
-  box-shadow:
-    0 24px 60px var(--color-md-code-shadow),
-    inset 0 1px 0 var(--color-md-code-inset),
-    0 0 0 1px rgba(0, 220, 200, 0.04);
-  overflow: clip;
-
-  /* Faded grid pattern backdrop */
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    background-image:
-      linear-gradient(rgba(0, 220, 200, 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 220, 200, 0.04) 1px, transparent 1px);
-    background-size: 42px 42px;
-    mask-image: linear-gradient(to bottom, black, transparent 85%);
-    -webkit-mask-image: linear-gradient(to bottom, black, transparent 85%);
-  }
-
-  /* Children sit above the backdrop layers */
-  & > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  @media (max-width: 480px) {
-    border-radius: 12px;
-  }
 `;
 
 const TerminalBar = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.7rem 0.95rem;
-  border-bottom: 1px solid var(--color-md-code-border);
-  background:
-    linear-gradient(90deg,
-      rgba(0, 220, 200, 0.05),
-      rgba(0, 220, 200, 0.02)),
-    rgba(255, 255, 255, 0.02);
+  padding: 0.5rem 0;
+  margin-bottom: 0.25rem;
+`;
+
+/* Visible grid + scanline backdrop, fixed full-screen behind the article */
+const PostBackdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+
+  /* The grid pattern over the page bg colour */
+  background-color: ${backgroundColor};
+  background-image:
+    linear-gradient(rgba(0, 220, 200, 0.18) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(0, 220, 200, 0.18) 2px, transparent 2px);
+  background-size: 800px 800px;
+
+  /* Horizontal scanlines layered on top */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 220, 200, 0.06) 0,
+      rgba(0, 220, 200, 0.06) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  }
 `;
 
 const TerminalTitle = styled.span`
@@ -950,13 +867,6 @@ const PostDetailComponent = function PostDetail({
   // No need to sanitize markdown - react-markdown handles it safely
   const markdownContent = post.body;
 
-  // Reading time: ~180 wpm. Memoized so post-reference changes (e.g. comment
-  // count updates causing a new post object) don't re-split the body.
-  const readingTime = React.useMemo(() => {
-    const wordCount = post.body.trim().split(/\s+/).length;
-    return Math.ceil(wordCount / 180);
-  }, [post.body]);
-
   // Edit functionality
   const handleEdit = React.useCallback(() => {
     setEditForm({
@@ -1079,6 +989,7 @@ const PostDetailComponent = function PostDetail({
 
   return (
     <>
+      <PostBackdrop />
       <Article
         ref={articleRef}
         onScroll={showScrollbarTemporarily}
@@ -1143,29 +1054,16 @@ const PostDetailComponent = function PostDetail({
           </EditForm>
         ) : (
           <>
-            <PostMetadata>
-              <MetadataItem>
-                <VisibilityIcon />
-                <MetadataValue>{post.pageViews || 0}</MetadataValue>
-                <span>views</span>
-              </MetadataItem>
-              <MetadataItem>
-                <AccessTimeIcon />
-                <MetadataValue>{readingTime}</MetadataValue>
-                <span>min read</span>
-              </MetadataItem>
-              <MetadataItem>
-                <CommentIcon />
-                <MetadataValue>{displayCommentCount}</MetadataValue>
-                <span>comments</span>
-              </MetadataItem>
-            </PostMetadata>
             <PostFrame>
-              <TerminalBar>
-                <TerminalTitle>brxstrng@blog:~/posts/{post.slug}.md</TerminalTitle>
-              </TerminalBar>
               <Content>
-                <MarkdownContent content={markdownContent} />
+                <MarkdownContent
+                  content={markdownContent}
+                  metadataAfterH1={
+                    <TerminalBar>
+                      <TerminalTitle>brxstrng@blg:~/posts/{post.slug}.md</TerminalTitle>
+                    </TerminalBar>
+                  }
+                />
               </Content>
             </PostFrame>
 

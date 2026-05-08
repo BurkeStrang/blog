@@ -72,10 +72,10 @@ export const DARK_SCENE_THEME: SceneTheme = {
   ambientLightColor: 0x11034d,
   sky: {
     turbidity: 30,
-    rayleigh: 0.8,
+    rayleigh: 0.3,
     mieCoefficient: 0,
     mieDirectionalG: 0.6,
-    elevation: 0.2,
+    elevation: 1.2,
     azimuth: 138,
     exposure: 0.69,
     showSunDisc: 0,

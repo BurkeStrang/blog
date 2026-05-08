@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import bash from 'react-syntax-highlighter/dist/esm/languages/prism/bash';
@@ -36,6 +36,11 @@ const MarkdownWrapper = styled.div`
   line-height: 1.8;
   color: ${readableLightgrey};
   counter-reset: md-section;
+
+  /* Keep body content at a readable line length inside the wide frame */
+  & > * {
+    max-width: 72ch;
+  }
 
   /* Headings — modern bold display sans */
   && h1, && h2, && h3, && h4, && h5, && h6 {
@@ -528,6 +533,7 @@ const MarkdownWrapper = styled.div`
 
 interface MarkdownContentProps {
   content: string;
+  metadataAfterH1?: React.ReactNode;
 }
 
 const languageAliases: Record<string, string> = {
@@ -559,17 +565,24 @@ const looksLikeInlineCss = (code: string) => (
 
 const CodeBlockWrapper = styled.div`
   position: relative;
-  margin: 2rem 0;
+  margin: 2.5rem 0 2rem 0;
   background: var(--color-md-code-bg);
   backdrop-filter: blur(24px) saturate(145%);
   -webkit-backdrop-filter: blur(24px) saturate(145%);
-  border: 1px solid var(--color-md-code-border);
-  border-radius: 14px;
-  box-shadow:
-    inset 0 1px 0 var(--color-md-code-inset),
-    0 10px 26px var(--color-md-code-shadow);
-  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 10px 26px var(--color-md-code-shadow);
   font-family: var(--font-family-mono);
+
+  /* Line number gutter from react-syntax-highlighter */
+  .linenumber {
+    display: inline-block;
+    min-width: 2em;
+    padding-right: 1.2em;
+    text-align: right;
+    color: var(--color-md-code-comment);
+    opacity: 0.55;
+    user-select: none;
+  }
 
   code {
     padding: 0 !important;
@@ -723,23 +736,68 @@ const CodeBlockWrapper = styled.div`
   }
 `;
 
-const CodeBlockHeader = styled.div`
-  display: flex;
-  align-items: center;
-  height: 2.2rem;
-  padding: 0 0.95rem;
-  border-bottom: 1px solid var(--color-md-code-border);
-  background: rgba(255, 255, 255, 0.025);
+/* Tab row — absolutely positioned at top-right of code block, items aligned
+   to bottom so the tab and flares share the same baseline. */
+const CodeBlockTabRow = styled.div`
+  position: absolute;
+  top: -1.7rem;
+  right: 1.25rem;
+  display: inline-flex;
+  align-items: flex-end;
+  z-index: 2;
 `;
 
-const CodeBlockLang = styled.span`
-  font-family: var(--font-family-mono);
-  font-size: 0.74rem;
-  color: ${lightgrey};
-  opacity: 0.55;
-  text-transform: lowercase;
-  letter-spacing: 0.04em;
+/* Each side flare is a single masked box: most of the flare is tab-bg (the
+   tab visually widens at the bottom), with a small concave cutout near the
+   tab's bottom corner so the curve sweeps INTO the tab area rather than out. */
+const CodeBlockTabFlare = styled.div<{ $side: 'left' | 'right' }>`
+  width: 12px;
+  height: 12px;
+  margin-bottom: -4px;
+  background: var(--color-md-code-bg);
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+  ${({ $side }) =>
+    $side === 'left'
+      ? `margin-right: -3px;
+         -webkit-mask: radial-gradient(circle at 0 0, transparent 8px, black 8.5px);
+         mask: radial-gradient(circle at 0 0, transparent 8px, black 8.5px);`
+      : `margin-left: -3px;
+         -webkit-mask: radial-gradient(circle at 100% 0, transparent 8px, black 8.5px);
+         mask: radial-gradient(circle at 100% 0, transparent 8px, black 8.5px);`}
 `;
+
+/* The tab itself — visible filled rectangle with rounded top corners. */
+const CodeBlockTab = styled.div`
+  height: 1.7rem;
+  padding: 0 0.95rem;
+  display: flex;
+  align-items: center;
+  background: var(--color-md-code-bg);
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+  border-radius: 8px 8px 0 0;
+  font-family: var(--font-family-mono);
+  font-size: 0.72rem;
+  color: rgba(176, 179, 198, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+`;
+
+const langDisplay: Record<string, string> = {
+  typescript: 'TS',
+  javascript: 'JS',
+  jsx: 'JSX',
+  tsx: 'TSX',
+  bash: 'SH',
+  python: 'PY',
+  csharp: 'C#',
+  cpp: 'C++',
+  go: 'GO',
+  css: 'CSS',
+  html: 'HTML',
+  markup: 'HTML',
+};
 
 const InlineCode = React.memo(function InlineCode({ children, className }: { children: React.ReactNode; className?: string }) {
   const code = String(children);
@@ -771,12 +829,15 @@ const InlineCode = React.memo(function InlineCode({ children, className }: { chi
 const CodeBlock = React.memo(function CodeBlock({ children, language }: { children: string; language: string }) {
   const normalizedLanguage = React.useMemo(() => getNormalizedLanguage(language), [language]);
   const languageClassName = normalizedLanguage.replace(/[^a-z0-9_-]/g, '-');
+  const tabLabel = langDisplay[normalizedLanguage] ?? normalizedLanguage.toUpperCase();
 
   return (
     <CodeBlockWrapper>
-      <CodeBlockHeader>
-        <CodeBlockLang>{normalizedLanguage}</CodeBlockLang>
-      </CodeBlockHeader>
+      <CodeBlockTabRow>
+        <CodeBlockTabFlare $side="left" />
+        <CodeBlockTab>{tabLabel}</CodeBlockTab>
+        <CodeBlockTabFlare $side="right" />
+      </CodeBlockTabRow>
       <SyntaxHighlighter
         codeTagProps={{ className: `language-${languageClassName}` }}
         customStyle={{}}
@@ -784,6 +845,15 @@ const CodeBlock = React.memo(function CodeBlock({ children, language }: { childr
         PreTag="pre"
         style={{}}
         useInlineStyles={false}
+        showLineNumbers
+        lineNumberStyle={{
+          minWidth: '2em',
+          paddingRight: '1.2em',
+          textAlign: 'right',
+          color: 'var(--color-md-code-comment)',
+          opacity: 0.55,
+          userSelect: 'none',
+        }}
       >
         {children}
       </SyntaxHighlighter>
@@ -791,9 +861,26 @@ const CodeBlock = React.memo(function CodeBlock({ children, language }: { childr
   );
 });
 
-export const MarkdownContent = React.memo(function MarkdownContent({ content }: MarkdownContentProps) {
+export const MarkdownContent = React.memo(function MarkdownContent({ content, metadataAfterH1 }: MarkdownContentProps) {
+  // Track whether the first <h1> has rendered so we can inject metadata after it.
+  // Reset at the start of every render — ReactMarkdown processes the tree top-down
+  // synchronously, so the h1 component callback observes a fresh counter each pass.
+  const h1SeenRef = useRef(false);
+  h1SeenRef.current = false;
+
   const markdownComponents = React.useMemo(
     () => ({
+      h1(props: { children?: React.ReactNode }) {
+        const { children } = props;
+        const isFirst = !h1SeenRef.current;
+        if (isFirst) h1SeenRef.current = true;
+        return (
+          <>
+            <h1>{children}</h1>
+            {isFirst && metadataAfterH1}
+          </>
+        );
+      },
       code(props: {
         children?: React.ReactNode;
         className?: string;
@@ -815,7 +902,7 @@ export const MarkdownContent = React.memo(function MarkdownContent({ content }: 
         );
       },
     }),
-    [],
+    [metadataAfterH1],
   );
 
   return (
