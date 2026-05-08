@@ -1,5 +1,5 @@
 import styled, { createGlobalStyle } from "styled-components";
-import { backgroundColor, darkgrey, primary, secondary } from "./colors";
+import { backgroundColor, darkgrey, secondary } from "./colors";
 
 // ——— global styles ———
 export const GlobalStyle = createGlobalStyle`
@@ -18,8 +18,13 @@ export const GlobalStyle = createGlobalStyle`
     --color-header-mobile-shadow: rgba(0, 0, 0, 0.38);
     --color-header-gradient-top: color-mix(in srgb, var(--color-primary) 88%, white);
     --color-header-gradient-bottom: color-mix(in srgb, var(--color-primary) 35%, black);
+    --color-search-bg: rgba(0, 20, 22, 0.42);
+    --color-search-bg-focus: rgba(0, 28, 30, 0.62);
     --color-search-outline: rgba(0, 220, 200, 0.8);
     --color-search-outline-focus: rgba(0, 255, 220, 1);
+    --color-search-text: #87babb;
+    --color-search-placeholder: rgba(135, 186, 187, 0.76);
+    --color-search-clear: rgba(135, 186, 187, 0.7);
     --color-dropdown-bg: rgba(0, 0, 0, 0.1);
     --color-divider: rgba(255, 255, 255, 0.1);
     --color-comment-bg: rgba(255, 255, 255, 0.02);
@@ -111,8 +116,13 @@ export const GlobalStyle = createGlobalStyle`
     --color-header-mobile-shadow: rgba(150, 210, 215, 0.035);
     --color-header-gradient-top: color-mix(in srgb, var(--color-primary) 80%, white);
     --color-header-gradient-bottom: color-mix(in srgb, var(--color-primary) 68%, white);
+    --color-search-bg: rgba(255, 255, 255, 0.38);
+    --color-search-bg-focus: rgba(248, 255, 255, 0.68);
     --color-search-outline: rgba(0, 200, 200, 0.7);
     --color-search-outline-focus: rgba(0, 120, 140, 1);
+    --color-search-text: #0f686c;
+    --color-search-placeholder: rgba(15, 104, 108, 0.66);
+    --color-search-clear: rgba(15, 104, 108, 0.68);
     --color-dropdown-bg: rgba(255, 255, 255, 0.1);
     --color-divider: rgba(0, 0, 0, 0.1);
     --color-comment-bg: rgba(0, 0, 0, 0.04);
@@ -671,76 +681,90 @@ export const SearchContainer = styled.div`
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  width: 240px;
+  width: 220px;
   height: 32px;
   border-radius: 15px;
+  background: var(--color-search-bg);
   outline: solid 2px var(--color-search-outline);
   overflow: hidden;
-  transition: width 0.3s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 20px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition:
+    width 0.3s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    outline-color 0.2s ease;
 
   &:hover,
   &:focus-within {
-    width: min(420px, calc(100vw - 8rem));
+    width: min(360px, calc(100vw - 8rem));
+    background: var(--color-search-bg-focus);
     outline-color: var(--color-search-outline-focus);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 10px 24px rgba(0, 0, 0, 0.12);
   }
 
   @media (max-height: 800px) {
-    width: 230px;
+    width: 210px;
     height: 30px;
 
     &:hover,
     &:focus-within {
-      width: min(390px, calc(100vw - 8rem));
+      width: min(330px, calc(100vw - 8rem));
     }
   }
 
   @media (max-height: 600px) {
-    width: 205px;
+    width: 190px;
     height: 26px;
 
     &:hover,
     &:focus-within {
-      width: min(350px, calc(100vw - 7rem));
+      width: min(300px, calc(100vw - 7rem));
     }
   }
 
   @media (max-height: 450px) {
-    width: 180px;
+    width: 170px;
     height: 22px;
 
     &:hover,
     &:focus-within {
-      width: min(300px, calc(100vw - 6rem));
+      width: min(250px, calc(100vw - 6rem));
     }
   }
 
   @media (max-width: 768px) {
-    width: min(210px, calc(100vw - 7rem));
+    width: min(190px, calc(100vw - 7rem));
     height: 28px;
 
     &:hover,
     &:focus-within {
-      width: min(340px, calc(100vw - 5rem));
+      width: min(290px, calc(100vw - 5rem));
     }
   }
 
   @media (max-width: 480px) {
-    width: min(180px, calc(100vw - 5rem));
+    width: min(168px, calc(100vw - 5rem));
     height: 24px;
 
     &:hover,
     &:focus-within {
-      width: min(280px, calc(100vw - 3rem));
+      width: min(245px, calc(100vw - 3rem));
     }
   }
 
   @media (max-width: 320px) {
-    width: min(155px, calc(100vw - 3rem));
+    width: min(148px, calc(100vw - 3rem));
     height: 22px;
 
     &:hover,
     &:focus-within {
-      width: min(230px, calc(100vw - 2rem));
+      width: min(205px, calc(100vw - 2rem));
     }
   }
 `;
@@ -753,12 +777,12 @@ export const SearchInput = styled.input`
   border: none;
   font-size: 1rem;
   background: transparent;
-  color: ${primary};
+  color: var(--color-search-text);
   font-family: var(--font-family);
 
   &::placeholder {
-    color: ${primary};
-    opacity: 0.8;
+    color: var(--color-search-placeholder);
+    opacity: 1;
   }
 
   &:focus {
@@ -813,9 +837,11 @@ export const ClearButton = styled.button`
   cursor: pointer;
   font-size: 1.2rem;
   line-height: 1;
-  color: ${primary};
+  color: var(--color-search-clear);
   opacity: 0.6;
-  transition: opacity 0.2s;
+  transition:
+    opacity 0.2s,
+    color 0.2s ease;
   min-width: 44px;
   min-height: 44px;
   display: flex;
@@ -824,6 +850,7 @@ export const ClearButton = styled.button`
 
   &:hover {
     opacity: 1;
+    color: var(--color-search-text);
   }
 
   @media (max-width: 768px) {

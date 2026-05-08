@@ -122,32 +122,34 @@ const TerminalBar = styled.div`
   margin-bottom: 0.25rem;
 `;
 
-/* Visible grid + scanline backdrop, fixed full-screen behind the article */
 const PostBackdrop = styled.div`
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
 
-  /* The grid pattern over the page bg colour */
-  background-color: ${backgroundColor};
-  background-image:
-    linear-gradient(rgba(0, 220, 200, 0.18) 2px, transparent 2px),
-    linear-gradient(90deg, rgba(0, 220, 200, 0.18) 2px, transparent 2px);
-  background-size: 800px 800px;
+  --grid-size: 180px;
 
-  /* Horizontal scanlines layered on top */
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
+  background-color: ${backgroundColor};
+
+  background-image:
+    linear-gradient(rgba(0, 220, 200, 0.105) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 220, 200, 0.105) 1px, transparent 1px),
+    repeating-linear-gradient(
       to bottom,
-      rgba(0, 220, 200, 0.06) 0,
-      rgba(0, 220, 200, 0.06) 1px,
+      rgba(0, 220, 200, 0.025) 0,
+      rgba(0, 220, 200, 0.025) 1px,
       transparent 1px,
-      transparent 4px
+      transparent 5px
     );
+
+  background-size:
+    var(--grid-size) var(--grid-size),
+    var(--grid-size) var(--grid-size),
+    auto;
+
+  @media (max-width: 700px) {
+    --grid-size: 120px;
   }
 `;
 
@@ -328,41 +330,6 @@ const BackButtonContainer = styled.div`
     gap: 0.5rem;
     flex-direction: column;
     align-items: flex-start;
-  }
-`;
-
-const BackButton = styled.button`
-  padding: 0.5rem 1rem;
-  font-family: inherit;
-  font-size: 0.875rem;
-  background: var(--color-btn-bg);
-  color: ${lightgrey};
-  border: 1px solid var(--color-btn-border);
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
-
-  &:hover {
-    background: var(--color-btn-bg-hover);
-    border-color: ${accent};
-    color: ${accent};
-    transform: translateX(-2px);
-  }
-
-  &:active {
-    transform: translateX(0);
-  }
-
-  @media (max-width: 768px) {
-    padding: 0.45rem 0.875rem;
-    font-size: 0.8rem;
-  }
-
-  @media (max-width: 480px) {
-    padding: 0.4rem 0.75rem;
-    font-size: 0.75rem;
   }
 `;
 
@@ -943,34 +910,6 @@ const PostDetailComponent = function PostDetail({
     setShowDeleteConfirm(false);
   }, []);
 
-  // Optimize handleClose to prevent re-renders
-  const closePostDetail = React.useCallback(() => {
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
-    handleClose();
-  }, [handleClose]);
-
-  const handleClick = React.useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      closePostDetail();
-    },
-    [closePostDetail],
-  );
-
-  const handleBackKeyDown = React.useCallback(
-    (e: React.KeyboardEvent<HTMLButtonElement>) => {
-      if (e.key !== "Enter" && e.key !== " ") return;
-
-      e.preventDefault();
-      e.stopPropagation();
-      closePostDetail();
-    },
-    [closePostDetail],
-  );
-
   // Toggle comments expanded state
   const toggleComments = React.useCallback(() => {
     setCommentsExpanded((prev) => !prev);
@@ -1092,9 +1031,6 @@ const PostDetailComponent = function PostDetail({
         )}
 
         <BackButtonContainer>
-          <BackButton onClick={handleClick} onKeyDown={handleBackKeyDown}>
-            ← home
-          </BackButton>
           {isAdmin(user) && !isEditing && (
             <>
               <EditButton onClick={handleEdit}>

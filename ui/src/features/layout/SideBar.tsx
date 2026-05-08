@@ -2,7 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useLocation, Navigate } from "react-router-dom";
 import styled, { css } from "styled-components";
 import { primary } from "../../shared/theme/colors";
-import MenuIcon from "@mui/icons-material/Menu";
+import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
+import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { useTheme } from "../../shared/contexts/ThemeContext";
@@ -11,50 +15,51 @@ import { useAuth } from "../../shared/contexts/AuthContext";
 // Sidebar container
 const Sidebar = styled.nav`
   position: fixed;
-  background: color-mix(in srgb, var(--color-bg) 72%, transparent);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-right: 1px solid var(--color-md-blockquote-border);
-  box-shadow: 0 0 0 1px rgba(0, 220, 200, 0.06);
   top: 0;
   left: 0;
   height: 100vh;
-  width: 10vw;
+  width: clamp(296px, 22vw, 360px);
+  padding: 1.1rem 1rem;
+  background: color-mix(in srgb, var(--color-bg) 94%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--color-sidebar-link) 16%, transparent);
+  border-radius: 0;
   z-index: 200;
-  padding: 4rem;
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateX(-110%);
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.24s ease;
+  transform: translateX(-100%);
+  opacity: 0;
   contain: paint;
   isolation: isolate;
   backface-visibility: hidden;
   will-change: transform;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 
   &[data-open="true"] {
     transform: translateX(0);
+    opacity: 1;
   }
 
-  /* Responsive width */
   @media (max-width: 768px) {
-    width: 25vw; /* Slightly wider on mobile for better touch targets */
-  }
-  @media (max-width: 480px) {
-    width: 35vw; /* 90% of viewport width on small screens */
-    max-width: 320px; /* But never exceed 320px */
-  }
-  @media (max-width: 320px) {
-    width: 50vw; /* Even more width on very small screens */
+    width: min(320px, 82vw);
   }
 
-  @media (max-height: 800px) {
-    padding: 4rem;
+  @media (max-width: 480px) {
+    width: min(320px, 88vw);
   }
+
+  @media (max-width: 320px) {
+    width: 92vw;
+  }
+
   @media (max-height: 600px) {
-    padding: 3rem;
+    padding: 0.9rem 0.85rem;
   }
+
   @media (max-height: 450px) {
-    padding: 2rem;
+    padding: 0.75rem;
   }
 `;
 
@@ -67,97 +72,202 @@ const HamburgerContainer = styled.div`
   z-index: 210;
 `;
 
-const HamburgerBtn = styled.button`
+const HamburgerBtn = styled.button<{ $open: boolean }>`
   position: absolute;
-  top: 1.1rem;
-  left: 1.1rem;
-  background: none;
-  border: none;
-  color: var(--color-readable-lightgrey);
+  top: 1rem;
+  left: 1rem;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-sidebar-link) 18%, transparent);
+  color: var(--color-lightgrey);
   cursor: pointer;
-  font-size: 2rem;
-  padding: 0.5rem;
+  font-size: 1.7rem;
+  padding: 0;
   transition:
     background-color 0.3s ease,
     color 0.3s ease,
-    box-shadow 0.3s ease,
-    transform 0.3s ease;
-  border-radius: 50%;
+    border-color 0.3s ease,
+    opacity 0.2s ease;
+  border-radius: 14px;
   backface-visibility: hidden;
+  opacity: ${({ $open }) => ($open ? 0 : 1)};
+  pointer-events: ${({ $open }) => ($open ? "none" : "auto")};
 
   &:hover {
-    background: rgba(0, 220, 200, 0.07);
+    background: color-mix(in srgb, var(--color-sidebar-hover-bg) 85%, transparent);
     color: var(--color-primary);
-    transform: scale(1.1);
-    box-shadow: 0 0 18px rgba(0, 220, 200, 0.24);
+    border-color: color-mix(in srgb, var(--color-sidebar-link) 28%, transparent);
   }
 
   @media (max-height: 800px) {
     top: 0.6rem;
     left: 0.6rem;
-    padding: 0.2rem;
-    font-size: 1.6rem;
+    width: 48px;
+    height: 48px;
+    font-size: 1.55rem;
   }
 
   @media (max-height: 600px) {
     top: 0.4rem;
     left: 0.4rem;
-    padding: 0.15rem;
-    font-size: 1.4rem;
+    width: 44px;
+    height: 44px;
+    font-size: 1.35rem;
   }
 
   @media (max-height: 450px) {
     top: 0.25rem;
     left: 0.25rem;
-    padding: 0.1rem;
+    width: 40px;
+    height: 40px;
     font-size: 1.2rem;
   }
+`;
+
+const SidebarContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+`;
+
+const SidebarHeader = styled.div`
+  padding: 0.5rem 0.5rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-sidebar-link) 12%, transparent);
+  margin-bottom: 1rem;
+`;
+
+const SidebarEyebrow = styled.span`
+  display: inline-block;
+  font-family: var(--font-family);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-sidebar-link) 65%, var(--color-readable-lightgrey));
+  margin-bottom: 0.4rem;
+`;
+
+const SidebarTitle = styled.h2`
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--color-lightgrey);
 `;
 
 const SidebarLinks = styled.ul`
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem;
-  margin: 1rem;
+  gap: 0.55rem;
+  padding: 0 0.35rem 0.2rem;
+  margin: 0;
   list-style: none;
+  flex: 1;
+  min-height: 0;
+  justify-content: flex-start;
+  overflow-y: auto;
 
   @media (max-height: 800px) {
-    padding: 0.75rem;
-    margin: 0.75rem;
-    gap: 0.2rem;
+    gap: 0.45rem;
   }
 
   @media (max-height: 600px) {
-    padding: 0.5rem;
-    margin: 0.5rem;
-    gap: 0.15rem;
+    gap: 0.35rem;
   }
 
   @media (max-height: 450px) {
-    padding: 0.25rem;
-    margin: 0.25rem;
-    gap: 0.1rem;
+    gap: 0.25rem;
   }
 `;
 
-const SidebarItem = styled.li``;
+const SidebarItem = styled.li`
+  margin: 0;
+`;
+
+const SidebarGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const SidebarSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const AccountSection = styled(SidebarSection)`
+  margin-top: 0.25rem;
+`;
+
+const SidebarSectionLabel = styled.span`
+  padding: 0 0.9rem;
+  font-family: var(--font-family);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-sidebar-link) 54%, var(--color-readable-lightgrey));
+`;
+
+const SidebarActionContent = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+`;
+
+const SidebarActionIcon = styled.span`
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  color: var(--color-sidebar-link);
+  flex-shrink: 0;
+`;
+
+const SidebarActionText = styled.span`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.08rem;
+  min-width: 0;
+`;
+
+const SidebarActionLabel = styled.span`
+  font-family: var(--font-family-display);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: inherit;
+  text-transform: uppercase;
+`;
 
 const sidebarLinkBase = css`
-  display: block;
-  width: 90%;
-  margin: 0.35rem auto;
-  padding: 0.8rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 0.85rem 0.95rem;
   color: var(--color-readable-lightgrey);
   font-family: var(--font-family-display);
   text-decoration: none;
-  font-weight: 800;
-  font-size: 1.05rem;
+  font-weight: 700;
+  font-size: 1rem;
   line-height: 1.05;
   letter-spacing: 0.02em;
-  text-transform: uppercase;
-  border: 1px solid transparent;
-  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--color-sidebar-link) 10%, transparent);
+  border-radius: 14px;
+  background: transparent;
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
@@ -165,34 +275,29 @@ const sidebarLinkBase = css`
     text-shadow 0.2s ease;
 
   &:hover {
-    color: color-mix(in srgb, var(--color-accent) 65%, black);
-    background: rgba(0, 220, 200, 0.07);
-    border-color: rgba(0, 220, 200, 0.16);
+    color: color-mix(in srgb, var(--color-sidebar-link) 38%, white 26%);
+    background: color-mix(in srgb, var(--color-sidebar-hover-bg) 72%, transparent);
+    border-color: color-mix(in srgb, var(--color-sidebar-link) 20%, transparent);
   }
 
   &.active {
     color: var(--color-primary);
-    text-shadow:
-      0 0 18px rgba(0, 220, 200, 0.35);
-    background: rgba(0, 220, 200, 0.08);
-    border-color: rgba(0, 220, 200, 0.18);
+    text-shadow: none;
+    background: color-mix(in srgb, var(--color-sidebar-active-bg) 82%, transparent);
+    border-color: color-mix(in srgb, var(--color-sidebar-link) 28%, transparent);
   }
 
   @media (max-height: 800px) {
-    margin: 0.75rem auto;
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
+    padding: 0.78rem 0.9rem;
   }
 
   @media (max-height: 600px) {
-    margin: 0.75rem auto;
-    padding: 0.7rem 0.75rem;
+    padding: 0.68rem 0.8rem;
     font-size: 0.9rem;
   }
 
   @media (max-height: 450px) {
-    margin: 0.5rem auto;
-    padding: 0.5rem 0.5rem;
+    padding: 0.56rem 0.7rem;
     font-size: 0.8rem;
   }
 `;
@@ -206,7 +311,6 @@ const SidebarButton = styled.button`
   background: none;
   border: none;
   cursor: pointer;
-  width: 100%;
   text-align: left;
 
   &:disabled {
@@ -217,43 +321,69 @@ const SidebarButton = styled.button`
 
 const ProfileSection = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.7rem;
   width: 100%;
+  box-sizing: border-box;
+  padding: 0.85rem 0.95rem;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--color-sidebar-link) 14%, transparent);
+  border-radius: 14px;
+  margin: 0 auto;
 `;
 
 const ProfileInfo = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.8rem;
 `;
 
 const ProfilePicture = styled.img`
-  width: 32px;
-  height: 32px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   border: 2px solid ${primary};
   object-fit: cover;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+`;
+
+const ProfileMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+`;
+
+const ProfileLabel = styled.span`
+  font-family: var(--font-family);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-sidebar-link) 54%, var(--color-readable-lightgrey));
 `;
 
 const UserName = styled.span`
-  font-family: var(--font-family);
-  font-weight: 500;
-  color: var(--color-readable-lightgrey);
-  font-size: 0.9rem;
+  font-family: var(--font-family-display);
+  font-weight: 700;
+  color: var(--color-lightgrey);
+  font-size: 0.92rem;
   line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const LogoutButton = styled(SidebarButton)`
   color: #b06e6e;
-  font-size: 1rem;
-  margin-top: 0.5rem;
-  font-weight: 800;
 
   &:hover {
     color: #b06e6e;
-    border-color: rgba(176, 110, 110, 0.32);
-    background: rgba(176, 110, 110, 0.08);
+    border-color: rgba(176, 110, 110, 0.28);
+    background:
+      linear-gradient(180deg, rgba(176, 110, 110, 0.08), transparent),
+      rgba(176, 110, 110, 0.08);
   }
 `;
 
@@ -289,6 +419,21 @@ const SidebarNav: React.FC<SidebarNavProps> = React.memo(({ onNavigateStart }) =
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
   // Redirect if at root
   if (location.pathname === "/") {
     return <Navigate to="/posts" replace />;
@@ -297,85 +442,144 @@ const SidebarNav: React.FC<SidebarNavProps> = React.memo(({ onNavigateStart }) =
   return (
     <>
       <HamburgerContainer ref={hamburgerRef}>
-        <HamburgerBtn aria-label="Toggle menu" onClick={() => setOpen(!open)}>
-          <MenuIcon fontSize="inherit" />
+        <HamburgerBtn $open={open} aria-label="Toggle menu" onClick={() => setOpen(!open)}>
+          <MenuRoundedIcon fontSize="inherit" />
         </HamburgerBtn>
       </HamburgerContainer>
 
       <Sidebar ref={sidebarRef} data-open={open} aria-label="Sidebar navigation">
-        <SidebarLinks>
-          <SidebarItem>
-            <SidebarLink
-              to="/about"
-              onClick={() => {
-                onNavigateStart?.("/about");
-                setOpen(false);
-              }}
-            >
-              ABOUT
-            </SidebarLink>
-          </SidebarItem>
-          <SidebarItem>
-            <SidebarLink
-              to="/posts"
-              onClick={() => {
-                onNavigateStart?.("/posts");
-                setOpen(false);
-              }}
-            >
-              POSTS
-            </SidebarLink>
-          </SidebarItem>
-          <SidebarItem>
-            <SidebarButton onClick={toggleTheme}>
-              {theme === 'dark' ? (
-                <LightModeIcon sx={{ fontSize: '1rem', marginRight: '0.4rem', verticalAlign: 'middle' }} />
-              ) : (
-                <DarkModeIcon sx={{ fontSize: '1rem', marginRight: '0.4rem', verticalAlign: 'middle' }} />
+        <SidebarContent>
+          <SidebarHeader>
+            <SidebarEyebrow>BRXSTNG</SidebarEyebrow>
+            <SidebarTitle>Navigation</SidebarTitle>
+          </SidebarHeader>
+
+          <SidebarLinks>
+            <SidebarGroup>
+              <SidebarSection>
+                <SidebarSectionLabel>Explore</SidebarSectionLabel>
+                <SidebarItem>
+                  <SidebarLink
+                    to="/about"
+                    onClick={() => {
+                      onNavigateStart?.("/about");
+                      setOpen(false);
+                    }}
+                  >
+                    <SidebarActionContent>
+                      <SidebarActionIcon>
+                        <InfoOutlinedIcon sx={{ fontSize: "1.1rem" }} />
+                      </SidebarActionIcon>
+                      <SidebarActionText>
+                        <SidebarActionLabel>About</SidebarActionLabel>
+                      </SidebarActionText>
+                    </SidebarActionContent>
+                  </SidebarLink>
+                </SidebarItem>
+                <SidebarItem>
+                  <SidebarLink
+                    to="/posts"
+                    onClick={() => {
+                      onNavigateStart?.("/posts");
+                      setOpen(false);
+                    }}
+                  >
+                    <SidebarActionContent>
+                      <SidebarActionIcon>
+                        <ArticleOutlinedIcon sx={{ fontSize: "1.1rem" }} />
+                      </SidebarActionIcon>
+                      <SidebarActionText>
+                        <SidebarActionLabel>Posts</SidebarActionLabel>
+                      </SidebarActionText>
+                    </SidebarActionContent>
+                  </SidebarLink>
+                </SidebarItem>
+              </SidebarSection>
+
+              <SidebarSection>
+                <SidebarSectionLabel>Preferences</SidebarSectionLabel>
+                <SidebarItem>
+                  <SidebarButton type="button" onClick={toggleTheme}>
+                    <SidebarActionContent>
+                      <SidebarActionIcon>
+                        {theme === "dark" ? (
+                          <LightModeIcon sx={{ fontSize: "1.1rem" }} />
+                        ) : (
+                          <DarkModeIcon sx={{ fontSize: "1.1rem" }} />
+                        )}
+                      </SidebarActionIcon>
+                      <SidebarActionText>
+                        <SidebarActionLabel>{theme === "dark" ? "Light mode" : "Dark mode"}</SidebarActionLabel>
+                      </SidebarActionText>
+                    </SidebarActionContent>
+                  </SidebarButton>
+                </SidebarItem>
+              </SidebarSection>
+            </SidebarGroup>
+
+            <AccountSection>
+              <SidebarSectionLabel>Account</SidebarSectionLabel>
+              <SidebarItem>
+                {user ? (
+                  <ProfileSection>
+                    <ProfileInfo>
+                      <ProfilePicture
+                        src={user.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0ff&color=000`}
+                        alt={user.name}
+                        onError={(e) => {
+                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0ff&color=000`;
+                        }}
+                      />
+                      <ProfileMeta>
+                        <ProfileLabel>Signed in</ProfileLabel>
+                        <UserName>{user.name}</UserName>
+                      </ProfileMeta>
+                    </ProfileInfo>
+                  </ProfileSection>
+                ) : (
+                  <SidebarButton
+                    type="button"
+                    onClick={() => {
+                      localStorage.setItem("returnTo", location.pathname);
+                      setOpen(false);
+                      loginWithGoogle();
+                    }}
+                    disabled={loginLoading}
+                    >
+                      <SidebarActionContent>
+                        <SidebarActionIcon>
+                          <LoginRoundedIcon sx={{ fontSize: "1.1rem" }} />
+                        </SidebarActionIcon>
+                        <SidebarActionText>
+                          <SidebarActionLabel>{loginLoading ? "Logging in..." : "Google OAuth login"}</SidebarActionLabel>
+                        </SidebarActionText>
+                      </SidebarActionContent>
+                    </SidebarButton>
+                )}
+              </SidebarItem>
+              {user && (
+                <SidebarItem>
+                  <LogoutButton
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      logout();
+                    }}
+                  >
+                    <SidebarActionContent>
+                      <SidebarActionIcon>
+                        <LogoutRoundedIcon sx={{ fontSize: "1.1rem" }} />
+                      </SidebarActionIcon>
+                      <SidebarActionText>
+                        <SidebarActionLabel>Logout</SidebarActionLabel>
+                      </SidebarActionText>
+                    </SidebarActionContent>
+                  </LogoutButton>
+                </SidebarItem>
               )}
-              {theme === 'dark' ? 'LIGHT' : 'DARK'}
-            </SidebarButton>
-          </SidebarItem>
-          <SidebarItem>
-            {user ? (
-              <div style={{ padding: '0.75rem 1.25rem', margin: '0.2rem auto', width: '90%' }}>
-                <ProfileSection>
-                  <ProfileInfo>
-                    <ProfilePicture
-                      src={user.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0ff&color=000`}
-                      alt={user.name}
-                      onError={(e) => {
-                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0ff&color=000`;
-                      }}
-                    />
-                    <UserName>{user.name}</UserName>
-                  </ProfileInfo>
-                </ProfileSection>
-              </div>
-            ) : (
-              <SidebarButton
-                onClick={() => {
-                  localStorage.setItem('returnTo', location.pathname);
-                  setOpen(false);
-                  loginWithGoogle();
-                }}
-                disabled={loginLoading}
-              >
-                {loginLoading ? 'LOGGING IN...' : 'LOGIN'}
-              </SidebarButton>
-            )}
-          </SidebarItem>
-          {user && (
-            <SidebarItem>
-              <LogoutButton onClick={() => {
-                setOpen(false);
-                logout();
-              }}>
-                LOGOUT
-              </LogoutButton>
-            </SidebarItem>
-          )}
-        </SidebarLinks>
+            </AccountSection>
+          </SidebarLinks>
+        </SidebarContent>
       </Sidebar>
     </>
   );

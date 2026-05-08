@@ -307,6 +307,7 @@ const AppContent: React.FC = memo(() => {
   const isDetail = /^\/posts\/[^/]+$/.test(location.pathname) && !isNewPost;
   const isOpeningDetail = pendingDetailSlug !== null && !isDetail;
   const hidePostsChrome = isDetail || isOpeningDetail;
+  const showSidebar = !isOpeningDetail && !isOAuthCallback && !isNewPost;
 
   useEffect(() => {
     if (isDetail) {
@@ -378,7 +379,7 @@ const AppContent: React.FC = memo(() => {
 
       {showUI && (
         <>
-          {!hidePostsChrome && <SideBar onNavigateStart={handleRouteTransitionStart} />}
+          {showSidebar && <SideBar onNavigateStart={handleRouteTransitionStart} />}
           <Suspense
             fallback={
               <LoaderOverlay>
