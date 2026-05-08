@@ -90,8 +90,9 @@ export const GlobalStyle = createGlobalStyle`
     --color-filter-hover-bg: rgba(0, 220, 200, 0.10);
     --color-filter-divider: rgba(0, 220, 200, 0.18);
 
-    /* Site fonts. --font-family for general text, --font-family-mono for code. */
+    /* Site fonts. --font-family body, --font-family-display headings, --font-family-mono code. */
     --font-family: ui-monospace, SFMono-Regular, 'Cascadia Mono', 'Cascadia Code', Consolas, 'Ubuntu Mono', 'DejaVu Sans Mono', Menlo, Monaco, 'Liberation Mono', 'Courier New', monospace;
+    --font-family-display: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
     --font-family-mono: ui-monospace, SFMono-Regular, 'Cascadia Mono', 'Cascadia Code', Consolas, 'Ubuntu Mono', 'DejaVu Sans Mono', Menlo, Monaco, 'Liberation Mono', 'Courier New', monospace;
   }
 

@@ -35,43 +35,103 @@ const MarkdownWrapper = styled.div`
   font-size: 1.125rem;
   line-height: 1.8;
   color: ${readableLightgrey};
+  counter-reset: md-section;
 
-  /* Headings */
+  /* Headings — modern bold display sans */
   && h1, && h2, && h3, && h4, && h5, && h6 {
-    color: ${readableAccent};
-    font-family: var(--font-family);
-    font-weight: 600;
-    margin: 2.5rem 0 1rem 0;
-    line-height: 1.3;
+    font-family: var(--font-family-display);
+    color: ${readableLightgrey};
     text-align: left;
+    text-wrap: balance;
   }
 
-  h1 {
-    font-size: 2.25rem;
-    border-bottom: 2px solid var(--color-md-h1-border);
-    padding-bottom: 0.5rem;
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
+  /* Inside any heading: *italic* and **bold** become the cyan accent (no italic).
+     Lets you write \`# Types Are Just *Vibes*  We Made Structural\` to get a
+     stacked, two-color title without leaving markdown. */
+  && h1 em, && h2 em, && h3 em, && h4 em, && h5 em, && h6 em,
+  && h1 strong, && h2 strong, && h3 strong, && h4 strong, && h5 strong, && h6 strong {
+    font-style: normal;
+    font-weight: inherit;
+    color: var(--color-primary);
+    background: none;
   }
 
-  h2 {
-    font-size: 1.875rem;
-    border-bottom: 2px solid var(--color-md-h2-border);
-    padding-bottom: 0.5rem;
+  /* H1 — massive display, tight tracking, uppercase */
+  && h1 {
+    font-size: clamp(2.8rem, 8vw, 5.5rem);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 0.9;
+    margin: 0.6rem 0 0.5rem 0;
+    text-transform: uppercase;
+    max-width: 14ch;
   }
 
-  h3 {
-    font-size: 1.5rem;
+  && h1 br { line-height: 0; }
+
+  /* H2 — section break with auto-numbered "0X /" prefix in mono cyan */
+  && h2 {
+    font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    margin: 3.5rem 0 0.7rem 0;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--color-md-h2-border);
   }
 
-  h4 {
-    font-size: 1.25rem;
+  && h2::before {
+    counter-increment: md-section;
+    content: counter(md-section, decimal-leading-zero) ' / ';
+    color: var(--color-primary);
+    font-family: var(--font-family-mono);
+    font-size: 0.42em;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: lowercase;
+    vertical-align: 0.35em;
+    margin-right: 0.3em;
+  }
+
+  /* Optional kicker accent: H2 strong as a leading uppercase mono accent
+     (e.g. \`## **Section** Title here\` puts a small caps tag before the title) */
+
+  /* H3 — accent color, smaller */
+  && h3 {
+    font-size: 1.22rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    margin: 2rem 0 0.4rem 0;
+    color: ${readableAccent};
+  }
+
+  && h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    line-height: 1.3;
+    margin: 1.6rem 0 0.5rem 0;
+    color: ${readableAccent};
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   /* Paragraphs */
   p {
-    margin: 1.5rem 0;
+    margin: 1.2rem 0;
     text-align: left;
+  }
+
+  /* Strong with cyan highlighter underline */
+  strong {
+    font-weight: 700;
+    color: ${readableLightgrey};
+    background: linear-gradient(
+      180deg,
+      transparent 60%,
+      rgba(0, 220, 200, 0.18) 60%
+    );
   }
 
   /* Links */
@@ -84,6 +144,7 @@ const MarkdownWrapper = styled.div`
     &:hover {
       color: var(--color-md-link-hover);
       border-bottom-color: var(--color-md-link-hover);
+      text-shadow: 0 0 18px rgba(0, 220, 200, 0.35);
     }
   }
 
@@ -95,37 +156,60 @@ const MarkdownWrapper = styled.div`
   }
 
   li {
-    margin: 0.75rem 0;
+    margin: 0.5rem 0;
     line-height: 1.6;
   }
 
-  /* Blockquotes */
-  blockquote {
-    border-left: 4px solid var(--color-md-blockquote-border);
-    padding: 1rem 1.5rem;
-    margin: 2rem 0;
-    background: var(--color-md-blockquote-bg);
-    border-radius: 0 8px 8px 0;
-    font-style: italic;
-    color: var(--color-md-blockquote-text);
-
-    p:first-child {
-      margin-top: 0;
-    }
-
-    p:last-child {
-      margin-bottom: 0;
-    }
+  li::marker {
+    color: var(--color-primary);
   }
 
-  /* Code */
+  /* Blockquote as NOTE callout */
+  blockquote {
+    position: relative;
+    padding: 1.1rem 1.2rem 1rem 1.3rem;
+    margin: 2rem 0;
+    background:
+      radial-gradient(circle at 8px 8px, rgba(0, 220, 200, 0.08) 2px, transparent 2px),
+      linear-gradient(180deg, rgba(0, 220, 200, 0.06), rgba(0, 220, 200, 0.025));
+    background-size: 16px 16px;
+    border: 1px solid var(--color-md-blockquote-border);
+    border-radius: 16px;
+    box-shadow: 0 0 0 1px rgba(0, 220, 200, 0.06);
+    font-style: normal;
+    color: ${readableLightgrey};
+
+    &::before {
+      content: 'NOTE';
+      position: absolute;
+      top: -0.85rem;
+      left: 1rem;
+      padding: 0.2rem 0.55rem;
+      font-family: var(--font-family);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--color-bg);
+      background: var(--color-primary);
+      border: 2px solid #000;
+      border-radius: 999px;
+      box-shadow: 3px 3px 0 #000;
+    }
+
+    p:first-child { margin-top: 0; }
+    p:last-child { margin-bottom: 0; }
+  }
+
+  /* Inline code with cyan tint + border */
   code {
-    color: var(--color-md-code-text);
+    color: var(--color-primary);
     font-family: var(--font-family-mono);
-    font-size: 0.9em;
+    font-size: 0.88em;
     font-weight: 500;
-    padding: 0.2em 0.4em;
-    border-radius: 4px;
+    padding: 0.16em 0.4em;
+    border-radius: 5px;
+    background: rgba(0, 220, 200, 0.07);
+    border: 1px solid rgba(0, 220, 200, 0.16);
   }
 
   .comment,
@@ -412,6 +496,34 @@ const MarkdownWrapper = styled.div`
       margin: 1.5rem 0;
     }
   }
+
+  /* Scroll-reveal: PostDetail tags direct children with [data-reveal] on
+     mount, then [data-revealed] when each enters the Article viewport. */
+  & > [data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    filter: blur(6px);
+    transition:
+      opacity 600ms ease,
+      transform 600ms ease,
+      filter 600ms ease;
+    will-change: opacity, transform, filter;
+  }
+
+  & > [data-reveal][data-revealed] {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    & > [data-reveal] {
+      opacity: 1;
+      transform: none;
+      filter: none;
+      transition: none;
+    }
+  }
 `;
 
 interface MarkdownContentProps {
@@ -446,12 +558,13 @@ const looksLikeInlineCss = (code: string) => (
 );
 
 const CodeBlockWrapper = styled.div`
+  position: relative;
   margin: 2rem 0;
   background: var(--color-md-code-bg);
   backdrop-filter: blur(24px) saturate(145%);
   -webkit-backdrop-filter: blur(24px) saturate(145%);
   border: 1px solid var(--color-md-code-border);
-  border-radius: 8px;
+  border-radius: 14px;
   box-shadow:
     inset 0 1px 0 var(--color-md-code-inset),
     0 10px 26px var(--color-md-code-shadow);
@@ -461,16 +574,19 @@ const CodeBlockWrapper = styled.div`
   code {
     padding: 0 !important;
     border-radius: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    color: inherit !important;
   }
 
   pre {
     background: transparent !important;
     color: ${lightgrey};
-    padding: 1.5rem !important;
+    padding: 1.2rem !important;
     border: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    font-size: 1rem !important;
+    font-size: 0.95rem !important;
     line-height: 1.6;
     overflow-x: auto !important;
     max-width: 100%;
@@ -598,13 +714,31 @@ const CodeBlockWrapper = styled.div`
 
   @media (max-width: 390px) {
     margin: 1rem 0;
-    border-radius: 4px;
+    border-radius: 8px;
 
     pre {
       padding: 0.75rem !important;
       font-size: 0.9rem !important;
     }
   }
+`;
+
+const CodeBlockHeader = styled.div`
+  display: flex;
+  align-items: center;
+  height: 2.2rem;
+  padding: 0 0.95rem;
+  border-bottom: 1px solid var(--color-md-code-border);
+  background: rgba(255, 255, 255, 0.025);
+`;
+
+const CodeBlockLang = styled.span`
+  font-family: var(--font-family-mono);
+  font-size: 0.74rem;
+  color: ${lightgrey};
+  opacity: 0.55;
+  text-transform: lowercase;
+  letter-spacing: 0.04em;
 `;
 
 const InlineCode = React.memo(function InlineCode({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -640,6 +774,9 @@ const CodeBlock = React.memo(function CodeBlock({ children, language }: { childr
 
   return (
     <CodeBlockWrapper>
+      <CodeBlockHeader>
+        <CodeBlockLang>{normalizedLanguage}</CodeBlockLang>
+      </CodeBlockHeader>
       <SyntaxHighlighter
         codeTagProps={{ className: `language-${languageClassName}` }}
         customStyle={{}}
@@ -682,7 +819,7 @@ export const MarkdownContent = React.memo(function MarkdownContent({ content }: 
   );
 
   return (
-    <MarkdownWrapper>
+    <MarkdownWrapper className="markdown-body">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={markdownComponents}

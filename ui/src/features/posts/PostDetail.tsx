@@ -179,13 +179,77 @@ const MetadataValue = styled.span`
   font-weight: 400;
 `;
 
+const PostFrame = styled.div`
+  position: relative;
+  max-width: 1000px;
+  width: 100%;
+  margin: 0.5rem auto 1rem auto;
+  border-radius: 18px;
+  border: 1px solid var(--color-md-code-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent),
+    var(--color-md-code-bg);
+  box-shadow:
+    0 24px 60px var(--color-md-code-shadow),
+    inset 0 1px 0 var(--color-md-code-inset),
+    0 0 0 1px rgba(0, 220, 200, 0.04);
+  overflow: clip;
+
+  /* Faded grid pattern backdrop */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      linear-gradient(rgba(0, 220, 200, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 220, 200, 0.04) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: linear-gradient(to bottom, black, transparent 85%);
+    -webkit-mask-image: linear-gradient(to bottom, black, transparent 85%);
+  }
+
+  /* Children sit above the backdrop layers */
+  & > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (max-width: 480px) {
+    border-radius: 12px;
+  }
+`;
+
+const TerminalBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.95rem;
+  border-bottom: 1px solid var(--color-md-code-border);
+  background:
+    linear-gradient(90deg,
+      rgba(0, 220, 200, 0.05),
+      rgba(0, 220, 200, 0.02)),
+    rgba(255, 255, 255, 0.02);
+`;
+
+const TerminalTitle = styled.span`
+  font-family: var(--font-family-mono);
+  font-size: 0.78rem;
+  color: ${lightgrey};
+  opacity: 0.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
 const Content = styled.div`
   color: ${lightgrey};
   line-height: 1.8;
   font-size: 1.125rem;
   text-align: left;
-  max-width: 1000px;
-  margin: 0 auto 1rem auto;
+  padding: clamp(1.4rem, 3vw, 2.4rem);
   width: 100%;
   box-sizing: border-box;
   overflow-wrap: break-word;
@@ -818,6 +882,43 @@ const PostDetailComponent = function PostDetail({
     return () => document.documentElement.classList.remove('detail-page');
   }, []);
 
+  // Scroll-reveal markdown blocks as they enter the Article viewport
+  useEffect(() => {
+    const root = articleRef.current;
+    if (!root || !post) return;
+
+    const target = root.querySelector('.markdown-body');
+    if (!target) return;
+
+    const elements = Array.from(target.children) as HTMLElement[];
+    if (elements.length === 0) return;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    elements.forEach((el) => {
+      el.dataset.reveal = '';
+      if (reduced) el.dataset.revealed = '';
+    });
+
+    if (reduced) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            (entry.target as HTMLElement).dataset.revealed = '';
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { root, threshold: 0.08, rootMargin: '0px 0px -60px 0px' },
+    );
+
+    elements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [post]);
+
   useEffect(() => {
     const el = articleRef.current;
     if (!el) return;
@@ -1059,9 +1160,14 @@ const PostDetailComponent = function PostDetail({
                 <span>comments</span>
               </MetadataItem>
             </PostMetadata>
-            <Content>
-              <MarkdownContent content={markdownContent} />
-            </Content>
+            <PostFrame>
+              <TerminalBar>
+                <TerminalTitle>brxstrng@blog:~/posts/{post.slug}.md</TerminalTitle>
+              </TerminalBar>
+              <Content>
+                <MarkdownContent content={markdownContent} />
+              </Content>
+            </PostFrame>
 
             {/* Comments toggle button */}
             <CommentsToggleButton onClick={toggleComments}>
