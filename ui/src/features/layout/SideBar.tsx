@@ -43,15 +43,18 @@ const Sidebar = styled.nav`
   }
 
   @media (max-width: 768px) {
-    width: min(320px, 82vw);
+    width: min(248px, 68vw);
+    padding: 0.9rem 0.75rem;
   }
 
   @media (max-width: 480px) {
-    width: min(320px, 88vw);
+    width: min(196px, 58vw);
+    padding: 0.7rem 0.55rem;
   }
 
   @media (max-width: 320px) {
-    width: 92vw;
+    width: min(176px, 56vw);
+    padding: 0.6rem 0.5rem;
   }
 
   @media (max-height: 600px) {
@@ -125,6 +128,33 @@ const HamburgerBtn = styled.button<{ $open: boolean }>`
     height: 40px;
     font-size: 1.2rem;
   }
+
+  @media (max-width: 768px) {
+    top: 0.7rem;
+    left: 0.7rem;
+    width: 42px;
+    height: 42px;
+    font-size: 1.3rem;
+    border-radius: 12px;
+  }
+
+  @media (max-width: 480px) {
+    top: 0.45rem;
+    left: 0.45rem;
+    width: 34px;
+    height: 34px;
+    font-size: 1.05rem;
+    border-radius: 10px;
+  }
+
+  @media (max-width: 320px) {
+    top: 0.35rem;
+    left: 0.35rem;
+    width: 30px;
+    height: 30px;
+    font-size: 0.95rem;
+    border-radius: 9px;
+  }
 `;
 
 const SidebarContent = styled.div`
@@ -138,6 +168,11 @@ const SidebarHeader = styled.div`
   padding: 0.5rem 0.5rem 1rem;
   border-bottom: 1px solid color-mix(in srgb, var(--color-sidebar-link) 12%, transparent);
   margin-bottom: 1rem;
+
+  @media (max-width: 480px) {
+    padding: 0.35rem 0.35rem 0.65rem;
+    margin-bottom: 0.7rem;
+  }
 `;
 
 const SidebarEyebrow = styled.span`
@@ -158,6 +193,10 @@ const SidebarTitle = styled.h2`
   font-weight: 800;
   letter-spacing: 0.02em;
   color: var(--color-lightgrey);
+
+  @media (max-width: 480px) {
+    font-size: 0.92rem;
+  }
 `;
 
 const SidebarLinks = styled.ul`
@@ -182,6 +221,11 @@ const SidebarLinks = styled.ul`
 
   @media (max-height: 450px) {
     gap: 0.25rem;
+  }
+
+  @media (max-width: 480px) {
+    gap: 0.35rem;
+    padding: 0 0.15rem 0.15rem;
   }
 `;
 
@@ -213,6 +257,12 @@ const SidebarSectionLabel = styled.span`
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--color-sidebar-link) 54%, var(--color-readable-lightgrey));
+
+  @media (max-width: 480px) {
+    padding: 0 0.55rem;
+    font-size: 0.56rem;
+    letter-spacing: 0.12em;
+  }
 `;
 
 const SidebarActionContent = styled.span`
@@ -231,6 +281,12 @@ const SidebarActionIcon = styled.span`
   border-radius: 10px;
   color: var(--color-sidebar-link);
   flex-shrink: 0;
+
+  @media (max-width: 480px) {
+    width: 1.45rem;
+    height: 1.45rem;
+    border-radius: 8px;
+  }
 `;
 
 const SidebarActionText = styled.span`
@@ -248,6 +304,10 @@ const SidebarActionLabel = styled.span`
   letter-spacing: 0.02em;
   color: inherit;
   text-transform: uppercase;
+
+  @media (max-width: 480px) {
+    font-size: 0.7rem;
+  }
 `;
 
 const sidebarLinkBase = css`
@@ -300,6 +360,13 @@ const sidebarLinkBase = css`
     padding: 0.56rem 0.7rem;
     font-size: 0.8rem;
   }
+
+  @media (max-width: 480px) {
+    gap: 0.45rem;
+    padding: 0.5rem 0.55rem;
+    font-size: 0.72rem;
+    border-radius: 10px;
+  }
 `;
 
 const SidebarLink = styled(NavLink)`
@@ -331,6 +398,12 @@ const ProfileSection = styled.div`
   border: 1px solid color-mix(in srgb, var(--color-sidebar-link) 14%, transparent);
   border-radius: 14px;
   margin: 0 auto;
+
+  @media (max-width: 480px) {
+    gap: 0.45rem;
+    padding: 0.55rem;
+    border-radius: 10px;
+  }
 `;
 
 const ProfileInfo = styled.div`
@@ -346,6 +419,11 @@ const ProfilePicture = styled.img`
   border: 2px solid ${primary};
   object-fit: cover;
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+
+  @media (max-width: 480px) {
+    width: 30px;
+    height: 30px;
+  }
 `;
 
 const ProfileMeta = styled.div`
@@ -373,6 +451,10 @@ const UserName = styled.span`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  @media (max-width: 480px) {
+    font-size: 0.72rem;
+  }
 `;
 
 const LogoutButton = styled(SidebarButton)`

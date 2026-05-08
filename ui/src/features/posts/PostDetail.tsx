@@ -333,6 +333,41 @@ const BackButtonContainer = styled.div`
   }
 `;
 
+const BackButton = styled.button`
+  padding: 0.5rem 1rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  background: var(--color-btn-bg);
+  color: ${lightgrey};
+  border: 1px solid var(--color-btn-border);
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+
+  &:hover {
+    background: var(--color-btn-bg-hover);
+    border-color: ${accent};
+    color: ${accent};
+    transform: translateX(-2px);
+  }
+
+  &:active {
+    transform: translateX(0);
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.45rem 0.875rem;
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+  }
+`;
+
 const EditButton = styled.button`
   padding: 0.5rem 1rem;
   font-family: inherit;
@@ -910,6 +945,33 @@ const PostDetailComponent = function PostDetail({
     setShowDeleteConfirm(false);
   }, []);
 
+  const closePostDetail = React.useCallback(() => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    handleClose();
+  }, [handleClose]);
+
+  const handleClick = React.useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closePostDetail();
+    },
+    [closePostDetail],
+  );
+
+  const handleBackKeyDown = React.useCallback(
+    (e: React.KeyboardEvent<HTMLButtonElement>) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      closePostDetail();
+    },
+    [closePostDetail],
+  );
+
   // Toggle comments expanded state
   const toggleComments = React.useCallback(() => {
     setCommentsExpanded((prev) => !prev);
@@ -1031,6 +1093,9 @@ const PostDetailComponent = function PostDetail({
         )}
 
         <BackButtonContainer>
+          <BackButton onClick={handleClick} onKeyDown={handleBackKeyDown}>
+            ← home
+          </BackButton>
           {isAdmin(user) && !isEditing && (
             <>
               <EditButton onClick={handleEdit}>
