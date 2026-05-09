@@ -314,7 +314,7 @@ export const Header = styled.header`
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     animation: headerLayerWarmup 1ms linear both;
-    text-shadow: 0 0.08em 0.24em rgba(0, 0, 0, 0.18);
+    text-shadow: 0 0.1em 0.28em rgba(0, 0, 0, 0.22);
   }
 
   @media (max-width: 768px) {
@@ -326,7 +326,7 @@ export const Header = styled.header`
       line-height: 0.92;
       margin: 0.65rem 0;
       text-wrap: balance;
-      text-shadow: 0 0.08em 0.22em rgba(0, 0, 0, 0.16);
+      text-shadow: 0 0.1em 0.24em rgba(0, 0, 0, 0.19);
     }
   }
 
@@ -339,7 +339,7 @@ export const Header = styled.header`
       line-height: 0.94;
       margin: 0.45rem 0;
       max-width: 95vw;
-      text-shadow: 0 0.08em 0.2em rgba(0, 0, 0, 0.14);
+      text-shadow: 0 0.09em 0.22em rgba(0, 0, 0, 0.17);
     }
   }
 
@@ -351,43 +351,43 @@ export const Header = styled.header`
       letter-spacing: 0;
       line-height: 0.96;
       margin: 0.35rem 0;
-      text-shadow: 0 0.08em 0.18em rgba(0, 0, 0, 0.12);
+      text-shadow: 0 0.09em 0.2em rgba(0, 0, 0, 0.15);
     }
   }
 
   /* Light-mode-only: match the quieter post detail title treatment. */
   [data-theme="light"] & h1 {
     color: var(--color-readable-lightgrey);
-    text-shadow: 0 0.08em 0.2em rgba(28, 31, 46, 0.14);
+    text-shadow: 0 0.1em 0.24em rgba(28, 31, 46, 0.18);
   }
 
   @media (max-width: 768px) {
     [data-theme="light"] & h1 {
-      text-shadow: 0 0.08em 0.18em rgba(28, 31, 46, 0.12);
+      text-shadow: 0 0.09em 0.2em rgba(28, 31, 46, 0.15);
     }
   }
 
   @media (max-width: 480px) {
     [data-theme="light"] & h1 {
-      text-shadow: 0 0.08em 0.16em rgba(28, 31, 46, 0.1);
+      text-shadow: 0 0.09em 0.18em rgba(28, 31, 46, 0.13);
     }
   }
 
   /* Dark-mode-only: match the quieter post detail title treatment. */
   [data-theme="dark"] & h1 {
     color: var(--color-readable-lightgrey);
-    text-shadow: 0 0.08em 0.24em rgba(0, 0, 0, 0.32);
+    text-shadow: 0 0.1em 0.28em rgba(0, 0, 0, 0.36);
   }
 
   @media (max-width: 768px) {
     [data-theme="dark"] & h1 {
-      text-shadow: 0 0.08em 0.22em rgba(0, 0, 0, 0.28);
+      text-shadow: 0 0.09em 0.24em rgba(0, 0, 0, 0.32);
     }
   }
 
   @media (max-width: 480px) {
     [data-theme="dark"] & h1 {
-      text-shadow: none;
+      text-shadow: 0 0.08em 0.18em rgba(0, 0, 0, 0.24);
     }
   }
 `;

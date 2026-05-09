@@ -320,7 +320,7 @@ const BackButtonContainer = styled.div`
 const BackButton = styled.button`
   width: 2.5rem;
   height: 2.5rem;
-  background: var(--color-btn-bg);
+  background: transparent;
   color: ${lightgrey};
   border: 1px solid var(--color-btn-border);
   border-radius: 6px;
@@ -333,7 +333,7 @@ const BackButton = styled.button`
   padding: 0;
 
   &:hover {
-    background: var(--color-btn-bg-hover);
+    background: transparent;
     border-color: ${accent};
     color: ${accent};
     transform: translateX(-2px);
@@ -344,13 +344,13 @@ const BackButton = styled.button`
   }
 
   @media (max-width: 768px) {
-    width: 2.35rem;
-    height: 2.35rem;
+    width: 2rem;
+    height: 2rem;
   }
 
   @media (max-width: 480px) {
-    width: 2.2rem;
-    height: 2.2rem;
+    width: 1.8rem;
+    height: 1.8rem;
   }
 `;
 

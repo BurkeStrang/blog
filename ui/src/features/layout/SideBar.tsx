@@ -83,7 +83,7 @@ const HamburgerBtn = styled.button<{ $open: boolean }>`
   height: 52px;
   display: grid;
   place-items: center;
-  background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+  background: transparent;
   border: 1px solid color-mix(in srgb, var(--color-sidebar-link) 18%, transparent);
   color: var(--color-lightgrey);
   cursor: pointer;
@@ -100,7 +100,7 @@ const HamburgerBtn = styled.button<{ $open: boolean }>`
   pointer-events: ${({ $open }) => ($open ? "none" : "auto")};
 
   &:hover {
-    background: color-mix(in srgb, var(--color-sidebar-hover-bg) 85%, transparent);
+    background: transparent;
     color: var(--color-primary);
     border-color: color-mix(in srgb, var(--color-sidebar-link) 28%, transparent);
   }
