@@ -13,9 +13,14 @@ import tsx from 'react-syntax-highlighter/dist/esm/languages/prism/tsx';
 import typescript from 'react-syntax-highlighter/dist/esm/languages/prism/typescript';
 import remarkGfm from 'remark-gfm';
 import styled from 'styled-components';
-import { accent, readableLightgrey } from '../../shared/theme/colors';
+import { bluish, readableLightgrey, secondary } from '../../shared/theme/colors';
 
-const readableAccent = `color-mix(in srgb, ${accent} 65%, black)`;
+const headingH3Base = `color-mix(in srgb, ${bluish} 52%, ${secondary} 48%)`;
+const headingH4Base = `color-mix(in srgb, ${secondary} 62%, ${bluish} 38%)`;
+const readableH3Light = `color-mix(in srgb, ${headingH3Base} 28%, black)`;
+const readableH3Dark = `color-mix(in srgb, ${headingH3Base} 34%, ${readableLightgrey})`;
+const readableH4Light = `color-mix(in srgb, ${headingH4Base} 24%, black)`;
+const readableH4Dark = `color-mix(in srgb, ${headingH4Base} 30%, ${readableLightgrey})`;
 
 SyntaxHighlighter.registerLanguage('bash', bash);
 SyntaxHighlighter.registerLanguage('cpp', cpp);
@@ -56,7 +61,7 @@ const MarkdownWrapper = styled.div`
   && h1 strong, && h2 strong, && h3 strong, && h4 strong, && h5 strong, && h6 strong {
     font-style: normal;
     font-weight: inherit;
-    color: var(--color-primary);
+    color: var(--color-md-accent);
     background: none;
   }
 
@@ -81,13 +86,13 @@ const MarkdownWrapper = styled.div`
     line-height: 1.05;
     margin: 3.5rem 0 0.7rem 0;
     padding-top: 1.6rem;
-    border-top: 1px solid var(--color-md-h2-border);
+    border-top: 3px solid var(--color-md-h2-border);
   }
 
   && h2::before {
     counter-increment: md-section;
     content: counter(md-section, decimal-leading-zero) ' / ';
-    color: var(--color-primary);
+    color: var(--color-md-accent);
     font-family: var(--font-family-mono);
     font-size: 0.42em;
     font-weight: 500;
@@ -107,7 +112,7 @@ const MarkdownWrapper = styled.div`
     letter-spacing: -0.01em;
     line-height: 1.3;
     margin: 2rem 0 0.4rem 0;
-    color: ${readableAccent};
+    color: ${readableH3Light};
   }
 
   && h4 {
@@ -116,9 +121,17 @@ const MarkdownWrapper = styled.div`
     letter-spacing: -0.005em;
     line-height: 1.3;
     margin: 1.6rem 0 0.5rem 0;
-    color: ${readableAccent};
+    color: ${readableH4Light};
     text-transform: uppercase;
     letter-spacing: 0.04em;
+  }
+
+  [data-theme="dark"] & h3 {
+    color: ${readableH3Dark};
+  }
+
+  [data-theme="dark"] & h4 {
+    color: ${readableH4Dark};
   }
 
   /* Paragraphs */
@@ -134,7 +147,7 @@ const MarkdownWrapper = styled.div`
     background: linear-gradient(
       180deg,
       transparent 60%,
-      rgba(0, 220, 200, 0.18) 60%
+      var(--color-md-accent-soft-strong) 60%
     );
   }
 
@@ -148,7 +161,7 @@ const MarkdownWrapper = styled.div`
     &:hover {
       color: var(--color-md-link-hover);
       border-bottom-color: var(--color-md-link-hover);
-      text-shadow: 0 0 18px rgba(0, 220, 200, 0.35);
+      text-shadow: 0 0 18px var(--color-md-accent-shadow);
     }
   }
 
@@ -165,7 +178,7 @@ const MarkdownWrapper = styled.div`
   }
 
   li::marker {
-    color: var(--color-primary);
+    color: var(--color-md-accent);
   }
 
   /* Blockquote as NOTE callout */
@@ -174,12 +187,12 @@ const MarkdownWrapper = styled.div`
     padding: 1.1rem 1.2rem 1rem 1.3rem;
     margin: 2rem 0;
     background:
-      radial-gradient(circle at 8px 8px, rgba(0, 220, 200, 0.08) 2px, transparent 2px),
-      linear-gradient(180deg, rgba(0, 220, 200, 0.06), rgba(0, 220, 200, 0.025));
+      radial-gradient(circle at 8px 8px, var(--color-md-accent-soft) 2px, transparent 2px),
+      linear-gradient(180deg, var(--color-md-accent-soft), rgba(0, 0, 0, 0));
     background-size: 16px 16px;
     border: 1px solid var(--color-md-blockquote-border);
     border-radius: 16px;
-    box-shadow: 0 0 0 1px rgba(0, 220, 200, 0.06);
+    box-shadow: 0 0 0 1px var(--color-md-accent-soft);
     font-style: normal;
     color: ${readableLightgrey};
 
@@ -194,7 +207,7 @@ const MarkdownWrapper = styled.div`
       font-weight: 700;
       letter-spacing: 0.05em;
       color: var(--color-bg);
-      background: var(--color-primary);
+      background: var(--color-md-accent);
       border: 2px solid #000;
       border-radius: 999px;
       box-shadow: 3px 3px 0 #000;
@@ -206,14 +219,14 @@ const MarkdownWrapper = styled.div`
 
   /* Inline code with cyan tint + border */
   code {
-    color: var(--color-primary);
+    color: var(--color-md-accent);
     font-family: var(--font-family-mono);
     font-size: 0.88em;
     font-weight: 500;
     padding: 0.16em 0.4em;
     border-radius: 5px;
-    background: rgba(0, 220, 200, 0.07);
-    border: 1px solid rgba(0, 220, 200, 0.16);
+    background: var(--color-md-accent-soft);
+    border: 1px solid var(--color-md-accent-soft-strong);
   }
 
   .comment,
@@ -564,7 +577,7 @@ const looksLikeInlineCss = (code: string) => (
 
 const CodeBlockWrapper = styled.div`
   position: relative;
-  margin: 2.5rem 0 2rem 0;
+  margin: 3.25rem 0 2rem 0;
   background: var(--color-md-code-bg);
   backdrop-filter: blur(24px) saturate(145%);
   -webkit-backdrop-filter: blur(24px) saturate(145%);
@@ -593,8 +606,8 @@ const CodeBlockWrapper = styled.div`
 
   pre {
     background: transparent !important;
-    color: ${readableLightgrey};
-    padding: 1.2rem !important;
+    color: var(--color-md-code-text);
+    padding: 1.6rem 1.2rem 1.2rem !important;
     border: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
@@ -725,30 +738,30 @@ const CodeBlockWrapper = styled.div`
   }
 
   @media (max-width: 768px) {
-    margin: 1.5rem 0;
+    margin: 2.4rem 0 1.5rem;
 
     pre {
-      padding: 1.25rem !important;
+      padding: 1.5rem 1.25rem 1.25rem !important;
       font-size: 0.95rem !important;
     }
   }
 
   @media (max-width: 480px) {
-    margin: 1.25rem 0;
+    margin: 2.1rem 0 1.25rem;
     border-radius: 6px;
 
     pre {
-      padding: 1rem !important;
+      padding: 1.3rem 1rem 1rem !important;
       font-size: 0.925rem !important;
     }
   }
 
   @media (max-width: 390px) {
-    margin: 1rem 0;
+    margin: 1.9rem 0 1rem;
     border-radius: 8px;
 
     pre {
-      padding: 0.75rem !important;
+      padding: 1.1rem 0.75rem 0.75rem !important;
       font-size: 0.9rem !important;
     }
   }

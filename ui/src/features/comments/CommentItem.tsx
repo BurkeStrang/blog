@@ -262,6 +262,10 @@ const CancelButton = styled.button`
   cursor: pointer;
   transition: all 0.2s ease;
 
+  [data-theme="light"] & {
+    border-color: rgba(28, 31, 46, 0.35);
+  }
+
   &:hover {
     background: rgba(255, 255, 255, 0.05);
     border-color: ${accent};
@@ -325,6 +329,10 @@ const ConfirmDeleteButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+
+  [data-theme="light"] & {
+    border: 1px solid rgba(28, 31, 46, 0.22);
+  }
 
   &:hover {
     background: #ff3333;

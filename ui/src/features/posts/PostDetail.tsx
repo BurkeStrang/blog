@@ -12,6 +12,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import { MarkdownContent } from "./MarkdownContent";
 
 const Article = styled.article`
@@ -115,20 +116,13 @@ const PostFrame = styled.div`
   margin: 0.5rem auto 1rem auto;
 `;
 
-const TerminalBar = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 0.5rem 0;
-  margin-bottom: 0.25rem;
-`;
-
 const PostBackdrop = styled.div`
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
 
-  --grid-size: 180px;
+  --grid-size: 280px;
 
   background-color: ${backgroundColor};
 
@@ -151,16 +145,6 @@ const PostBackdrop = styled.div`
   @media (max-width: 700px) {
     --grid-size: 120px;
   }
-`;
-
-const TerminalTitle = styled.span`
-  font-family: var(--font-family-mono);
-  font-size: 0.78rem;
-  color: ${lightgrey};
-  opacity: 0.6;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 `;
 
 const Content = styled.div`
@@ -334,17 +318,19 @@ const BackButtonContainer = styled.div`
 `;
 
 const BackButton = styled.button`
-  padding: 0.5rem 1rem;
-  font-family: inherit;
-  font-size: 0.875rem;
+  width: 2.5rem;
+  height: 2.5rem;
   background: var(--color-btn-bg);
   color: ${lightgrey};
   border: 1px solid var(--color-btn-border);
   border-radius: 6px;
-  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   backdrop-filter: blur(10px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 
   &:hover {
     background: var(--color-btn-bg-hover);
@@ -358,13 +344,13 @@ const BackButton = styled.button`
   }
 
   @media (max-width: 768px) {
-    padding: 0.45rem 0.875rem;
-    font-size: 0.8rem;
+    width: 2.35rem;
+    height: 2.35rem;
   }
 
   @media (max-width: 480px) {
-    padding: 0.4rem 0.75rem;
-    font-size: 0.75rem;
+    width: 2.2rem;
+    height: 2.2rem;
   }
 `;
 
@@ -1057,14 +1043,7 @@ const PostDetailComponent = function PostDetail({
           <>
             <PostFrame>
               <Content>
-                <MarkdownContent
-                  content={markdownContent}
-                  metadataAfterH1={
-                    <TerminalBar>
-                      <TerminalTitle>brxstrng@blg:~/posts/{post.slug}.md</TerminalTitle>
-                    </TerminalBar>
-                  }
-                />
+                <MarkdownContent content={markdownContent} />
               </Content>
             </PostFrame>
 
@@ -1093,8 +1072,13 @@ const PostDetailComponent = function PostDetail({
         )}
 
         <BackButtonContainer>
-          <BackButton onClick={handleClick} onKeyDown={handleBackKeyDown}>
-            ← home
+          <BackButton
+            onClick={handleClick}
+            onKeyDown={handleBackKeyDown}
+            aria-label="Home"
+            title="Home"
+          >
+            <HomeRoundedIcon fontSize="small" />
           </BackButton>
           {isAdmin(user) && !isEditing && (
             <>

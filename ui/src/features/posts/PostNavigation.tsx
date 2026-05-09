@@ -7,11 +7,6 @@ import type { Font } from "three/examples/jsm/loaders/FontLoader";
 import { triggerMobileHapticFeedback } from "../../services/haptics";
 import { DARK_SCENE_THEME, LIGHT_SCENE_THEME } from "../../shared/theme/sceneColors";
 
-const navigationLabelColor = {
-  dark: 0x9ca3aa,
-  light: 0x707070,
-};
-
 interface FollowerSphereProps {
   offset: [number, number, number];
   onLeftClick?: () => void;
@@ -77,10 +72,10 @@ export default function FollowerSphere({
 
   const primarySolidMat = useMemo(
     () => new MeshBasicMaterial({
-      color: isDark ? navigationLabelColor.dark : navigationLabelColor.light,
+      color: colors.sphereArrowAccentColor,
       toneMapped: false,
     }),
-    [isDark],
+    [colors.sphereArrowAccentColor],
   );
   const labelBackdropMat = useMemo(
     () => new MeshBasicMaterial({
@@ -327,7 +322,7 @@ export default function FollowerSphere({
     leftArrowMesh.scale.setScalar(ls);
     leftArrowOutlineMesh.scale.setScalar(ls);
     leftArrowHitMesh.scale.setScalar(ls);
-    const leftHoverY = -0.30 - 0.20 * leftHoverT.current;
+    const leftHoverY = -0.30 - 0.10 * leftHoverT.current;
     leftArrowMesh.position.set(-1.4, leftHoverY, -1.29);
     leftArrowOutlineMesh.position.set(-1.4, leftHoverY, -1.29);
     leftArrowHitMesh.position.set(-1.4, leftHoverY, -1.29);
