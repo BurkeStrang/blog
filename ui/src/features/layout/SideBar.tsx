@@ -192,7 +192,7 @@ const SidebarTitle = styled.h2`
   font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: 0.02em;
-  color: var(--color-lightgrey);
+  color: var(--color-readable-lightgrey);
 
   @media (max-width: 480px) {
     font-size: 0.92rem;
@@ -445,7 +445,7 @@ const ProfileLabel = styled.span`
 const UserName = styled.span`
   font-family: var(--font-family-display);
   font-weight: 700;
-  color: var(--color-lightgrey);
+  color: var(--color-readable-lightgrey);
   font-size: 0.92rem;
   line-height: 1.3;
   white-space: nowrap;

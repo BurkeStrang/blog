@@ -122,7 +122,7 @@ const PostBackdrop = styled.div`
   pointer-events: none;
   z-index: 0;
 
-  --grid-size: 380px;
+  --grid-size: 480px;
 
   background-color: ${backgroundColor};
 
