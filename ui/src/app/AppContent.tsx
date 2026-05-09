@@ -57,7 +57,7 @@ const PersistentCanvasWrapper = styled.div<{ hidden: boolean }>`
   inset: 0;
   pointer-events: ${({ hidden }) => (hidden ? "none" : "auto")};
   opacity: ${({ hidden }) => (hidden ? 0 : 1)};
-  /* Removed transition for instant hiding */
+  transition: opacity 140ms ease-out;
 `;
 
 const AppContent: React.FC = memo(() => {

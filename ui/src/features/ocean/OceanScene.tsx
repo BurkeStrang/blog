@@ -49,6 +49,7 @@ function ThemeSky({ isDark }: { isDark: boolean }) {
   const skyRef = useRef<Sky | null>(null);
   const progressRef = useRef(isDark ? 0 : 1);
   const targetRef = useRef(isDark ? 0 : 1);
+  const skyTimeRef = useRef(0);
   targetRef.current = isDark ? 0 : 1;
 
   useEffect(() => {
@@ -67,8 +68,10 @@ function ThemeSky({ isDark }: { isDark: boolean }) {
   useFrame((state, delta) => {
     const sky = skyRef.current;
     if (!sky) return;
+    const safeDelta = Math.min(delta, 1 / 30);
 
-    progressRef.current = MathUtils.lerp(progressRef.current, targetRef.current, 1 - Math.pow(0.005, delta));
+    progressRef.current = MathUtils.lerp(progressRef.current, targetRef.current, 1 - Math.pow(0.005, safeDelta));
+    skyTimeRef.current = (skyTimeRef.current + safeDelta) % 600;
     const t = progressRef.current;
     const dark = DARK_SCENE_THEME.sky;
     const light = LIGHT_SCENE_THEME.sky;
@@ -85,7 +88,7 @@ function ThemeSky({ isDark }: { isDark: boolean }) {
     uniforms['cloudDensity'].value = MathUtils.lerp(dc.cloudDensity, lc.cloudDensity, t);
     uniforms['cloudElevation'].value = MathUtils.lerp(dc.cloudElevation, lc.cloudElevation, t);
     uniforms['showSunDisc'].value = MathUtils.lerp(dark.showSunDisc, light.showSunDisc, t);
-    uniforms['time'].value = state.clock.getElapsedTime();
+    uniforms['time'].value = skyTimeRef.current;
     state.gl.toneMappingExposure = MathUtils.lerp(dark.exposure, light.exposure, t);
 
     const elevation = MathUtils.lerp(dark.elevation, light.elevation, t);
@@ -694,9 +697,9 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
       const canvas = gl.domElement;
 
       gl.toneMapping = ACESFilmicToneMapping;
-      gl.toneMappingExposure = DARK_SCENE_THEME.sky.exposure;
+      gl.toneMappingExposure = colors.sky.exposure;
       gl.outputEncoding = LINEAR_ENCODING;
-      gl.setClearColor(DARK_SCENE_THEME.clearColor, 1);
+      gl.setClearColor(colors.clearColor, 1);
 
       // Consistent medium-high quality renderer settings
       gl.setPixelRatio(
@@ -800,7 +803,7 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
         }
       };
     };
-  }, []);
+  }, [colors.clearColor, colors.sky.exposure]);
 
   // Early return if resources aren't ready or posts is invalid
   if (

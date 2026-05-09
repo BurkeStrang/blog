@@ -14,6 +14,11 @@ const FixedHeader = styled(Header)`
   border-bottom: none;
 
   @media (max-width: 768px) {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    z-index: auto;
     padding-top: 1.5rem;
   }
 
@@ -28,8 +33,16 @@ const FixedContent = styled(Content)`
   overflow: hidden;
 
   @media (max-width: 768px) {
-    margin-top: 6rem;
-    height: calc(100vh - 6rem);
+    margin-top: 0.75rem;
+    height: calc(100vh - 5.25rem);
+    overflow-y: auto;
+    padding-bottom: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    margin-top: 0.25rem;
+    height: calc(100vh - 4.5rem);
+    padding-bottom: 0.75rem;
   }
 `;
 
@@ -99,15 +112,19 @@ const ContentBox = styled.div<{ $isDark: boolean }>`
       $isDark ? "var(--color-md-blockquote-border)" : "rgba(0, 0, 0, 0.12)"};
 
   @media (max-width: 768px) {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
     width: min(520px, calc(100vw - 5rem));
-    max-height: calc(100vh - 10rem);
+    max-height: none;
     border-radius: 12px;
+    margin: 0 auto;
   }
 
   @media (max-width: 480px) {
-    width: min(360px, calc(100vw - 3rem));
-    max-height: calc(100vh - 8rem);
-    padding: 1.1rem;
+    width: min(360px, calc(100vw - 2rem));
+    padding: 0.95rem;
     border-radius: 10px;
   }
 
@@ -135,6 +152,12 @@ const AboutSection = styled.section`
     gap: 0.85rem;
     justify-content: flex-start;
     padding: 0.25rem 0;
+    min-height: auto;
+  }
+
+  @media (max-width: 480px) {
+    gap: 0.6rem;
+    padding: 0;
   }
 `;
 
@@ -172,6 +195,8 @@ const LeadText = styled.p<{ $isDark: boolean }>`
   @media (max-width: 480px) {
     font-size: 0.92rem;
     max-width: 31ch;
+    line-height: 1.45;
+    margin: 0.7rem 0;
   }
 `;
 
@@ -191,6 +216,8 @@ const BodyText = styled.p<{ $isDark: boolean }>`
 
   @media (max-width: 480px) {
     max-width: 30ch;
+    line-height: 1.45;
+    margin: 0.7rem 0;
   }
 `;
 
@@ -217,9 +244,11 @@ const FocusList = styled.ul<{ $isDark: boolean }>`
 
   @media (max-width: 480px) {
     padding-left: 1.25rem;
+    margin: 0.85rem 0;
 
     li {
       font-size: 0.9rem;
+      margin: 0.3rem 0;
     }
   }
 `;
@@ -258,9 +287,10 @@ const CodeSnippet = styled.div<{ $isDark: boolean }>`
 
   @media (max-width: 480px) {
     padding: 0.6rem;
-    min-height: 100px;
-    height: 100px;
+    min-height: 84px;
+    height: 84px;
     font-size: 0.66rem;
+    margin-top: 0.4rem;
   }
 `;
 
