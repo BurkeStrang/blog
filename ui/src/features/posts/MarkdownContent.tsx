@@ -1,4 +1,5 @@
-import React, { useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
+import { compressToEncodedURIComponent } from 'lz-string';
 import ReactMarkdown from 'react-markdown';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import bash from 'react-syntax-highlighter/dist/esm/languages/prism/bash';
@@ -86,7 +87,6 @@ const MarkdownWrapper = styled.div`
     line-height: 1.05;
     margin: 3.5rem 0 0.7rem 0;
     padding-top: 1.6rem;
-    border-top: 3px solid var(--color-md-h2-border);
   }
 
   && h2::before {
@@ -815,6 +815,97 @@ const CodeBlockTab = styled.div`
   letter-spacing: 0.06em;
 `;
 
+const CodeIconButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--color-md-code-text);
+  cursor: pointer;
+  opacity: 0.18;
+  transition: opacity 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+
+  svg {
+    width: 0.95rem;
+    height: 0.95rem;
+    display: block;
+  }
+
+  &:hover {
+    opacity: 1;
+    color: var(--color-md-accent);
+    background: var(--color-md-accent-soft);
+    border-color: var(--color-md-accent-soft-strong);
+  }
+
+  &:focus-visible {
+    opacity: 1;
+    color: var(--color-md-accent);
+    outline: 2px solid var(--color-md-accent);
+    outline-offset: 2px;
+  }
+
+  &[data-active='true'] {
+    opacity: 1;
+    color: var(--color-md-accent);
+  }
+`;
+
+const CopyIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="9" y="9" width="11" height="11" rx="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
+const RunIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" aria-hidden="true">
+    <polygon points="6 4 20 12 6 20 6 4" />
+  </svg>
+);
+
+const ButtonRow = styled.div`
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  display: inline-flex;
+  gap: 0.25rem;
+`;
+
+const onecompilerLanguages: Record<string, string> = {
+  javascript: 'javascript',
+  python: 'python',
+  go: 'go',
+  csharp: 'csharp',
+  cpp: 'cpp',
+  bash: 'bash',
+  html: 'html',
+};
+
+const buildRunnerUrl = (language: string, code: string): string | null => {
+  if (language === 'typescript' || language === 'tsx') {
+    return `https://www.typescriptlang.org/play?#code/${compressToEncodedURIComponent(code)}`;
+  }
+  const slug = onecompilerLanguages[language];
+  return slug ? `https://onecompiler.com/${slug}` : null;
+};
+
+const runnerNeedsClipboard = (language: string): boolean => (
+  language !== 'typescript' && language !== 'tsx'
+);
+
 const langDisplay: Record<string, string> = {
   typescript: 'TS',
   javascript: 'JS',
@@ -861,6 +952,35 @@ const CodeBlock = React.memo(function CodeBlock({ children, language }: { childr
   const normalizedLanguage = React.useMemo(() => getNormalizedLanguage(language), [language]);
   const languageClassName = normalizedLanguage.replace(/[^a-z0-9_-]/g, '-');
   const tabLabel = langDisplay[normalizedLanguage] ?? normalizedLanguage.toUpperCase();
+  const [copied, setCopied] = useState(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(children);
+      setCopied(true);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
+  }, [children]);
+
+  React.useEffect(() => () => {
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+  }, []);
+
+  const runnerUrl = React.useMemo(
+    () => buildRunnerUrl(normalizedLanguage, children),
+    [normalizedLanguage, children],
+  );
+  const handleRun = useCallback(() => {
+    if (!runnerUrl) return;
+    if (runnerNeedsClipboard(normalizedLanguage)) {
+      void navigator.clipboard.writeText(children).catch(() => undefined);
+    }
+    window.open(runnerUrl, '_blank', 'noopener,noreferrer');
+  }, [children, normalizedLanguage, runnerUrl]);
 
   return (
     <CodeBlockWrapper>
@@ -869,6 +989,27 @@ const CodeBlock = React.memo(function CodeBlock({ children, language }: { childr
         <CodeBlockTab>{tabLabel}</CodeBlockTab>
         <CodeBlockTabFlare $side="right" />
       </CodeBlockTabRow>
+      <ButtonRow>
+        {runnerUrl && (
+          <CodeIconButton
+            type="button"
+            onClick={handleRun}
+            aria-label={`Open ${tabLabel} runner`}
+            title={`Open ${tabLabel} runner`}
+          >
+            <RunIcon />
+          </CodeIconButton>
+        )}
+        <CodeIconButton
+          type="button"
+          onClick={handleCopy}
+          data-active={copied}
+          aria-label={copied ? 'Copied' : 'Copy code'}
+          title={copied ? 'Copied' : 'Copy code'}
+        >
+          {copied ? <CheckIcon /> : <CopyIcon />}
+        </CodeIconButton>
+      </ButtonRow>
       <SyntaxHighlighter
         codeTagProps={{ className: `language-${languageClassName}` }}
         customStyle={{}}

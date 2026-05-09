@@ -3,7 +3,6 @@ name: Deploy to AKS
 on:
   push:
     branches: [master]
-    tags: ["v*"]
 
 env:
   RESOURCE_GROUP: rg-blog-prod
@@ -44,14 +43,7 @@ jobs:
 
       - name: Set shared env vars
         run: |
-          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
-          # Use the semver tag as the image tag when deploying from a tag push;
-          # fall back to the short commit SHA for branch-based deploys.
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            echo "IMAGE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          else
-            echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
-          fi
+          echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
           ACR_SERVER=$(az acr list --resource-group "$RESOURCE_GROUP" --query "[0].loginServer" -o tsv)
           echo "ACR_SERVER=$ACR_SERVER" >> $GITHUB_ENV
           az acr login --name "${ACR_SERVER%%.*}"
