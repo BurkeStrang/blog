@@ -75,85 +75,90 @@ const HamburgerContainer = styled.div`
   z-index: 210;
 `;
 
-const HamburgerBtn = styled.button<{ $open: boolean }>`
+const HamburgerBtn = styled.button<{ $open: boolean; $subtle: boolean }>`
   position: absolute;
   top: 1rem;
   left: 1rem;
-  width: 52px;
-  height: 52px;
+  width: ${({ $subtle }) => ($subtle ? "44px" : "52px")};
+  height: ${({ $subtle }) => ($subtle ? "44px" : "52px")};
   display: grid;
   place-items: center;
   background: transparent;
-  border: 1px solid color-mix(in srgb, var(--color-sidebar-link) 18%, transparent);
+  border: 1px solid
+    ${({ $subtle }) =>
+      $subtle
+        ? "color-mix(in srgb, var(--color-sidebar-link) 10%, transparent)"
+        : "color-mix(in srgb, var(--color-sidebar-link) 18%, transparent)"};
   color: var(--color-lightgrey);
   cursor: pointer;
-  font-size: 1.7rem;
+  font-size: ${({ $subtle }) => ($subtle ? "1.5rem" : "1.7rem")};
   padding: 0;
   transition:
     background-color 0.3s ease,
     color 0.3s ease,
     border-color 0.3s ease,
     opacity 0.2s ease;
-  border-radius: 14px;
+  border-radius: ${({ $subtle }) => ($subtle ? "12px" : "14px")};
   backface-visibility: hidden;
-  opacity: ${({ $open }) => ($open ? 0 : 1)};
+  opacity: ${({ $open, $subtle }) => ($open ? 0 : $subtle ? 0.38 : 1)};
   pointer-events: ${({ $open }) => ($open ? "none" : "auto")};
 
   &:hover {
     background: transparent;
     color: var(--color-primary);
     border-color: color-mix(in srgb, var(--color-sidebar-link) 28%, transparent);
+    opacity: ${({ $open }) => ($open ? 0 : 0.88)};
   }
 
   @media (max-height: 800px) {
     top: 0.6rem;
     left: 0.6rem;
-    width: 48px;
-    height: 48px;
+    width: ${({ $subtle }) => ($subtle ? "42px" : "48px")};
+    height: ${({ $subtle }) => ($subtle ? "42px" : "48px")};
     font-size: 1.55rem;
   }
 
   @media (max-height: 600px) {
     top: 0.4rem;
     left: 0.4rem;
-    width: 44px;
-    height: 44px;
+    width: ${({ $subtle }) => ($subtle ? "38px" : "44px")};
+    height: ${({ $subtle }) => ($subtle ? "38px" : "44px")};
     font-size: 1.35rem;
   }
 
   @media (max-height: 450px) {
     top: 0.25rem;
     left: 0.25rem;
-    width: 40px;
-    height: 40px;
+    width: ${({ $subtle }) => ($subtle ? "34px" : "40px")};
+    height: ${({ $subtle }) => ($subtle ? "34px" : "40px")};
     font-size: 1.2rem;
   }
 
   @media (max-width: 768px) {
     top: 0.7rem;
     left: 0.7rem;
-    width: 42px;
-    height: 42px;
-    font-size: 1.3rem;
-    border-radius: 12px;
+    width: ${({ $subtle }) => ($subtle ? "34px" : "42px")};
+    height: ${({ $subtle }) => ($subtle ? "34px" : "42px")};
+    font-size: ${({ $subtle }) => ($subtle ? "1.15rem" : "1.3rem")};
+    border-radius: ${({ $subtle }) => ($subtle ? "10px" : "12px")};
   }
 
   @media (max-width: 480px) {
     top: 0.45rem;
     left: 0.45rem;
-    width: 34px;
-    height: 34px;
-    font-size: 1.05rem;
-    border-radius: 10px;
+    width: ${({ $subtle }) => ($subtle ? "28px" : "34px")};
+    height: ${({ $subtle }) => ($subtle ? "28px" : "34px")};
+    font-size: ${({ $subtle }) => ($subtle ? "0.92rem" : "1.05rem")};
+    border-radius: ${({ $subtle }) => ($subtle ? "8px" : "10px")};
   }
 
   @media (max-width: 320px) {
     top: 0.35rem;
     left: 0.35rem;
-    width: 30px;
-    height: 30px;
-    font-size: 0.95rem;
-    border-radius: 9px;
+    width: ${({ $subtle }) => ($subtle ? "25px" : "30px")};
+    height: ${({ $subtle }) => ($subtle ? "25px" : "30px")};
+    font-size: ${({ $subtle }) => ($subtle ? "0.82rem" : "0.95rem")};
+    border-radius: ${({ $subtle }) => ($subtle ? "7px" : "9px")};
   }
 `;
 
@@ -480,6 +485,7 @@ const SidebarNav: React.FC<SidebarNavProps> = React.memo(({ onNavigateStart }) =
   const { theme, toggleTheme } = useTheme();
   const sidebarRef = useRef<HTMLElement>(null);
   const hamburgerRef = useRef<HTMLDivElement>(null);
+  const isDetailPage = /^\/posts\/[^/]+$/.test(location.pathname);
 
   // Close sidebar when clicking outside
   useEffect(() => {
@@ -524,7 +530,12 @@ const SidebarNav: React.FC<SidebarNavProps> = React.memo(({ onNavigateStart }) =
   return (
     <>
       <HamburgerContainer ref={hamburgerRef}>
-        <HamburgerBtn $open={open} aria-label="Toggle menu" onClick={() => setOpen(!open)}>
+        <HamburgerBtn
+          $open={open}
+          $subtle={isDetailPage}
+          aria-label="Toggle menu"
+          onClick={() => setOpen(!open)}
+        >
           <MenuRoundedIcon fontSize="inherit" />
         </HamburgerBtn>
       </HamburgerContainer>

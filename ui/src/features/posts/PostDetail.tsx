@@ -318,11 +318,11 @@ const BackButtonContainer = styled.div`
 `;
 
 const BackButton = styled.button`
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2rem;
+  height: 2rem;
   background: transparent;
   color: ${lightgrey};
-  border: 1px solid var(--color-btn-border);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -331,11 +331,13 @@ const BackButton = styled.button`
   align-items: center;
   justify-content: center;
   padding: 0;
+  opacity: 0.34;
 
   &:hover {
     background: transparent;
     border-color: ${accent};
     color: ${accent};
+    opacity: 0.88;
     transform: translateX(-2px);
   }
 
@@ -344,13 +346,13 @@ const BackButton = styled.button`
   }
 
   @media (max-width: 768px) {
-    width: 2rem;
-    height: 2rem;
+    width: 1.7rem;
+    height: 1.7rem;
   }
 
   @media (max-width: 480px) {
-    width: 1.8rem;
-    height: 1.8rem;
+    width: 1.45rem;
+    height: 1.45rem;
   }
 `;
 

@@ -81,7 +81,7 @@ export const DARK_SCENE_THEME: SceneTheme = {
     showSunDisc: 0,
   },
   clouds: {
-    cloudScale: 0.0006,
+    cloudScale: 0.0003,
     cloudCoverage: 0.41,
     cloudDensity: 0.69,
     cloudElevation: 0.1,
