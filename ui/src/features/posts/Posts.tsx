@@ -254,7 +254,7 @@ const PostsHeader = React.memo(function PostsHeader() {
   return (
     <>
       <Header>
-        <h1>BRXSTNG BLG</h1>
+        <h1>BRXSTRNG BLG</h1>
       </Header>
       <ControlsContainer>
         <SearchBarMemo />
