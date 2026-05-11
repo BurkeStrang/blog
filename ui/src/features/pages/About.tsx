@@ -311,7 +311,7 @@ const CodeSnippet = styled.div`
 
 const CodeTabRow = styled.div`
   position: absolute;
-  top: -1.7rem;
+  top: calc(-1.7rem + 1px);
   right: 1.25rem;
   display: inline-flex;
   align-items: flex-end;
@@ -323,8 +323,6 @@ const CodeTabFlare = styled.div<{ $side: "left" | "right" }>`
   height: 12px;
   margin-bottom: -4px;
   background: var(--color-md-code-bg);
-  backdrop-filter: blur(24px) saturate(145%);
-  -webkit-backdrop-filter: blur(24px) saturate(145%);
   ${({ $side }) =>
     $side === "left"
       ? `margin-right: -3px;
@@ -341,10 +339,7 @@ const CodeTab = styled.div`
   display: flex;
   align-items: center;
   background: var(--color-md-code-bg);
-  backdrop-filter: blur(24px) saturate(145%);
-  -webkit-backdrop-filter: blur(24px) saturate(145%);
   border-radius: 8px 8px 0 0;
-  box-shadow: 0 -10px 26px var(--color-md-code-shadow);
   font-family: var(--font-family-mono);
   font-size: 0.72rem;
   color: rgba(176, 179, 198, 0.75);

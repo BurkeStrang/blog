@@ -42,8 +42,11 @@ const MarkdownWrapper = styled.div`
   color: ${readableLightgrey};
   counter-reset: md-section;
 
-  /* Keep body content at a readable line length inside the wide frame */
-  & > * {
+  /* Keep prose at a readable line length, but let code blocks (and
+     other wide content like tables/images) span the full Article
+     width on larger screens. */
+  & > h1, & > h2, & > h3, & > h4, & > h5, & > h6,
+  & > p, & > ul, & > ol, & > blockquote, & > hr {
     max-width: 72ch;
   }
 
@@ -771,7 +774,7 @@ const CodeBlockWrapper = styled.div`
    to bottom so the tab and flares share the same baseline. */
 const CodeBlockTabRow = styled.div`
   position: absolute;
-  top: -1.7rem;
+  top: calc(-1.7rem + 1px);
   right: 1.25rem;
   display: inline-flex;
   align-items: flex-end;
@@ -780,14 +783,14 @@ const CodeBlockTabRow = styled.div`
 
 /* Each side flare is a single masked box: most of the flare is tab-bg (the
    tab visually widens at the bottom), with a small concave cutout near the
-   tab's bottom corner so the curve sweeps INTO the tab area rather than out. */
+   tab's bottom corner so the curve sweeps INTO the tab area rather than out.
+   No own backdrop-filter — they inherit the box's filtered look via the
+   solid background, which avoids a visible compositing seam at the join. */
 const CodeBlockTabFlare = styled.div<{ $side: 'left' | 'right' }>`
   width: 12px;
   height: 12px;
   margin-bottom: -4px;
   background: var(--color-md-code-bg);
-  backdrop-filter: blur(24px) saturate(145%);
-  -webkit-backdrop-filter: blur(24px) saturate(145%);
   ${({ $side }) =>
     $side === 'left'
       ? `margin-right: -3px;
@@ -798,15 +801,15 @@ const CodeBlockTabFlare = styled.div<{ $side: 'left' | 'right' }>`
          mask: radial-gradient(circle at 100% 0, transparent 8px, black 8.5px);`}
 `;
 
-/* The tab itself — visible filled rectangle with rounded top corners. */
+/* The tab itself — visible filled rectangle with rounded top corners.
+   No backdrop-filter here — the box owns the filter and the tab sits
+   on top, so adding another filter creates a visible seam at the bottom. */
 const CodeBlockTab = styled.div`
   height: 1.7rem;
   padding: 0 0.95rem;
   display: flex;
   align-items: center;
   background: var(--color-md-code-bg);
-  backdrop-filter: blur(24px) saturate(145%);
-  -webkit-backdrop-filter: blur(24px) saturate(145%);
   border-radius: 8px 8px 0 0;
   font-family: var(--font-family-mono);
   font-size: 0.72rem;
