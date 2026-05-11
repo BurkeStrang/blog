@@ -273,10 +273,18 @@ const CodeSnippet = styled.div<{ $isDark: boolean }>`
   display: flex;
   align-items: flex-start;
   box-sizing: border-box;
+  overflow: hidden;
   box-shadow:
     inset 0 1px 0 var(--color-md-code-glass-highlight),
     0 0 0 1px var(--color-md-code-inset),
     0 18px 40px rgba(0, 0, 0, 0.16);
+
+  pre {
+    width: 100%;
+    min-width: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
 
   @media (max-width: 768px) {
     padding: 0.85rem;

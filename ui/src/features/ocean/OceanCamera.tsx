@@ -10,8 +10,6 @@ interface ScrollCameraProps {
   stepSize: number;
   /** Position to move to when About route is active */
   aboutModePosition?: THREE.Vector3;
-  /** Rotation to apply when About route is active */
-  aboutModeRotation?: THREE.Euler;
   /** Programmatically set scroll to specific post index */
   scrollToIndex?: number;
   /** Maximum position index allowed on current page */
@@ -23,7 +21,6 @@ function ScrollCamera({
   lerpFactor,
   stepSize,
   aboutModePosition = new THREE.Vector3(-500, -5, -500),
-  aboutModeRotation = new THREE.Euler(0, 0.5, 0),
   scrollToIndex,
   maxPositionIndex,
 }: ScrollCameraProps) {
@@ -31,6 +28,13 @@ function ScrollCamera({
   const location = useLocation();
   const [scrollY, setScrollY] = useState(0);
   const [originalRotation] = useState(() => camera.rotation.clone());
+
+  // Sunset-flight state: a moving virtual target the camera chases.
+  // Direction is the dark-theme sun vector (elev 1.9°, az 158°).
+  const aboutTargetRef = useRef(new THREE.Vector3());
+  const aboutInitializedRef = useRef(false);
+  const lookAheadRef = useRef(new THREE.Vector3());
+  const flightDir = useRef(new THREE.Vector3(0.374, 0.033, -0.926).normalize());
 
   // Check if we're on the About route
   const isAboutRoute = location.pathname === "/about";
@@ -126,27 +130,35 @@ function ScrollCamera({
     }
   }, [scrollToIndex, positions.length, stepSize]);
 
-  useFrame(() => {
-    // If on About route, move to about position and rotation
+  useFrame((state, delta) => {
+    // About route: continuously fly toward the sunset.
+    // A virtual target advances along flightDir each frame and the
+    // camera lerps after it — the offset settles into equilibrium so
+    // forward motion is sustained indefinitely.
     if (isAboutRoute) {
-      camera.position.lerp(aboutModePosition, 0.009);
-      camera.rotation.x = THREE.MathUtils.lerp(
-        camera.rotation.x,
-        aboutModeRotation.x,
-        lerpFactor,
-      );
-      camera.rotation.y = THREE.MathUtils.lerp(
-        camera.rotation.y,
-        aboutModeRotation.y,
-        lerpFactor,
-      );
-      camera.rotation.z = THREE.MathUtils.lerp(
-        camera.rotation.z,
-        aboutModeRotation.z,
-        lerpFactor,
-      );
+      if (!aboutInitializedRef.current) {
+        aboutTargetRef.current.copy(aboutModePosition);
+        aboutInitializedRef.current = true;
+      }
+
+      const flightSpeed = 9; // world units / sec
+      aboutTargetRef.current.addScaledVector(flightDir.current, flightSpeed * delta);
+      camera.position.lerp(aboutTargetRef.current, 0.06);
+
+      // Look down the flight vector (toward the sunset on the horizon)
+      lookAheadRef.current
+        .copy(camera.position)
+        .addScaledVector(flightDir.current, 200);
+      camera.lookAt(lookAheadRef.current);
+
+      // Subtle bank + pitch wobble layered on top of lookAt
+      const t = state.clock.elapsedTime;
+      camera.rotation.z += Math.sin(t * 0.35) * 0.07;
+      camera.rotation.x += Math.sin(t * 0.22) * 0.018;
       return;
     }
+
+    aboutInitializedRef.current = false;
 
     // Restore original rotation when not in about mode
     camera.rotation.x = THREE.MathUtils.lerp(
