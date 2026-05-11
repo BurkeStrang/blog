@@ -262,7 +262,7 @@ const CodeSnippet = styled.div`
   border-radius: 12px;
   box-shadow: 0 10px 26px var(--color-md-code-shadow);
   padding: 0.85rem;
-  margin: 1.2rem 0 0;
+  margin: 0.4rem 0 0;
   max-width: 500px;
   min-width: 0;
   width: 100%;
@@ -288,7 +288,7 @@ const CodeSnippet = styled.div`
     min-height: 120px;
     height: 120px;
     font-size: 0.66rem;
-    margin: 0.95rem auto 0;
+    margin: 0.3rem auto 0;
   }
 
   @media (max-width: 480px) {
@@ -296,7 +296,7 @@ const CodeSnippet = styled.div`
     min-height: 84px;
     height: 84px;
     font-size: 0.6rem;
-    margin-top: 0.8rem;
+    margin-top: 0.25rem;
     border-radius: 6px;
   }
 
