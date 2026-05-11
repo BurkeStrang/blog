@@ -82,7 +82,7 @@ const ContentBox = styled.div<{ $isDark: boolean }>`
   ${blink}
 
   position: fixed;
-  top: 50%;
+  top: 44%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: min(940px, calc(100vw - 8rem));
@@ -418,7 +418,7 @@ const About: React.FC = () => {
     <>
       <Page style={{ overflow: "hidden" }}>
         <FixedHeader>
-          <h1>ABOUT ME</h1>
+          <h1>ABOUT | ME</h1>
         </FixedHeader>
         <FixedContent>
           <ContentBox $isDark={isDark}>
