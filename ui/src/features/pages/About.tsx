@@ -262,7 +262,7 @@ const CodeSnippet = styled.div`
   border-radius: 12px;
   box-shadow: 0 10px 26px var(--color-md-code-shadow);
   padding: 0.85rem;
-  margin: 2.2rem 0 0;
+  margin: 1.2rem 0 0;
   max-width: 500px;
   min-width: 0;
   width: 100%;
@@ -288,7 +288,7 @@ const CodeSnippet = styled.div`
     min-height: 120px;
     height: 120px;
     font-size: 0.66rem;
-    margin: 1.75rem auto 0;
+    margin: 0.95rem auto 0;
   }
 
   @media (max-width: 480px) {
@@ -296,7 +296,7 @@ const CodeSnippet = styled.div`
     min-height: 84px;
     height: 84px;
     font-size: 0.6rem;
-    margin-top: 1.5rem;
+    margin-top: 0.8rem;
     border-radius: 6px;
   }
 
@@ -340,6 +340,7 @@ const CodeTab = styled.div`
   backdrop-filter: blur(24px) saturate(145%);
   -webkit-backdrop-filter: blur(24px) saturate(145%);
   border-radius: 8px 8px 0 0;
+  box-shadow: 0 -10px 26px var(--color-md-code-shadow);
   font-family: var(--font-family-mono);
   font-size: 0.72rem;
   color: rgba(176, 179, 198, 0.75);
