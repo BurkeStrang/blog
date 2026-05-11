@@ -749,7 +749,30 @@ const PostDetailComponent = function PostDetail({
     return () => document.documentElement.classList.remove('detail-page');
   }, []);
 
-  // Scroll-reveal markdown blocks as they enter the Article viewport
+  // Stamp `data-reveal` before the first paint so the browser commits
+  // the initial opacity:0 state to a frame. Done in useLayoutEffect so
+  // the markup paints invisible *before* the observer (below) is even
+  // attached — otherwise both `data-reveal` and `data-revealed` can
+  // land in the same paint and the CSS transition never triggers.
+  React.useLayoutEffect(() => {
+    const root = articleRef.current;
+    if (!root || !post) return;
+
+    const target = root.querySelector('.markdown-body');
+    if (!target) return;
+
+    const elements = Array.from(target.children) as HTMLElement[];
+    if (elements.length === 0) return;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    elements.forEach((el) => {
+      el.dataset.reveal = '';
+      if (reduced) el.dataset.revealed = '';
+    });
+  }, [post]);
+
+  // Scroll-reveal markdown blocks as they enter the Article viewport.
+  // Runs post-paint so the initial opacity:0 frame is committed first.
   useEffect(() => {
     const root = articleRef.current;
     if (!root || !post) return;
@@ -761,12 +784,6 @@ const PostDetailComponent = function PostDetail({
     if (elements.length === 0) return;
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    elements.forEach((el) => {
-      el.dataset.reveal = '';
-      if (reduced) el.dataset.revealed = '';
-    });
-
     if (reduced) return;
 
     const observer = new IntersectionObserver(

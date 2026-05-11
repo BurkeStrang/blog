@@ -96,7 +96,7 @@ const ContentBox = styled.div<{ $isDark: boolean }>`
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-radius: 8px;
-  padding: clamp(1.4rem, 3vw, 2.4rem);
+  padding: clamp(1.15rem, 2.5vw, 2rem);
   overflow-y: auto;
   scrollbar-width: none;
   &::-webkit-scrollbar {
@@ -125,13 +125,13 @@ const ContentBox = styled.div<{ $isDark: boolean }>`
 
   @media (max-width: 480px) {
     max-width: 360px;
-    padding: 0.95rem;
+    padding: 0.8rem;
     border-radius: 10px;
   }
 
   @media (max-width: 360px) {
     max-width: none;
-    padding: 0.9rem;
+    padding: 0.75rem;
   }
 `;
 
@@ -146,18 +146,18 @@ const AboutSection = styled.section`
   justify-content: center;
   gap: 0;
   margin: 0 auto;
-  padding: 0.5rem 0;
+  padding: 0.4rem 0;
   box-sizing: border-box;
 
   @media (max-width: 768px) {
-    gap: 0.85rem;
+    gap: 0.7rem;
     justify-content: flex-start;
-    padding: 0.25rem 0;
+    padding: 0.2rem 0;
     min-height: auto;
   }
 
   @media (max-width: 480px) {
-    gap: 0.6rem;
+    gap: 0.5rem;
     padding: 0;
   }
 `;
@@ -176,7 +176,7 @@ const RoleLabel = styled.div<{ $isDark: boolean }>`
   letter-spacing: 0.04em;
   opacity: 0.9;
   padding: 0;
-  margin: 0 0 0.4rem 0;
+  margin: 0 0 0.3rem 0;
 `;
 
 const LeadText = styled.p<{ $isDark: boolean }>`
@@ -185,7 +185,7 @@ const LeadText = styled.p<{ $isDark: boolean }>`
   line-height: 1.8;
   text-align: left;
   max-width: 620px;
-  margin: 1.2rem 0;
+  margin: 1rem 0;
 
   @media (max-width: 768px) {
     font-size: 0.98rem;
@@ -197,7 +197,7 @@ const LeadText = styled.p<{ $isDark: boolean }>`
     font-size: 0.92rem;
     max-width: 31ch;
     line-height: 1.45;
-    margin: 0.7rem 0;
+    margin: 0.55rem 0;
   }
 `;
 
@@ -207,7 +207,7 @@ const BodyText = styled.p<{ $isDark: boolean }>`
   color: var(--color-readable-lightgrey);
   text-align: left;
   max-width: 600px;
-  margin: 1.2rem 0;
+  margin: 1rem 0;
 
   @media (max-width: 768px) {
     font-size: 0.92rem;
@@ -218,15 +218,15 @@ const BodyText = styled.p<{ $isDark: boolean }>`
   @media (max-width: 480px) {
     max-width: 30ch;
     line-height: 1.45;
-    margin: 0.7rem 0;
+    margin: 0.55rem 0;
   }
 `;
 
 const FocusList = styled.ul<{ $isDark: boolean }>`
   display: block;
   list-style: disc;
-  padding-left: 2rem;
-  margin: 1.5rem 0;
+  padding-left: 1.65rem;
+  margin: 1.2rem 0;
   max-width: 620px;
   text-align: left;
 
@@ -235,7 +235,7 @@ const FocusList = styled.ul<{ $isDark: boolean }>`
     padding: 0;
     font-size: 1.05rem;
     line-height: 1.6;
-    margin: 0.5rem 0;
+    margin: 0.4rem 0;
     white-space: normal;
   }
 
@@ -244,40 +244,37 @@ const FocusList = styled.ul<{ $isDark: boolean }>`
   }
 
   @media (max-width: 480px) {
-    padding-left: 1.25rem;
-    margin: 0.85rem 0;
+    padding-left: 1rem;
+    margin: 0.7rem 0;
 
     li {
       font-size: 0.9rem;
-      margin: 0.3rem 0;
+      margin: 0.25rem 0;
     }
   }
 `;
 
-const CodeSnippet = styled.div<{ $isDark: boolean }>`
-  background: ${({ $isDark }) =>
-    $isDark ? "var(--color-md-code-bg)" : "rgba(255, 255, 255, 0.72)"};
-  border: 1px solid var(--color-md-code-border);
-  border-radius: 8px;
-  padding: 1rem;
-  margin: 1.5rem 0 0;
+const CodeSnippet = styled.div`
+  position: relative;
+  background: var(--color-md-code-bg);
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+  border-radius: 12px;
+  box-shadow: 0 10px 26px var(--color-md-code-shadow);
+  padding: 0.85rem;
+  margin: 2.2rem 0 0;
   max-width: 500px;
   min-width: 0;
   width: 100%;
   min-height: 180px;
   height: 180px;
   font-family: var(--font-family-mono);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--color-md-code-text);
   text-align: left;
   display: flex;
   align-items: flex-start;
   box-sizing: border-box;
-  overflow: hidden;
-  box-shadow:
-    inset 0 1px 0 var(--color-md-code-glass-highlight),
-    0 0 0 1px var(--color-md-code-inset),
-    0 18px 40px rgba(0, 0, 0, 0.16);
 
   pre {
     width: 100%;
@@ -287,20 +284,67 @@ const CodeSnippet = styled.div<{ $isDark: boolean }>`
   }
 
   @media (max-width: 768px) {
-    padding: 0.85rem;
+    padding: 0.7rem;
     min-height: 120px;
     height: 120px;
-    font-size: 0.72rem;
-    margin: 0.75rem auto 0;
+    font-size: 0.66rem;
+    margin: 1.75rem auto 0;
   }
 
   @media (max-width: 480px) {
-    padding: 0.6rem;
+    padding: 0.5rem;
     min-height: 84px;
     height: 84px;
-    font-size: 0.66rem;
-    margin-top: 0.4rem;
+    font-size: 0.6rem;
+    margin-top: 1.5rem;
+    border-radius: 6px;
   }
+
+  @media (max-width: 390px) {
+    border-radius: 8px;
+  }
+`;
+
+const CodeTabRow = styled.div`
+  position: absolute;
+  top: -1.7rem;
+  right: 1.25rem;
+  display: inline-flex;
+  align-items: flex-end;
+  z-index: 2;
+`;
+
+const CodeTabFlare = styled.div<{ $side: "left" | "right" }>`
+  width: 12px;
+  height: 12px;
+  margin-bottom: -4px;
+  background: var(--color-md-code-bg);
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+  ${({ $side }) =>
+    $side === "left"
+      ? `margin-right: -3px;
+         -webkit-mask: radial-gradient(circle at 0 0, transparent 8px, black 8.5px);
+         mask: radial-gradient(circle at 0 0, transparent 8px, black 8.5px);`
+      : `margin-left: -3px;
+         -webkit-mask: radial-gradient(circle at 100% 0, transparent 8px, black 8.5px);
+         mask: radial-gradient(circle at 100% 0, transparent 8px, black 8.5px);`}
+`;
+
+const CodeTab = styled.div`
+  height: 1.7rem;
+  padding: 0 0.95rem;
+  display: flex;
+  align-items: center;
+  background: var(--color-md-code-bg);
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+  border-radius: 8px 8px 0 0;
+  font-family: var(--font-family-mono);
+  font-size: 0.72rem;
+  color: rgba(176, 179, 198, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 `;
 
 const Cursor = styled.span<{ $isDark: boolean }>`
@@ -340,7 +384,12 @@ const AnimatedCodeSnippet = React.memo(function AnimatedCodeSnippet({ isDark }: 
   }, [currentIndex, isMobile]);
 
   return (
-    <CodeSnippet $isDark={isDark}>
+    <CodeSnippet>
+      <CodeTabRow>
+        <CodeTabFlare $side="left" />
+        <CodeTab>wk</CodeTab>
+        <CodeTabFlare $side="right" />
+      </CodeTabRow>
       <pre style={{ margin: 0, fontFamily: "inherit" }}>
         {displayedCode}
         {currentIndex < fullCode.length && (
