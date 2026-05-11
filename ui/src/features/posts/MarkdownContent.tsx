@@ -90,7 +90,7 @@ const MarkdownWrapper = styled.div`
     font-weight: 700;
     letter-spacing: -0.04em;
     line-height: 1.05;
-    margin: 3.5rem 0 0.7rem 0;
+    margin: 2.2rem 0 0.5em 0;
     padding-top: 1.6rem;
     padding-left: 1.5em;
     text-indent: -1.5em;
@@ -405,8 +405,10 @@ const MarkdownWrapper = styled.div`
       margin-bottom: 1.25rem;
     }
 
-    h2 {
+    && h2 {
       font-size: 1.5rem;
+      margin: 1.6rem 0 0.5rem 0;
+      padding-top: 0.6rem;
     }
 
     h3 {
@@ -436,9 +438,10 @@ const MarkdownWrapper = styled.div`
       margin: 1rem 0;
     }
 
-    h2 {
+    && h2 {
       font-size: 1.375rem;
-      margin: 1.75rem 0 0.75rem 0;
+      margin: 1.25rem 0 0.45rem 0;
+      padding-top: 0.45rem;
     }
 
     h3 {
@@ -487,9 +490,10 @@ const MarkdownWrapper = styled.div`
       margin: 0.75rem 0;
     }
 
-    h2 {
+    && h2 {
       font-size: 1.25rem;
-      margin: 1.5rem 0 0.75rem 0;
+      margin: 1rem 0 0.4rem 0;
+      padding-top: 0.35rem;
     }
 
     h3 {
