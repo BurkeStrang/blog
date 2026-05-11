@@ -82,10 +82,10 @@ const ContentBox = styled.div<{ $isDark: boolean }>`
   ${blink}
 
   position: fixed;
-  top: 44%;
+  top: 47%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(940px, calc(100vw - 8rem));
+  width: min(820px, calc(100vw - 12rem));
   max-height: calc(100vh - 6rem);
   box-sizing: border-box;
 
@@ -96,7 +96,7 @@ const ContentBox = styled.div<{ $isDark: boolean }>`
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-radius: 8px;
-  padding: clamp(1.15rem, 2.5vw, 2rem);
+  padding: clamp(1.15rem, 3vw, 2.8rem);
   overflow-y: auto;
   scrollbar-width: none;
   &::-webkit-scrollbar {
@@ -263,13 +263,13 @@ const CodeSnippet = styled.div`
   box-shadow: 0 10px 26px var(--color-md-code-shadow);
   padding: 0.7rem 0.85rem;
   margin: 0.4rem 0 0;
-  max-width: 420px;
+  max-width: 440px;
   min-width: 0;
   width: 100%;
-  min-height: 130px;
-  height: 130px;
+  min-height: 150px;
+  height: 150px;
   font-family: var(--font-family-mono);
-  font-size: 0.72rem;
+  font-size: 0.88rem;
   line-height: 1.4;
   color: var(--color-md-code-text);
   text-align: left;
@@ -418,7 +418,7 @@ const About: React.FC = () => {
     <>
       <Page style={{ overflow: "hidden" }}>
         <FixedHeader>
-          <h1>ABOUT | ME</h1>
+          <h1>ABOUTME</h1>
         </FixedHeader>
         <FixedContent>
           <ContentBox $isDark={isDark}>
