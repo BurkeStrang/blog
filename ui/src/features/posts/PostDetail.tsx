@@ -121,7 +121,7 @@ const PostBackdrop = styled.div`
   pointer-events: none;
   z-index: 0;
 
-  --grid-size: 480px;
+  --grid-size: 280px;
 
   background-color: ${backgroundColor};
 
@@ -141,8 +141,21 @@ const PostBackdrop = styled.div`
     var(--grid-size) var(--grid-size),
     auto;
 
+  [data-theme="dark"] & {
+    background-image:
+      linear-gradient(rgba(0, 220, 200, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 220, 200, 0.07) 1px, transparent 1px),
+      repeating-linear-gradient(
+        to bottom,
+        rgba(0, 220, 200, 0.012) 0,
+        rgba(0, 220, 200, 0.012) 1px,
+        transparent 1px,
+        transparent 5px
+      );
+  }
+
   @media (max-width: 700px) {
-    --grid-size: 220px;
+    --grid-size: 80px;
   }
 `;
 

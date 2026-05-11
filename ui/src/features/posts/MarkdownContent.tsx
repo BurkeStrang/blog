@@ -42,11 +42,10 @@ const MarkdownWrapper = styled.div`
   color: ${readableLightgrey};
   counter-reset: md-section;
 
-  /* Keep prose at a readable line length, but let code blocks (and
-     other wide content like tables/images) span the full Article
-     width on larger screens. */
-  & > h1, & > h2, & > h3, & > h4, & > h5, & > h6,
-  & > p, & > ul, & > ol, & > blockquote, & > hr {
+  /* Keep headers narrow so they stack/wrap predictably, but let
+     everything else (paragraphs, lists, code, tables, images, etc.)
+     span the full Article width on larger screens. */
+  & > h1, & > h2, & > h3, & > h4, & > h5, & > h6 {
     max-width: 72ch;
   }
 
@@ -556,8 +555,8 @@ const languageAliases: Record<string, string> = {
   'c++': 'cpp',
   cs: 'csharp',
   cxx: 'cpp',
-  javascript: 'typescript',
-  js: 'typescript',
+  javascript: 'javascript',
+  js: 'javascript',
   jsx: 'typescript',
   htm: 'html',
   ts: 'typescript',
