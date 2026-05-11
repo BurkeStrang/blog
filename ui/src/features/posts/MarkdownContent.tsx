@@ -81,7 +81,10 @@ const MarkdownWrapper = styled.div`
 
   && h1 br { line-height: 0; }
 
-  /* H2 — section break with auto-numbered "0X /" prefix in mono cyan */
+  /* H2 — section break with auto-numbered "0X /" prefix in mono cyan.
+     Hanging-indent so wrapped lines align with the heading text rather
+     than with the prefix. padding-left + negative text-indent shifts
+     only the first line back over the prefix. */
   && h2 {
     font-size: clamp(1.6rem, 3.4vw, 2.4rem);
     font-weight: 700;
@@ -89,6 +92,9 @@ const MarkdownWrapper = styled.div`
     line-height: 1.05;
     margin: 3.5rem 0 0.7rem 0;
     padding-top: 1.6rem;
+    padding-left: 1.5em;
+    text-indent: -1.5em;
+    max-width: 28ch;
   }
 
   && h2::before {

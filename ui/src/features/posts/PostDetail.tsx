@@ -121,7 +121,7 @@ const PostBackdrop = styled.div`
   pointer-events: none;
   z-index: 0;
 
-  --grid-size: 280px;
+  --grid-size: 180px;
 
   background-color: ${backgroundColor};
 
@@ -155,7 +155,7 @@ const PostBackdrop = styled.div`
   }
 
   @media (max-width: 700px) {
-    --grid-size: 80px;
+    --grid-size: 30px;
   }
 `;
 
