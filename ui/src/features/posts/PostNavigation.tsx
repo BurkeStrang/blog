@@ -136,7 +136,7 @@ export default function FollowerSphere({
   const rightArrowHitMesh = useMemo(() => {
     const m = new Mesh(new PlaneGeometry(1.5, 1.5), hitboxMat);
     m.name = "rightArrow";
-    m.position.set(1.9, -0.08, 0.35);
+    m.position.set(2.80, -0.45, -0.30);
     m.rotation.set(1.43, 1.27, 1.42);
     return m;
   }, [hitboxMat]);
@@ -171,7 +171,7 @@ export default function FollowerSphere({
   const rightArrowOutlineMesh = useMemo(() => {
     const m = new Mesh(rightGeo, greenOutlineMat);
     m.name = "rightArrow-outline";
-    m.position.set(1.9, -0.08, 0.35);
+    m.position.set(2.80, -0.45, -0.30);
     m.rotation.set(1.43, 1.27, 1.42);
     m.visible = false;
     return m;
@@ -180,7 +180,7 @@ export default function FollowerSphere({
   const rightArrowMesh = useMemo(() => {
     const m = new Mesh(rightGeo, greyOutlineMat);
     m.name = "rightArrow";
-    m.position.set(1.9, -0.08, 0.35);
+    m.position.set(2.80, -0.45, -0.30);
     m.rotation.set(1.43, 1.27, 1.42);
     m.scale.set(1.04, 1.04, 1.04);
     return m;
