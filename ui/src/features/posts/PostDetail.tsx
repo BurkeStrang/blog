@@ -156,18 +156,18 @@ const PostBackdrop = styled.div`
 
   @media (max-width: 700px) {
     --grid-size: 40px;
-  [data-theme="dark"] & {
-    background-image:
-      linear-gradient(rgba(0, 220, 200, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 220, 200, 0.03) 1px, transparent 1px),
-      repeating-linear-gradient(
-        to bottom,
-        rgba(0, 220, 200, 0.012) 0,
-        rgba(0, 220, 200, 0.012) 1px,
-        transparent 1px,
-        transparent 5px
-      );
-  }
+    [data-theme="dark"] & {
+      background-image:
+        linear-gradient(rgba(0, 220, 200, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 220, 200, 0.03) 1px, transparent 1px),
+        repeating-linear-gradient(
+          to bottom,
+          rgba(0, 220, 200, 0.012) 0,
+          rgba(0, 220, 200, 0.012) 1px,
+          transparent 1px,
+          transparent 5px
+        );
+    }
 `;
 
 const Content = styled.div`
