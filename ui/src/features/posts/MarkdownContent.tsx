@@ -367,7 +367,7 @@ const MarkdownWrapper = styled.div`
   hr {
     border: none;
     border-top: 2px solid var(--color-md-hr);
-    margin: 3rem 0;
+    margin: 2rem 0;
   }
 
   /* Images */
@@ -421,6 +421,10 @@ const MarkdownWrapper = styled.div`
       padding: 0.75rem 1rem;
       margin: 1.5rem 0;
     }
+
+    hr {
+      margin: 1.75rem 0;
+    }
   }
 
   @media (max-width: 480px) {
@@ -467,6 +471,10 @@ const MarkdownWrapper = styled.div`
 
     th, td {
       padding: 0.5rem 0.75rem;
+    }
+
+    hr {
+      margin: 1.25rem 0;
     }
   }
 
@@ -519,6 +527,10 @@ const MarkdownWrapper = styled.div`
 
     img {
       margin: 1.5rem 0;
+    }
+
+    hr {
+      margin: 1rem 0;
     }
   }
 
