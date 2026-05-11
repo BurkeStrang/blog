@@ -116,20 +116,21 @@ const ContentBox = styled.div<{ $isDark: boolean }>`
     top: auto;
     left: auto;
     transform: none;
-    width: min(520px, calc(100vw - 5rem));
+    width: 100%;
+    max-width: 520px;
     max-height: none;
     border-radius: 12px;
     margin: 0 auto;
   }
 
   @media (max-width: 480px) {
-    width: min(360px, calc(100vw - 2rem));
+    max-width: 360px;
     padding: 0.95rem;
     border-radius: 10px;
   }
 
   @media (max-width: 360px) {
-    width: calc(100vw - 2.5rem);
+    max-width: none;
     padding: 0.9rem;
   }
 `;
