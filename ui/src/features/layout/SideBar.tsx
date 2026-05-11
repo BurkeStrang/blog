@@ -84,12 +84,9 @@ const HamburgerBtn = styled.button<{ $open: boolean; $subtle: boolean }>`
   display: grid;
   place-items: center;
   background: transparent;
-  border: 1px solid
-    ${({ $subtle }) =>
-      $subtle
-        ? "color-mix(in srgb, var(--color-sidebar-link) 10%, transparent)"
-        : "color-mix(in srgb, var(--color-sidebar-link) 18%, transparent)"};
-  color: var(--color-lightgrey);
+  border: 1px solid transparent;
+  outline: none;
+  color: var(--color-readable-lightgrey);
   cursor: pointer;
   font-size: ${({ $subtle }) => ($subtle ? "1.5rem" : "1.7rem")};
   padding: 0;
@@ -103,7 +100,9 @@ const HamburgerBtn = styled.button<{ $open: boolean; $subtle: boolean }>`
   opacity: ${({ $open, $subtle }) => ($open ? 0 : $subtle ? 0.38 : 1)};
   pointer-events: ${({ $open }) => ($open ? "none" : "auto")};
 
-  &:hover {
+  &:hover,
+  &:focus-visible,
+  &:active {
     background: transparent;
     color: var(--color-primary);
     border-color: color-mix(in srgb, var(--color-sidebar-link) 28%, transparent);

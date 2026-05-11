@@ -12,7 +12,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import { MarkdownContent } from "./MarkdownContent";
 
 const Article = styled.article`
@@ -314,45 +313,6 @@ const BackButtonContainer = styled.div`
     gap: 0.5rem;
     flex-direction: column;
     align-items: flex-start;
-  }
-`;
-
-const BackButton = styled.button`
-  width: 2rem;
-  height: 2rem;
-  background: transparent;
-  color: ${lightgrey};
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  opacity: 0.34;
-
-  &:hover {
-    background: transparent;
-    border-color: ${accent};
-    color: ${accent};
-    opacity: 0.88;
-    transform: translateX(-2px);
-  }
-
-  &:active {
-    transform: translateX(0);
-  }
-
-  @media (max-width: 768px) {
-    width: 1.7rem;
-    height: 1.7rem;
-  }
-
-  @media (max-width: 480px) {
-    width: 1.45rem;
-    height: 1.45rem;
   }
 `;
 
@@ -933,33 +893,6 @@ const PostDetailComponent = function PostDetail({
     setShowDeleteConfirm(false);
   }, []);
 
-  const closePostDetail = React.useCallback(() => {
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
-    handleClose();
-  }, [handleClose]);
-
-  const handleClick = React.useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      closePostDetail();
-    },
-    [closePostDetail],
-  );
-
-  const handleBackKeyDown = React.useCallback(
-    (e: React.KeyboardEvent<HTMLButtonElement>) => {
-      if (e.key !== "Enter" && e.key !== " ") return;
-
-      e.preventDefault();
-      e.stopPropagation();
-      closePostDetail();
-    },
-    [closePostDetail],
-  );
-
   // Toggle comments expanded state
   const toggleComments = React.useCallback(() => {
     setCommentsExpanded((prev) => !prev);
@@ -1073,28 +1006,18 @@ const PostDetailComponent = function PostDetail({
           </>
         )}
 
-        <BackButtonContainer>
-          <BackButton
-            onClick={handleClick}
-            onKeyDown={handleBackKeyDown}
-            aria-label="Home"
-            title="Home"
-          >
-            <HomeRoundedIcon fontSize="small" />
-          </BackButton>
-          {isAdmin(user) && !isEditing && (
-            <>
-              <EditButton onClick={handleEdit}>
-                <EditIcon />
-                Edit
-              </EditButton>
-              <DeleteButton onClick={handleDelete}>
-                <DeleteIcon />
-                Delete
-              </DeleteButton>
-            </>
-          )}
-        </BackButtonContainer>
+        {isAdmin(user) && !isEditing && (
+          <BackButtonContainer>
+            <EditButton onClick={handleEdit}>
+              <EditIcon />
+              Edit
+            </EditButton>
+            <DeleteButton onClick={handleDelete}>
+              <DeleteIcon />
+              Delete
+            </DeleteButton>
+          </BackButtonContainer>
+        )}
 
         {/* Delete Confirmation Dialog */}
         {showDeleteConfirm && (
