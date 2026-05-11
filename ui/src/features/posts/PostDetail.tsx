@@ -121,7 +121,7 @@ const PostBackdrop = styled.div`
   pointer-events: none;
   z-index: 0;
 
-  --grid-size: 180px;
+  --grid-size: 100px;
 
   background-color: ${backgroundColor};
 
@@ -143,8 +143,8 @@ const PostBackdrop = styled.div`
 
   [data-theme="dark"] & {
     background-image:
-      linear-gradient(rgba(0, 220, 200, 0.07) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 220, 200, 0.07) 1px, transparent 1px),
+      linear-gradient(rgba(0, 220, 200, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 220, 200, 0.06) 1px, transparent 1px),
       repeating-linear-gradient(
         to bottom,
         rgba(0, 220, 200, 0.012) 0,
@@ -155,7 +155,18 @@ const PostBackdrop = styled.div`
   }
 
   @media (max-width: 700px) {
-    --grid-size: 30px;
+    --grid-size: 40px;
+  [data-theme="dark"] & {
+    background-image:
+      linear-gradient(rgba(0, 220, 200, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 220, 200, 0.03) 1px, transparent 1px),
+      repeating-linear-gradient(
+        to bottom,
+        rgba(0, 220, 200, 0.012) 0,
+        rgba(0, 220, 200, 0.012) 1px,
+        transparent 1px,
+        transparent 5px
+      );
   }
 `;
 
@@ -622,7 +633,7 @@ const ConfirmDeleteButton = styled.button`
 
 const CommentsCollapse = styled.div<{ $expanded: boolean }>`
   width: 100%;
-  display: ${({ $expanded }) => ($expanded ? 'block' : 'none')};
+  display: ${({ $expanded }) => ($expanded ? "block" : "none")};
 `;
 
 const CommentsToggleButton = styled.button`
@@ -707,19 +718,21 @@ const PostDetailComponent = function PostDetail({
   }, [allPosts, slug]);
   const hasTrackedRef = useRef<string | null>(null);
   const articleRef = useRef<HTMLElement>(null);
-  const scrollbarTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scrollbarTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   // Toggle scrollbar visibility imperatively via a class on the Article so
   // scroll/touch/wheel events don't trigger React re-renders of PostDetail.
   const showScrollbarTemporarily = React.useCallback(() => {
     const el = articleRef.current;
     if (!el) return;
-    el.classList.add('scrollbar-visible');
+    el.classList.add("scrollbar-visible");
     if (scrollbarTimeoutRef.current) {
       clearTimeout(scrollbarTimeoutRef.current);
     }
     scrollbarTimeoutRef.current = setTimeout(() => {
-      articleRef.current?.classList.remove('scrollbar-visible');
+      articleRef.current?.classList.remove("scrollbar-visible");
       scrollbarTimeoutRef.current = null;
     }, 3000);
   }, []);
@@ -727,7 +740,7 @@ const PostDetailComponent = function PostDetail({
   // Reset local comment count when post changes
   React.useEffect(() => {
     setLocalCommentCount(undefined);
-    articleRef.current?.classList.remove('scrollbar-visible');
+    articleRef.current?.classList.remove("scrollbar-visible");
   }, [post?.id]);
 
   useEffect(() => {
@@ -758,8 +771,8 @@ const PostDetailComponent = function PostDetail({
   }, [slug]);
 
   React.useLayoutEffect(() => {
-    document.documentElement.classList.add('detail-page');
-    return () => document.documentElement.classList.remove('detail-page');
+    document.documentElement.classList.add("detail-page");
+    return () => document.documentElement.classList.remove("detail-page");
   }, []);
 
   // Stamp `data-reveal` before the first paint so the browser commits
@@ -771,16 +784,18 @@ const PostDetailComponent = function PostDetail({
     const root = articleRef.current;
     if (!root || !post) return;
 
-    const target = root.querySelector('.markdown-body');
+    const target = root.querySelector(".markdown-body");
     if (!target) return;
 
     const elements = Array.from(target.children) as HTMLElement[];
     if (elements.length === 0) return;
 
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     elements.forEach((el) => {
-      el.dataset.reveal = '';
-      if (reduced) el.dataset.revealed = '';
+      el.dataset.reveal = "";
+      if (reduced) el.dataset.revealed = "";
     });
   }, [post]);
 
@@ -790,25 +805,27 @@ const PostDetailComponent = function PostDetail({
     const root = articleRef.current;
     if (!root || !post) return;
 
-    const target = root.querySelector('.markdown-body');
+    const target = root.querySelector(".markdown-body");
     if (!target) return;
 
     const elements = Array.from(target.children) as HTMLElement[];
     if (elements.length === 0) return;
 
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     if (reduced) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            (entry.target as HTMLElement).dataset.revealed = '';
+            (entry.target as HTMLElement).dataset.revealed = "";
             observer.unobserve(entry.target);
           }
         }
       },
-      { root, threshold: 0.08, rootMargin: '0px 0px -60px 0px' },
+      { root, threshold: 0.08, rootMargin: "0px 0px -60px 0px" },
     );
 
     elements.forEach((el) => observer.observe(el));
@@ -820,20 +837,24 @@ const PostDetailComponent = function PostDetail({
     const el = articleRef.current;
     if (!el) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === 'ArrowDown') {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
+      if (e.key === "ArrowDown") {
         e.preventDefault();
         showScrollbarTemporarily();
-        el.scrollBy({ top: 120, behavior: 'smooth' });
+        el.scrollBy({ top: 120, behavior: "smooth" });
       }
-      if (e.key === 'ArrowUp') {
+      if (e.key === "ArrowUp") {
         e.preventDefault();
         showScrollbarTemporarily();
-        el.scrollBy({ top: -120, behavior: 'smooth' });
+        el.scrollBy({ top: -120, behavior: "smooth" });
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showScrollbarTemporarily]);
 
   if (!post) {
@@ -929,12 +950,15 @@ const PostDetailComponent = function PostDetail({
   }, []);
 
   // Called when comments finish loading — sync count into local state and parent allPosts
-  const handleCommentsLoad = React.useCallback((total: number) => {
-    setLocalCommentCount(total);
-    if (post?.id !== undefined && total !== post.commentCount) {
-      onCommentCountChange?.(post.id, total);
-    }
-  }, [post?.id, post?.commentCount, onCommentCountChange]);
+  const handleCommentsLoad = React.useCallback(
+    (total: number) => {
+      setLocalCommentCount(total);
+      if (post?.id !== undefined && total !== post.commentCount) {
+        onCommentCountChange?.(post.id, total);
+      }
+    },
+    [post?.id, post?.commentCount, onCommentCountChange],
+  );
 
   // Get the display comment count (local override or original)
   const displayCommentCount = localCommentCount ?? post?.commentCount ?? 0;
