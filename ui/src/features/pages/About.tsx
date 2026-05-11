@@ -261,15 +261,16 @@ const CodeSnippet = styled.div`
   -webkit-backdrop-filter: blur(24px) saturate(145%);
   border-radius: 12px;
   box-shadow: 0 10px 26px var(--color-md-code-shadow);
-  padding: 0.85rem;
+  padding: 0.7rem 0.85rem;
   margin: 0.4rem 0 0;
-  max-width: 500px;
+  max-width: 420px;
   min-width: 0;
   width: 100%;
-  min-height: 180px;
-  height: 180px;
+  min-height: 130px;
+  height: 130px;
   font-family: var(--font-family-mono);
-  font-size: 0.85rem;
+  font-size: 0.72rem;
+  line-height: 1.4;
   color: var(--color-md-code-text);
   text-align: left;
   display: flex;
@@ -279,6 +280,7 @@ const CodeSnippet = styled.div`
   pre {
     width: 100%;
     min-width: 0;
+    line-height: inherit;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
@@ -288,6 +290,7 @@ const CodeSnippet = styled.div`
     min-height: 120px;
     height: 120px;
     font-size: 0.66rem;
+    line-height: 1.35;
     margin: 0.3rem auto 0;
   }
 
@@ -295,7 +298,8 @@ const CodeSnippet = styled.div`
     padding: 0.5rem;
     min-height: 84px;
     height: 84px;
-    font-size: 0.6rem;
+    font-size: 0.55rem;
+    line-height: 1.3;
     margin-top: 0.25rem;
     border-radius: 6px;
   }
