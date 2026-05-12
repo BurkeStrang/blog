@@ -4,7 +4,7 @@ FROM node:26-alpine AS builder
 WORKDIR /app
 
 # Install pnpm (must match package.json#packageManager)
-RUN npm install -g pnpm@11.0.8
+RUN npm install -g pnpm@11.1.1
 
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
