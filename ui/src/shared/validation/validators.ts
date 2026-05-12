@@ -82,6 +82,8 @@ export const validateStringLength = (
 export interface Post {
   id?: number;
   slug: string;
+  previous?: string;
+  next?: string;
   title: string;
   body: string;
   author: string;
@@ -156,6 +158,40 @@ export const validatePost = (post: unknown): ValidationError[] => {
       message: 'must be a non-negative number',
       value: p.recentViews,
     });
+  }
+
+  if (p.previous !== undefined) {
+    if (!isString(p.previous)) {
+      errors.push({ field: 'previous', message: 'must be a string', value: p.previous });
+    } else {
+      const previousError = validateStringLength(p.previous, 'previous', 0, 100);
+      if (previousError) errors.push(previousError);
+
+      if (p.previous.length > 0 && !isValidSlug(p.previous)) {
+        errors.push({
+          field: 'previous',
+          message: 'must contain only lowercase letters, numbers, and hyphens',
+          value: p.previous,
+        });
+      }
+    }
+  }
+
+  if (p.next !== undefined) {
+    if (!isString(p.next)) {
+      errors.push({ field: 'next', message: 'must be a string', value: p.next });
+    } else {
+      const nextError = validateStringLength(p.next, 'next', 0, 100);
+      if (nextError) errors.push(nextError);
+
+      if (p.next.length > 0 && !isValidSlug(p.next)) {
+        errors.push({
+          field: 'next',
+          message: 'must contain only lowercase letters, numbers, and hyphens',
+          value: p.next,
+        });
+      }
+    }
   }
   
   return errors;

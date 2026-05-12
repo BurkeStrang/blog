@@ -7,21 +7,23 @@ import (
 
 // CosmosPost represents a blog post in Cosmos DB
 type CosmosPost struct {
-	ID          string    `json:"id"`
-	Type        string    `json:"type"` // "post" for type discrimination
-	Slug        string    `json:"slug"`
-	Title       string    `json:"title"`
-	Body        string    `json:"body"`
-	Author      string    `json:"author"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-	
+	ID        string    `json:"id"`
+	Type      string    `json:"type"` // "post" for type discrimination
+	Slug      string    `json:"slug"`
+	Previous  string    `json:"previous,omitempty"`
+	Next      string    `json:"next,omitempty"`
+	Title     string    `json:"title"`
+	Body      string    `json:"body"`
+	Author    string    `json:"author"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+
 	// Analytics (embedded for API compatibility)
-	PageViews   int       `json:"pageViews"`
-	RecentViews int       `json:"recentViews"`
+	PageViews   int        `json:"pageViews"`
+	RecentViews int        `json:"recentViews"`
 	LastViewed  *time.Time `json:"lastViewed,omitempty"`
 	FirstViewed *time.Time `json:"firstViewed,omitempty"`
-	
+
 	// Comment count field (computed)
 	CommentCount int `json:"commentCount"`
 }
@@ -29,24 +31,24 @@ type CosmosPost struct {
 // CosmosComment represents a comment in Cosmos DB
 type CosmosComment struct {
 	ID        string    `json:"id"`
-	Type      string    `json:"type"` // "comment" for type discrimination
+	Type      string    `json:"type"`   // "comment" for type discrimination
 	PostID    string    `json:"postId"` // Partition key
 	Content   string    `json:"content"`
 	Author    string    `json:"author"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
-	
+
 	// Reply functionality
-	ParentID  *string   `json:"parentId,omitempty"`
-	
+	ParentID *string `json:"parentId,omitempty"`
+
 	// Like count
-	LikeCount int       `json:"likeCount"`
+	LikeCount int `json:"likeCount"`
 }
 
 // CosmosCommentLike represents a like on a comment in Cosmos DB
 type CosmosCommentLike struct {
 	ID        string    `json:"id"`
-	Type      string    `json:"type"` // "comment_like" for type discrimination
+	Type      string    `json:"type"`   // "comment_like" for type discrimination
 	PostID    string    `json:"postId"` // Partition key (same as comment)
 	CommentID string    `json:"commentId"`
 	Username  string    `json:"username"`
@@ -77,14 +79,14 @@ type CosmosUserPreferences struct {
 
 // CosmosPostAnalytics represents analytics events in Cosmos DB
 type CosmosPostAnalytics struct {
-	ID          string    `json:"id"`
-	Type        string    `json:"type"` // "analytics" for type discrimination
-	PostID      string    `json:"postId"` // Partition key
-	PostSlug    string    `json:"postSlug"`
-	ViewedAt    time.Time `json:"viewedAt"`
-	UserAgent   string    `json:"userAgent,omitempty"`
-	IPAddress   string    `json:"ipAddress,omitempty"`
-	Referrer    string    `json:"referrer,omitempty"`
+	ID        string    `json:"id"`
+	Type      string    `json:"type"`   // "analytics" for type discrimination
+	PostID    string    `json:"postId"` // Partition key
+	PostSlug  string    `json:"postSlug"`
+	ViewedAt  time.Time `json:"viewedAt"`
+	UserAgent string    `json:"userAgent,omitempty"`
+	IPAddress string    `json:"ipAddress,omitempty"`
+	Referrer  string    `json:"referrer,omitempty"`
 }
 
 // Helper methods to convert between GORM and Cosmos models
@@ -95,6 +97,8 @@ func (p *Post) ToCosmosPost() *CosmosPost {
 		ID:           fmt.Sprintf("post-%d", p.ID),
 		Type:         "post",
 		Slug:         p.Slug,
+		Previous:     p.Previous,
+		Next:         p.Next,
 		Title:        p.Title,
 		Body:         p.Body,
 		Author:       p.Author,
@@ -113,10 +117,12 @@ func (cp *CosmosPost) ToPost() *Post {
 	// Extract numeric ID from string ID
 	var id uint
 	fmt.Sscanf(cp.ID, "post-%d", &id)
-	
+
 	return &Post{
 		ID:           id,
 		Slug:         cp.Slug,
+		Previous:     cp.Previous,
+		Next:         cp.Next,
 		Title:        cp.Title,
 		Body:         cp.Body,
 		Author:       cp.Author,
@@ -137,7 +143,7 @@ func (c *Comment) ToCosmosComment() *CosmosComment {
 		parentIDStr := fmt.Sprintf("comment-%d", *c.ParentID)
 		parentID = &parentIDStr
 	}
-	
+
 	return &CosmosComment{
 		ID:        fmt.Sprintf("comment-%d", c.ID),
 		Type:      "comment",
@@ -202,7 +208,7 @@ func (u *User) ToCosmosUser() *CosmosUser {
 func (cu *CosmosUser) ToUser() *User {
 	var id uint
 	fmt.Sscanf(cu.ID, "user-%d", &id)
-	
+
 	return &User{
 		ID:        id,
 		Username:  cu.Username,

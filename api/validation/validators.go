@@ -14,8 +14,8 @@ import (
 
 // ValidationError represents a validation error
 type ValidationError struct {
-	Field   string `json:"field"`
-	Message string `json:"message"`
+	Field   string      `json:"field"`
+	Message string      `json:"message"`
 	Value   interface{} `json:"value,omitempty"`
 }
 
@@ -30,7 +30,7 @@ func (e ValidationErrors) Error() string {
 	if len(e) == 0 {
 		return "no validation errors"
 	}
-	
+
 	var messages []string
 	for _, err := range e {
 		messages = append(messages, err.Error())
@@ -44,6 +44,30 @@ var (
 	emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	urlRegex   = regexp.MustCompile(`^https?://[^\s]+$`)
 )
+
+func validateOptionalSlug(field string, value string) *ValidationError {
+	if value == "" {
+		return nil
+	}
+
+	if len(value) > 100 {
+		return &ValidationError{
+			Field:   field,
+			Message: fmt.Sprintf("%s must be less than 100 characters", field),
+			Value:   value,
+		}
+	}
+
+	if !slugRegex.MatchString(value) {
+		return &ValidationError{
+			Field:   field,
+			Message: fmt.Sprintf("%s must contain only lowercase letters, numbers, and hyphens", field),
+			Value:   value,
+		}
+	}
+
+	return nil
+}
 
 // ValidatePost validates a blog post (for creation)
 func ValidatePost(post *models.Post) ValidationErrors {
@@ -113,6 +137,14 @@ func ValidatePost(post *models.Post) ValidationErrors {
 			Message: "author must be less than 100 characters",
 			Value:   post.Author,
 		})
+	}
+
+	if validationErr := validateOptionalSlug("previous", post.Previous); validationErr != nil {
+		errors = append(errors, *validationErr)
+	}
+
+	if validationErr := validateOptionalSlug("next", post.Next); validationErr != nil {
+		errors = append(errors, *validationErr)
 	}
 
 	return errors
@@ -190,6 +222,14 @@ func ValidatePostUpdate(post *models.Post) ValidationErrors {
 			Message: "recent views cannot be negative",
 			Value:   post.RecentViews,
 		})
+	}
+
+	if validationErr := validateOptionalSlug("previous", post.Previous); validationErr != nil {
+		errors = append(errors, *validationErr)
+	}
+
+	if validationErr := validateOptionalSlug("next", post.Next); validationErr != nil {
+		errors = append(errors, *validationErr)
 	}
 
 	return errors
@@ -323,15 +363,15 @@ func SanitizeHTML(input string) string {
 	// Remove script tags and their content
 	scriptRegex := regexp.MustCompile(`(?i)<script[^>]*>.*?</script>`)
 	input = scriptRegex.ReplaceAllString(input, "")
-	
+
 	// Remove potentially dangerous attributes
 	onEventRegex := regexp.MustCompile(`(?i)\s+on\w+\s*=\s*[^>]*`)
 	input = onEventRegex.ReplaceAllString(input, "")
-	
+
 	// Remove javascript: links
 	jsLinkRegex := regexp.MustCompile(`(?i)javascript:\s*[^"'>\s]*`)
 	input = jsLinkRegex.ReplaceAllString(input, "")
-	
+
 	return input
 }
 
@@ -347,7 +387,7 @@ func ValidateJSON(data []byte) error {
 // ValidateStringLength validates string length with UTF-8 awareness
 func ValidateStringLength(value string, fieldName string, minLength, maxLength int) *ValidationError {
 	length := utf8.RuneCountInString(value)
-	
+
 	if length < minLength {
 		return &ValidationError{
 			Field:   fieldName,
@@ -355,7 +395,7 @@ func ValidateStringLength(value string, fieldName string, minLength, maxLength i
 			Value:   length,
 		}
 	}
-	
+
 	if length > maxLength {
 		return &ValidationError{
 			Field:   fieldName,
@@ -363,7 +403,7 @@ func ValidateStringLength(value string, fieldName string, minLength, maxLength i
 			Value:   length,
 		}
 	}
-	
+
 	return nil
 }
 
@@ -372,7 +412,7 @@ func ValidateURL(urlStr string, fieldName string) *ValidationError {
 	if urlStr == "" {
 		return nil // Allow empty URLs if optional
 	}
-	
+
 	parsed, err := url.Parse(urlStr)
 	if err != nil {
 		return &ValidationError{
@@ -381,7 +421,7 @@ func ValidateURL(urlStr string, fieldName string) *ValidationError {
 			Value:   urlStr,
 		}
 	}
-	
+
 	// Only allow http and https schemes
 	if parsed.Scheme != "http" && parsed.Scheme != "https" {
 		return &ValidationError{
@@ -390,14 +430,14 @@ func ValidateURL(urlStr string, fieldName string) *ValidationError {
 			Value:   parsed.Scheme,
 		}
 	}
-	
+
 	return nil
 }
 
 // ValidateTimeRange validates that time values are reasonable
 func ValidateTimeRange(timeValue time.Time, fieldName string) *ValidationError {
 	now := time.Now()
-	
+
 	// Don't allow times more than 10 years in the future
 	if timeValue.After(now.AddDate(10, 0, 0)) {
 		return &ValidationError{
@@ -406,7 +446,7 @@ func ValidateTimeRange(timeValue time.Time, fieldName string) *ValidationError {
 			Value:   timeValue,
 		}
 	}
-	
+
 	// Don't allow times more than 100 years in the past
 	if timeValue.Before(now.AddDate(-100, 0, 0)) {
 		return &ValidationError{
@@ -415,14 +455,14 @@ func ValidateTimeRange(timeValue time.Time, fieldName string) *ValidationError {
 			Value:   timeValue,
 		}
 	}
-	
+
 	return nil
 }
 
 // ValidateSearchQuery validates search query parameters
 func ValidateSearchQuery(query string) ValidationErrors {
 	var errors ValidationErrors
-	
+
 	if len(query) > 200 {
 		errors = append(errors, ValidationError{
 			Field:   "query",
@@ -430,7 +470,7 @@ func ValidateSearchQuery(query string) ValidationErrors {
 			Value:   len(query),
 		})
 	}
-	
+
 	// Check for potentially malicious patterns
 	maliciousPatterns := []string{
 		"<script",
@@ -440,7 +480,7 @@ func ValidateSearchQuery(query string) ValidationErrors {
 		"onload",
 		"onerror",
 	}
-	
+
 	lowerQuery := strings.ToLower(query)
 	for _, pattern := range maliciousPatterns {
 		if strings.Contains(lowerQuery, pattern) {
@@ -452,6 +492,6 @@ func ValidateSearchQuery(query string) ValidationErrors {
 			break
 		}
 	}
-	
+
 	return errors
 }

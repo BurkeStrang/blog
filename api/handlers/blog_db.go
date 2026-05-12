@@ -424,6 +424,8 @@ func CreatePostDB(c *gin.Context) {
 	post.Title = validation.SanitizeHTML(post.Title)
 	post.Body = validation.SanitizeHTML(post.Body)
 	post.Slug = validation.SanitizeHTML(post.Slug)
+	post.Previous = validation.SanitizeHTML(post.Previous)
+	post.Next = validation.SanitizeHTML(post.Next)
 
 	// Get user from context (set by auth middleware) - must be set before validation
 	if userI, exists := c.Get("user"); exists {
@@ -590,6 +592,8 @@ func UpdatePostDB(c *gin.Context) {
 	updateData.Title = validation.SanitizeHTML(updateData.Title)
 	updateData.Body = validation.SanitizeHTML(updateData.Body)
 	updateData.Slug = validation.SanitizeHTML(updateData.Slug)
+	updateData.Previous = validation.SanitizeHTML(updateData.Previous)
+	updateData.Next = validation.SanitizeHTML(updateData.Next)
 
 	// Validate post data (using update validation which doesn't require author)
 	if validationErrors := validation.ValidatePostUpdate(&updateData); len(validationErrors) > 0 {
@@ -614,6 +618,8 @@ func UpdatePostDB(c *gin.Context) {
 	if !updateData.CreatedAt.IsZero() {
 		existingPost.CreatedAt = updateData.CreatedAt
 	}
+	existingPost.Previous = updateData.Previous
+	existingPost.Next = updateData.Next
 	existingPost.UpdatedAt = time.Now().UTC()
 
 	// Update in Cosmos DB

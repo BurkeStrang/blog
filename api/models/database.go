@@ -6,17 +6,19 @@ import (
 
 // Post represents a blog post (for API compatibility with Cosmos DB)
 type Post struct {
-	ID          uint      `json:"id"`
-	Slug        string    `json:"slug"`
-	Title       string    `json:"title"`
-	Body        string    `json:"body"`
-	Author      string    `json:"author"`
-	CreatedAt   time.Time `json:"date"`
-	UpdatedAt   time.Time `json:"-"`
+	ID        uint      `json:"id"`
+	Slug      string    `json:"slug"`
+	Previous  string    `json:"previous,omitempty"`
+	Next      string    `json:"next,omitempty"`
+	Title     string    `json:"title"`
+	Body      string    `json:"body"`
+	Author    string    `json:"author"`
+	CreatedAt time.Time `json:"date"`
+	UpdatedAt time.Time `json:"-"`
 
 	// Analytics (embedded for API compatibility)
-	PageViews   int       `json:"pageViews"`
-	RecentViews int       `json:"recentViews"`
+	PageViews   int        `json:"pageViews"`
+	RecentViews int        `json:"recentViews"`
 	LastViewed  *time.Time `json:"lastViewed,omitempty"`
 	FirstViewed *time.Time `json:"firstViewed,omitempty"`
 
@@ -34,13 +36,13 @@ type Comment struct {
 	UpdatedAt time.Time `json:"-"`
 
 	// Reply functionality
-	ParentID  *uint     `json:"parent_id,omitempty"`
+	ParentID *uint `json:"parent_id,omitempty"`
 
 	// Like count
-	LikeCount int       `json:"like_count"`
+	LikeCount int `json:"like_count"`
 
 	// Cosmos DB ID (for reference)
-	CosmosID  string    `json:"cosmos_id,omitempty"`
+	CosmosID string `json:"cosmos_id,omitempty"`
 }
 
 // CommentLike represents a like on a comment
@@ -65,12 +67,12 @@ type User struct {
 
 // PostAnalytics represents detailed analytics for posts
 type PostAnalytics struct {
-	ID          uint      `json:"id"`
-	PostSlug    string    `json:"post_slug"`
-	ViewedAt    time.Time `json:"viewed_at"`
-	UserAgent   string    `json:"user_agent,omitempty"`
-	IPAddress   string    `json:"ip_address,omitempty"`
-	Referrer    string    `json:"referrer,omitempty"`
+	ID        uint      `json:"id"`
+	PostSlug  string    `json:"post_slug"`
+	ViewedAt  time.Time `json:"viewed_at"`
+	UserAgent string    `json:"user_agent,omitempty"`
+	IPAddress string    `json:"ip_address,omitempty"`
+	Referrer  string    `json:"referrer,omitempty"`
 }
 
 // Legacy compatibility types for analytics service

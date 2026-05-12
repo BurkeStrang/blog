@@ -31,6 +31,8 @@ const NotFound = lazy(() =>
 export interface Post {
   id?: number;
   slug: string;
+  previous?: string;
+  next?: string;
   title: string;
   body: string;
   position?: Vector3;

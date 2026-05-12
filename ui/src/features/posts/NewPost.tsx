@@ -188,6 +188,8 @@ const NewPost: React.FC<NewPostProps> = ({ onPostsChange }) => {
   const [form, setForm] = useState({
     title: "",
     slug: "",
+    previous: "",
+    next: "",
     body: "",
     date: new Date().toISOString().split("T")[0],
   });
@@ -230,6 +232,8 @@ const NewPost: React.FC<NewPostProps> = ({ onPostsChange }) => {
       const postData = {
         title: form.title,
         slug: form.slug,
+        previous: form.previous || undefined,
+        next: form.next || undefined,
         body: form.body,
         date: form.date ? new Date(form.date) : undefined,
       };
@@ -291,6 +295,28 @@ const NewPost: React.FC<NewPostProps> = ({ onPostsChange }) => {
             type="date"
             value={form.date}
             onChange={(e) => handleChange("date", e.target.value)}
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <Label htmlFor="previous">Previous Post Slug</Label>
+          <Input
+            id="previous"
+            type="text"
+            value={form.previous}
+            onChange={(e) => handleChange("previous", e.target.value)}
+            placeholder="optional-previous-post-slug"
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <Label htmlFor="next">Next Post Slug</Label>
+          <Input
+            id="next"
+            type="text"
+            value={form.next}
+            onChange={(e) => handleChange("next", e.target.value)}
+            placeholder="optional-next-post-slug"
           />
         </FormGroup>
 

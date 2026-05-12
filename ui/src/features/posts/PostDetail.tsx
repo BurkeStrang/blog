@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, Navigate } from "react-router-dom";
+import { useNavigate, useParams, Navigate } from "react-router-dom";
 import { Post } from "../../app/AppContent";
 import styled from "styled-components";
 import { backgroundColor, lightgrey, accent } from "../../shared/theme/colors";
@@ -12,6 +12,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { MarkdownContent } from "./MarkdownContent";
 
 const Article = styled.article`
@@ -683,6 +685,141 @@ const CommentsToggleButton = styled.button`
   }
 `;
 
+const PostSeriesNav = styled.nav`
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 2rem 0 0;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const SeriesNavSpacer = styled.div`
+  display: none;
+
+  @media (min-width: 601px) {
+    display: block;
+  }
+`;
+
+const SeriesNavButton = styled.button<{ $align: "left" | "right" }>`
+  width: 100%;
+  min-height: 4.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--color-comment-border);
+  border-radius: 12px;
+  background: var(--color-comment-bg);
+  color: ${lightgrey};
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  text-align: ${({ $align }) => $align};
+
+  &:hover {
+    background: var(--color-comment-bg-hover);
+    border-color: ${accent};
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.15);
+    color: ${accent};
+  }
+`;
+
+const SeriesNavText = styled.span`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+`;
+
+const SeriesNavLabel = styled.span`
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.7;
+`;
+
+const SeriesNavSlug = styled.span`
+  font-size: 0.95rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+`;
+
+const NAV_LABEL_MAX_LENGTH = 44;
+
+const SLUG_WORD_REPLACEMENTS: Record<string, string> = {
+  api: "API",
+  css: "CSS",
+  db: "DB",
+  go: "Go",
+  html: "HTML",
+  ii: "II",
+  iii: "III",
+  iv: "IV",
+  javascript: "JavaScript",
+  jwt: "JWT",
+  oauth: "OAuth",
+  react: "React",
+  sql: "SQL",
+  typescript: "TypeScript",
+  ui: "UI",
+  url: "URL",
+  ux: "UX",
+  vite: "Vite",
+};
+
+const titleCaseSlugToken = (token: string): string => {
+  const normalized = token.toLowerCase();
+  const replacement = SLUG_WORD_REPLACEMENTS[normalized];
+  if (replacement) {
+    return replacement;
+  }
+
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+};
+
+const formatSlugLabel = (slug: string): string => {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map(titleCaseSlugToken)
+    .join(" ");
+};
+
+const truncateNavLabel = (label: string, maxLength = NAV_LABEL_MAX_LENGTH): string => {
+  if (label.length <= maxLength) {
+    return label;
+  }
+
+  const words = label.split(/\s+/);
+  let truncated = "";
+
+  for (const word of words) {
+    const candidate = truncated ? `${truncated} ${word}` : word;
+    if (candidate.length > maxLength - 1) {
+      break;
+    }
+    truncated = candidate;
+  }
+
+  if (!truncated) {
+    return `${label.slice(0, maxLength - 1).trimEnd()}…`;
+  }
+
+  return `${truncated}…`;
+};
+
+const getSeriesNavLabel = (targetSlug: string, allPosts: Post[]): string => {
+  const linkedPost = allPosts.find((candidate) => candidate.slug === targetSlug);
+  const sourceLabel = linkedPost?.title?.trim() || formatSlugLabel(targetSlug);
+  return truncateNavLabel(sourceLabel);
+};
+
 interface PostDetailProps {
   allPosts: Post[];
   handleClose: () => void;
@@ -696,6 +833,7 @@ const PostDetailComponent = function PostDetail({
   onPostsChange,
   onCommentCountChange,
 }: PostDetailProps) {
+  const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
   const { trackPostView } = usePostsData();
   const { user, loginWithGoogle } = useAuth();
@@ -704,6 +842,8 @@ const PostDetailComponent = function PostDetail({
     title: "",
     body: "",
     slug: "",
+    previous: "",
+    next: "",
     date: "",
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -768,6 +908,10 @@ const PostDetailComponent = function PostDetail({
     return () => {
       hasTrackedRef.current = null;
     };
+  }, [slug]);
+
+  useEffect(() => {
+    articleRef.current?.scrollTo({ top: 0, behavior: "auto" });
   }, [slug]);
 
   React.useLayoutEffect(() => {
@@ -874,6 +1018,8 @@ const PostDetailComponent = function PostDetail({
       title: post.title,
       body: post.body,
       slug: post.slug,
+      previous: post.previous ?? "",
+      next: post.next ?? "",
       date: post.date ? new Date(post.date).toISOString().split("T")[0] : "",
     });
     setIsEditing(true);
@@ -881,7 +1027,7 @@ const PostDetailComponent = function PostDetail({
 
   const handleCancelEdit = React.useCallback(() => {
     setIsEditing(false);
-    setEditForm({ title: "", body: "", slug: "", date: "" });
+    setEditForm({ title: "", body: "", slug: "", previous: "", next: "", date: "" });
   }, []);
 
   const handleSave = React.useCallback(
@@ -895,6 +1041,8 @@ const PostDetailComponent = function PostDetail({
           title: editForm.title,
           body: editForm.body,
           slug: editForm.slug,
+          previous: editForm.previous || undefined,
+          next: editForm.next || undefined,
           date: editForm.date ? new Date(editForm.date) : undefined,
         };
 
@@ -962,6 +1110,19 @@ const PostDetailComponent = function PostDetail({
 
   // Get the display comment count (local override or original)
   const displayCommentCount = localCommentCount ?? post?.commentCount ?? 0;
+  const previousSlug = post.previous?.trim();
+  const nextSlug = post.next?.trim();
+  const previousLabel = previousSlug
+    ? getSeriesNavLabel(previousSlug, allPosts)
+    : null;
+  const nextLabel = nextSlug ? getSeriesNavLabel(nextSlug, allPosts) : null;
+
+  const handleSeriesNavigation = React.useCallback(
+    (targetSlug: string) => {
+      navigate(`/posts/${targetSlug}`);
+    },
+    [navigate],
+  );
 
   return (
     <>
@@ -1005,6 +1166,28 @@ const PostDetailComponent = function PostDetail({
                 type="date"
                 value={editForm.date}
                 onChange={(e) => handleFormChange("date", e.target.value)}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label htmlFor="previous">Previous Post Slug</Label>
+              <Input
+                id="previous"
+                type="text"
+                value={editForm.previous}
+                onChange={(e) => handleFormChange("previous", e.target.value)}
+                placeholder="optional-previous-post-slug"
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label htmlFor="next">Next Post Slug</Label>
+              <Input
+                id="next"
+                type="text"
+                value={editForm.next}
+                onChange={(e) => handleFormChange("next", e.target.value)}
+                placeholder="optional-next-post-slug"
               />
             </FormGroup>
 
@@ -1057,6 +1240,44 @@ const PostDetailComponent = function PostDetail({
                 onCommentsLoad={handleCommentsLoad}
               />
             </CommentsCollapse>
+
+            {(previousSlug || nextSlug) && (
+              <PostSeriesNav aria-label="Post navigation">
+                {previousSlug ? (
+                  <SeriesNavButton
+                    type="button"
+                    $align="left"
+                    onClick={() => handleSeriesNavigation(previousSlug)}
+                    title={previousLabel ?? previousSlug}
+                  >
+                    <ArrowBackIcon />
+                    <SeriesNavText>
+                      <SeriesNavLabel>Previous</SeriesNavLabel>
+                      <SeriesNavSlug>{previousLabel}</SeriesNavSlug>
+                    </SeriesNavText>
+                  </SeriesNavButton>
+                ) : (
+                  <SeriesNavSpacer aria-hidden="true" />
+                )}
+
+                {nextSlug ? (
+                  <SeriesNavButton
+                    type="button"
+                    $align="right"
+                    onClick={() => handleSeriesNavigation(nextSlug)}
+                    title={nextLabel ?? nextSlug}
+                  >
+                    <SeriesNavText>
+                      <SeriesNavLabel>Next</SeriesNavLabel>
+                      <SeriesNavSlug>{nextLabel}</SeriesNavSlug>
+                    </SeriesNavText>
+                    <ArrowForwardIcon />
+                  </SeriesNavButton>
+                ) : (
+                  <SeriesNavSpacer aria-hidden="true" />
+                )}
+              </PostSeriesNav>
+            )}
           </>
         )}
 

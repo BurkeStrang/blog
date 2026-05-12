@@ -295,7 +295,7 @@ class ApiService {
   }
 
   // Admin post management endpoints
-  async createPost(post: { title: string; body: string; slug: string; date?: Date }): Promise<Post> {
+  async createPost(post: { title: string; body: string; slug: string; previous?: string; next?: string; date?: Date }): Promise<Post> {
     if (!this.checkTokenValidity()) {
       throw new Error('Authentication required');
     }
@@ -310,7 +310,7 @@ class ApiService {
     });
   }
 
-  async updatePost(id: string, post: { title: string; body: string; slug: string; date?: Date }): Promise<Post> {
+  async updatePost(id: string, post: { title: string; body: string; slug: string; previous?: string; next?: string; date?: Date }): Promise<Post> {
     if (!this.checkTokenValidity()) {
       throw new Error('Authentication required');
     }
