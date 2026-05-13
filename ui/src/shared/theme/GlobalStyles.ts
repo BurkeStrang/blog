@@ -370,26 +370,26 @@ export const Header = styled.header`
   [data-theme="light"] & h1 {
     color: color-mix(in srgb, var(--color-readable-lightgrey) 60%, transparent);
     text-shadow:
-      0 0.05em 0.14em rgba(28, 31, 46, 0.3),
-      0 0.16em 0.34em rgba(28, 31, 46, 0.16),
-      0 0.36em 0.9em rgba(28, 31, 46, 0.04);
+      0 0.05em 0.14em rgba(28, 31, 46, 0.28),
+      0 0.18em 0.4em rgba(28, 31, 46, 0.08),
+      0 0.42em 1em rgba(28, 31, 46, 0.015);
   }
 
   @media (max-width: 768px) {
     [data-theme="light"] & h1 {
       text-shadow:
-        0 0.05em 0.13em rgba(28, 31, 46, 0.28),
-        0 0.14em 0.3em rgba(28, 31, 46, 0.14),
-        0 0.32em 0.8em rgba(28, 31, 46, 0.03);
+        0 0.05em 0.13em rgba(28, 31, 46, 0.26),
+        0 0.16em 0.35em rgba(28, 31, 46, 0.07),
+        0 0.36em 0.9em rgba(28, 31, 46, 0.012);
     }
   }
 
   @media (max-width: 480px) {
     [data-theme="light"] & h1 {
       text-shadow:
-        0 0.04em 0.05em rgba(28, 31, 46, 0.4),
-        0 0.11em 0.2em rgba(28, 31, 46, 0.15),
-        0 0.26em 0.65em rgba(28, 31, 46, 0.03);
+        0 0.04em 0.06em rgba(28, 31, 46, 0.36),
+        0 0.12em 0.22em rgba(28, 31, 46, 0.09),
+        0 0.28em 0.7em rgba(28, 31, 46, 0.02);
     }
   }
 
