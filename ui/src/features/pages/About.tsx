@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useLayoutEffect } from "react";
+import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
+import javascript from "react-syntax-highlighter/dist/esm/languages/prism/javascript";
 import { Page, Header, Content } from "../../shared/theme/GlobalStyles";
 import { useTheme } from "../../shared/contexts/ThemeContext";
 import styled from "styled-components";
+
+SyntaxHighlighter.registerLanguage("javascript", javascript);
 
 const FixedHeader = styled(Header)`
   position: fixed;
@@ -261,16 +265,15 @@ const CodeSnippet = styled.div`
   -webkit-backdrop-filter: blur(24px) saturate(145%);
   border-radius: 12px;
   box-shadow: 0 10px 26px var(--color-md-code-shadow);
-  padding: 0.7rem 0.85rem;
+  padding: 1.6rem 1.2rem 1.2rem;
   margin: 0.4rem 0 0;
   max-width: 440px;
   min-width: 0;
   width: 100%;
-  min-height: 150px;
-  height: 150px;
+  min-height: 170px;
   font-family: var(--font-family-mono);
-  font-size: 0.88rem;
-  line-height: 1.4;
+  font-size: 0.95rem;
+  line-height: 1.6;
   color: var(--color-md-code-text);
   text-align: left;
   display: flex;
@@ -281,30 +284,65 @@ const CodeSnippet = styled.div`
     width: 100%;
     min-width: 0;
     line-height: inherit;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  .comment, .prolog, .doctype, .cdata, .token-comment {
+    color: var(--color-md-code-comment);
+    font-style: italic;
+  }
+  .function, .function-name, .token-function {
+    color: var(--color-md-code-function);
+  }
+  .keyword, .atrule, .important, .token-keyword {
+    color: var(--color-md-code-keyword);
+  }
+  .builtin { color: var(--color-md-code-builtin); }
+  .boolean, .constant, .number, .unit, .token-number {
+    color: var(--color-md-code-number);
+  }
+  .punctuation, .token-punctuation {
+    color: var(--color-md-code-punctuation);
+  }
+  .operator, .token-operator {
+    color: var(--color-md-code-operator);
+  }
+  .property, .attr-name, .symbol, .token-property {
+    color: var(--color-md-code-property);
+  }
+  .string, .attr-value, .char, .template-string, .token-string {
+    color: var(--color-md-code-string);
+  }
+  .class-name, .maybe-class-name {
+    color: var(--color-md-code-type);
+  }
+  .selector, .tag, .token-tag {
+    color: var(--color-md-code-tag);
+  }
+  .parameter, .variable {
+    color: var(--color-md-code-variable);
   }
 
   @media (max-width: 768px) {
-    padding: 0.7rem;
-    min-height: 120px;
-    height: 120px;
-    font-size: 0.66rem;
-    line-height: 1.35;
+    padding: 1.5rem 1.25rem 1.25rem;
+    min-height: 150px;
+    font-size: 0.78rem;
+    line-height: 1.55;
     margin: 0.3rem auto 0;
   }
 
   @media (max-width: 480px) {
-    padding: 0.5rem;
-    min-height: 84px;
-    height: 84px;
-    font-size: 0.55rem;
-    line-height: 1.3;
+    padding: 1.3rem 1rem 1rem;
+    min-height: 120px;
+    font-size: 0.62rem;
+    line-height: 1.5;
     margin-top: 0.25rem;
     border-radius: 6px;
   }
 
   @media (max-width: 390px) {
+    padding: 1.1rem 0.75rem 0.75rem;
     border-radius: 8px;
   }
 `;
@@ -335,7 +373,7 @@ const CodeTabFlare = styled.div<{ $side: "left" | "right" }>`
 
 const CodeTab = styled.div`
   height: 1.7rem;
-  padding: 0 0.95rem;
+  padding: 0 1.6rem;
   display: flex;
   align-items: center;
   background: var(--color-md-code-bg);
@@ -391,7 +429,14 @@ const AnimatedCodeSnippet = React.memo(function AnimatedCodeSnippet({ isDark }: 
         <CodeTabFlare $side="right" />
       </CodeTabRow>
       <pre style={{ margin: 0, fontFamily: "inherit" }}>
-        {displayedCode}
+        <SyntaxHighlighter
+          language="javascript"
+          useInlineStyles={false}
+          PreTag="span"
+          CodeTag="span"
+        >
+          {displayedCode || " "}
+        </SyntaxHighlighter>
         {currentIndex < fullCode.length && (
           <Cursor $isDark={isDark}>|</Cursor>
         )}

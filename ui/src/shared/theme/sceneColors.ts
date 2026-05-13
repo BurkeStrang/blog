@@ -100,7 +100,7 @@ export const DARK_SCENE_THEME: SceneTheme = {
   cubeBodyColor: 0x6a8a6a,
   cubeMetalness: 0.99,
   cubeRoughness: 0.6,
-  cubeEnvMapIntensity: 0.1,
+  cubeEnvMapIntensity: 0.8,
   cubeBackdropColor: 0x202020,
   cubeBackdropOpacity: 0.95,
   accentColor: 0x00aaaa, // not used for labels
@@ -168,8 +168,8 @@ export const LIGHT_SCENE_THEME: SceneTheme = {
   sphereArrowAccentColor: 0x00dddd,
   sphereArrowAccentOpacity: 1.0,
   sphereLabelBackdropColor: 0xf1f1f1,
-  sphereLabelBackdropOpacity: 0.7,
-  sphereLabelOpacity: 0.8,
+  sphereLabelBackdropOpacity: 0.6,
+  sphereLabelOpacity: 0.7,
 };
 
 export function getSceneTheme(isDark: boolean): SceneTheme {
