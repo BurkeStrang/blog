@@ -73,9 +73,11 @@ export default function FollowerSphere({
   const primarySolidMat = useMemo(
     () => new MeshBasicMaterial({
       color: colors.sphereArrowAccentColor,
+      transparent: true,
+      opacity: colors.sphereLabelOpacity,
       toneMapped: false,
     }),
-    [colors.sphereArrowAccentColor],
+    [colors.sphereArrowAccentColor, colors.sphereLabelOpacity],
   );
   const labelBackdropMat = useMemo(
     () => new MeshBasicMaterial({

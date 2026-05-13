@@ -661,7 +661,7 @@ function PostBoxCore(props: PostBoxProps) {
             material={backdropMaterial}
             position={[
               frontCenterX + 4,
-              frontCenterY - 5,
+              frontCenterY - 4,
               bbox.max.z + textMargin + 22,
             ]}
           />
@@ -671,7 +671,7 @@ function PostBoxCore(props: PostBoxProps) {
             const zBase = bbox.max.z + textMargin - 0.02 + 27;
             const leftEdgeX = frontCenterX + 2 - (textWrapWidth * wordScale) / 2;
             const textX = leftEdgeX + (lineWidths[i] * wordScale) / 2 + 3;
-            const textY = frontCenterY + lineOffsets[i] - 4;
+            const textY = frontCenterY + lineOffsets[i] - 3;
             return (
               <React.Fragment key={i}>
                 <mesh

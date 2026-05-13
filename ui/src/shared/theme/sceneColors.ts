@@ -63,6 +63,7 @@ export interface SceneTheme {
   sphereArrowAccentOpacity: number;
   sphereLabelBackdropColor: number;
   sphereLabelBackdropOpacity: number;
+  sphereLabelOpacity: number;
 }
 
 export const DARK_SCENE_THEME: SceneTheme = {
@@ -115,6 +116,7 @@ export const DARK_SCENE_THEME: SceneTheme = {
   sphereArrowAccentOpacity: 1.0,
   sphereLabelBackdropColor: 0x202020,
   sphereLabelBackdropOpacity: 1.0,
+  sphereLabelOpacity: 1.0,
 };
 
 export const LIGHT_SCENE_THEME: SceneTheme = {
@@ -167,6 +169,7 @@ export const LIGHT_SCENE_THEME: SceneTheme = {
   sphereArrowAccentOpacity: 1.0,
   sphereLabelBackdropColor: 0xffffff,
   sphereLabelBackdropOpacity: 0.4,
+  sphereLabelOpacity: 0.5,
 };
 
 export function getSceneTheme(isDark: boolean): SceneTheme {

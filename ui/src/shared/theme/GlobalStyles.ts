@@ -122,8 +122,8 @@ export const GlobalStyle = createGlobalStyle`
     --color-header-gradient-bottom: color-mix(in srgb, var(--color-primary) 68%, white);
     --color-search-bg: transparent;
     --color-search-bg-focus: transparent;
-    --color-search-outline: rgba(0, 200, 200, 0.36);
-    --color-search-outline-focus: rgba(0, 120, 140, 0.56);
+    --color-search-outline: rgba(0, 200, 200, 0.18);
+    --color-search-outline-focus: rgba(0, 120, 140, 0.32);
     --color-search-text: #0f686c;
     --color-search-placeholder: rgba(15, 104, 108, 0.66);
     --color-search-clear: rgba(15, 104, 108, 0.68);
@@ -196,8 +196,8 @@ export const GlobalStyle = createGlobalStyle`
     --color-filter-text-hover: #00afaf;
     --color-filter-icon: #009a9a;
     --color-filter-icon-active: #00baba;
-    --color-filter-dropdown-bg: rgba(255, 255, 255, 0.1);
-    --color-filter-border: rgba(0, 122, 122, 0.35);
+    --color-filter-dropdown-bg: rgba(255, 255, 255, 0.05);
+    --color-filter-border: rgba(0, 122, 122, 0.18);
     --color-filter-hover-bg: rgba(128, 128, 128, 0.08);
     --color-filter-divider: var(--color-divider);
   }
