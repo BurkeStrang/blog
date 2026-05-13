@@ -66,6 +66,28 @@ const searchPosts = (posts: Post[], query: string): Post[] => {
   });
 };
 
+// Tiered match rank. Lower wins:
+//   0: literal phrase in title
+//   1: literal phrase in body
+//   2: all words present in title
+//   3: all words present only in body
+const literalMatchRank = (post: Post, query: string): number => {
+  const phrase = query.toLowerCase().trim();
+  if (!phrase) return 0;
+  const title = post.title.toLowerCase();
+  const body = stripHtmlTags(post.body).toLowerCase();
+  const isMultiWord = /\s/.test(phrase);
+
+  if (isMultiWord) {
+    if (title.includes(phrase)) return 0;
+    if (body.includes(phrase)) return 1;
+  }
+
+  const terms = phrase.split(/\s+/);
+  if (terms.every((t) => title.includes(t))) return 2;
+  return 3;
+};
+
 const calculateTrendingScore = (post: Post): number => {
   const recentViews = post.recentViews || 0;
   let score = recentViews + (post.commentCount || 0) * 3;
@@ -81,8 +103,14 @@ const sortPosts = (
   sortBy: SortCriteria,
   direction: SortDirection,
   snapshot?: Post[],
+  query?: string,
 ): Post[] =>
   [...posts].sort((a, b) => {
+    if (query && query.trim()) {
+      const rankA = literalMatchRank(a, query);
+      const rankB = literalMatchRank(b, query);
+      if (rankA !== rankB) return rankA - rankB;
+    }
     let cmp = 0;
     if (sortBy === "pageViews") {
       cmp = (a.pageViews || 0) - (b.pageViews || 0);
@@ -206,7 +234,7 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const deferredSortDirection = useDeferredValue(sortDirection);
 
   const filteredPosts = useMemo(
-    () => sortPosts(searchPosts(allPosts, debouncedQuery), deferredSortBy, deferredSortDirection, initialPostsSnapshot),
+    () => sortPosts(searchPosts(allPosts, debouncedQuery), deferredSortBy, deferredSortDirection, initialPostsSnapshot, debouncedQuery),
     [allPosts, debouncedQuery, deferredSortBy, deferredSortDirection, initialPostsSnapshot],
   );
 

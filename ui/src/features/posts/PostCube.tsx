@@ -5,7 +5,6 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 import type { Font } from "three/examples/jsm/loaders/FontLoader";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { MathUtils } from "three";
-import { materialManager } from "../../engine";
 import { triggerMobileHapticFeedback } from "../../services/haptics";
 import { getSceneTheme } from "../../shared/theme/sceneColors";
 
@@ -326,24 +325,37 @@ function PostBoxCore(props: PostBoxProps) {
     return offs;
   }, [lineHeights, totalTextHeight, lineGap]);
 
-  // --- Backdrop (plane) geometry - using optimized geometry manager ---
+  // --- Backdrop (rounded rectangle) geometry ---
   const backdropGeo = useMemo(() => {
     const width = frontWidth + 50 * textMargin;
     const height = frontHeight + 37 * textMargin;
-    // Use geometry manager for better memory management
-    const geo = new THREE.PlaneGeometry(width, height);
-    return geo;
-  }, [frontWidth, frontHeight]); // REMOVED title dependency that was causing recreation
+    const radius = Math.min(2, width / 2, height / 2);
+    const shape = new THREE.Shape();
+    const x = -width / 2;
+    const y = -height / 2;
+    shape.moveTo(x + radius, y);
+    shape.lineTo(x + width - radius, y);
+    shape.quadraticCurveTo(x + width, y, x + width, y + radius);
+    shape.lineTo(x + width, y + height - radius);
+    shape.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    shape.lineTo(x + radius, y + height);
+    shape.quadraticCurveTo(x, y + height, x, y + height - radius);
+    shape.lineTo(x, y + radius);
+    shape.quadraticCurveTo(x, y, x + radius, y);
+    return new THREE.ShapeGeometry(shape, 10);
+  }, [frontWidth, frontHeight]);
 
-  // --- Materials using optimized material manager for better performance ---
+  // --- Frosted glass backdrop material ---
   const backdropMaterial = useMemo(() => {
-    return materialManager.getMaterial({
+    return new THREE.MeshPhysicalMaterial({
       color: colors.cubeBackdropColor,
       transparent: true,
       opacity: colors.cubeBackdropOpacity,
-      needsLighting: true,
-      needsSpecular: false,
-      needsNormalMap: false,
+      roughness: 0.55,
+      metalness: 0.05,
+      clearcoat: 0.7,
+      clearcoatRoughness: 0.22,
+      side: THREE.DoubleSide,
     });
   }, [isDark]);
   const neonMat = useMemo(() => {
@@ -430,6 +442,10 @@ function PostBoxCore(props: PostBoxProps) {
       }
     };
   }, [backdropGeo, blockScene]);
+
+  useEffect(() => {
+    return () => { backdropMaterial.dispose(); };
+  }, [backdropMaterial]);
 
   useEffect(() => {
     return () => { neonMat.dispose(); };

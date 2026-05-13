@@ -368,28 +368,28 @@ export const Header = styled.header`
 
   /* Light-mode-only: match the quieter post detail title treatment. */
   [data-theme="light"] & h1 {
-    color: var(--color-readable-lightgrey);
+    color: color-mix(in srgb, var(--color-readable-lightgrey) 60%, transparent);
     text-shadow:
-      0 0.03em 0.04em rgba(28, 31, 46, 0.3),
-      0 0.1em 0.18em rgba(28, 31, 46, 0.17),
-      0 0.22em 0.5em rgba(28, 31, 46, 0.06);
+      0 0.04em 0.05em rgba(28, 31, 46, 0.5),
+      0 0.12em 0.22em rgba(28, 31, 46, 0.32),
+      0 0.26em 0.6em rgba(28, 31, 46, 0.14);
   }
 
   @media (max-width: 768px) {
     [data-theme="light"] & h1 {
       text-shadow:
-        0 0.03em 0.04em rgba(28, 31, 46, 0.26),
-        0 0.09em 0.16em rgba(28, 31, 46, 0.14),
-        0 0.2em 0.44em rgba(28, 31, 46, 0.05);
+        0 0.04em 0.05em rgba(28, 31, 46, 0.44),
+        0 0.11em 0.2em rgba(28, 31, 46, 0.28),
+        0 0.24em 0.52em rgba(28, 31, 46, 0.12);
     }
   }
 
   @media (max-width: 480px) {
     [data-theme="light"] & h1 {
       text-shadow:
-        0 0.03em 0.04em rgba(28, 31, 46, 0.22),
-        0 0.08em 0.14em rgba(28, 31, 46, 0.13),
-        0 0.18em 0.4em rgba(28, 31, 46, 0.04);
+        0 0.04em 0.05em rgba(28, 31, 46, 0.38),
+        0 0.1em 0.18em rgba(28, 31, 46, 0.24),
+        0 0.22em 0.48em rgba(28, 31, 46, 0.1);
     }
   }
 
