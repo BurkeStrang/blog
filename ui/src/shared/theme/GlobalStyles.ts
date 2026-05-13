@@ -368,28 +368,28 @@ export const Header = styled.header`
 
   /* Light-mode-only: match the quieter post detail title treatment. */
   [data-theme="light"] & h1 {
-    color: color-mix(in srgb, var(--color-readable-lightgrey) 60%, transparent);
+    color: color-mix(in srgb, color-mix(in srgb, var(--color-readable-lightgrey) 78%, black) 65%, transparent);
     text-shadow:
-      0 0.05em 0.14em rgba(28, 31, 46, 0.28),
-      0 0.18em 0.4em rgba(28, 31, 46, 0.08),
-      0 0.42em 1em rgba(28, 31, 46, 0.015);
+      0 0.06em 0.26em rgba(28, 31, 46, 0.22),
+      0 0.22em 0.55em rgba(28, 31, 46, 0.06),
+      0 0.5em 1.2em rgba(28, 31, 46, 0.01);
   }
 
   @media (max-width: 768px) {
     [data-theme="light"] & h1 {
       text-shadow:
-        0 0.05em 0.13em rgba(28, 31, 46, 0.26),
-        0 0.16em 0.35em rgba(28, 31, 46, 0.07),
-        0 0.36em 0.9em rgba(28, 31, 46, 0.012);
+        0 0.06em 0.22em rgba(28, 31, 46, 0.21),
+        0 0.2em 0.48em rgba(28, 31, 46, 0.05),
+        0 0.44em 1.05em rgba(28, 31, 46, 0.008);
     }
   }
 
   @media (max-width: 480px) {
     [data-theme="light"] & h1 {
       text-shadow:
-        0 0.04em 0.06em rgba(28, 31, 46, 0.36),
-        0 0.12em 0.22em rgba(28, 31, 46, 0.09),
-        0 0.28em 0.7em rgba(28, 31, 46, 0.02);
+        0 0.05em 0.12em rgba(28, 31, 46, 0.3),
+        0 0.14em 0.3em rgba(28, 31, 46, 0.07),
+        0 0.32em 0.85em rgba(28, 31, 46, 0.015);
     }
   }
 

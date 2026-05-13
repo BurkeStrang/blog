@@ -169,7 +169,7 @@ export const LIGHT_SCENE_THEME: SceneTheme = {
   sphereArrowAccentOpacity: 1.0,
   sphereLabelBackdropColor: 0xf1f1f1,
   sphereLabelBackdropOpacity: 0.6,
-  sphereLabelOpacity: 0.7,
+  sphereLabelOpacity: 0.4,
 };
 
 export function getSceneTheme(isDark: boolean): SceneTheme {
