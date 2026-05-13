@@ -370,17 +370,17 @@ export const Header = styled.header`
   [data-theme="light"] & h1 {
     color: color-mix(in srgb, var(--color-readable-lightgrey) 60%, transparent);
     text-shadow:
-      0 0.04em 0.05em rgba(28, 31, 46, 0.55),
-      0 0.14em 0.26em rgba(28, 31, 46, 0.22),
-      0 0.34em 0.85em rgba(28, 31, 46, 0.05);
+      0 0.05em 0.14em rgba(28, 31, 46, 0.3),
+      0 0.16em 0.34em rgba(28, 31, 46, 0.16),
+      0 0.36em 0.9em rgba(28, 31, 46, 0.04);
   }
 
   @media (max-width: 768px) {
     [data-theme="light"] & h1 {
       text-shadow:
-        0 0.04em 0.05em rgba(28, 31, 46, 0.46),
-        0 0.12em 0.22em rgba(28, 31, 46, 0.18),
-        0 0.3em 0.75em rgba(28, 31, 46, 0.04);
+        0 0.05em 0.13em rgba(28, 31, 46, 0.28),
+        0 0.14em 0.3em rgba(28, 31, 46, 0.14),
+        0 0.32em 0.8em rgba(28, 31, 46, 0.03);
     }
   }
 
