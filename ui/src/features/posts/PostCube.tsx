@@ -119,11 +119,16 @@ const fontSize = 0.2;
 const wordScale = 13;
 const textMargin = 0.8;
 const textWrapWidthRatio = 0.78;
-const textBoldOffset = 0.18;
+const textBoldOffset = 0.1;
+const textBoldOffsetY = 0.05;
 
 const postTitleTextColor = {
   dark: 0x9ca3aa,
-  light: 0x707070,
+  light: 0x848c95,
+};
+const postTitleTextBackColor = {
+  dark: 0x8b929a,
+  light: 0x787f88,
 };
 
 function PostBoxCore(props: PostBoxProps) {
@@ -365,6 +370,13 @@ function PostBoxCore(props: PostBoxProps) {
       toneMapped: false,
     });
   }, [isDark]);
+  const neonMatBack = useMemo(() => {
+    return new THREE.MeshBasicMaterial({
+      color: isDark ? postTitleTextBackColor.dark : postTitleTextBackColor.light,
+      transparent: true,
+      toneMapped: false,
+    });
+  }, [isDark]);
   // --- Signal ready when geometries are created ---
   useEffect(() => {
     if (textGeometries.length > 0) {
@@ -450,6 +462,10 @@ function PostBoxCore(props: PostBoxProps) {
   useEffect(() => {
     return () => { neonMat.dispose(); };
   }, [neonMat]);
+
+  useEffect(() => {
+    return () => { neonMatBack.dispose(); };
+  }, [neonMatBack]);
 
   // --- Animation (frame loop) ---
 
@@ -688,15 +704,16 @@ function PostBoxCore(props: PostBoxProps) {
             const leftEdgeX = frontCenterX + 2 - (textWrapWidth * wordScale) / 2;
             const textX = leftEdgeX + (lineWidths[i] * wordScale) / 2 + 3;
             const textY = frontCenterY + lineOffsets[i] - 3;
+            const offsetScale = isDark ? 1 : 0.35;
             return (
               <React.Fragment key={i}>
                 <mesh
                   geometry={geo}
-                  material={neonMat}
+                  material={neonMatBack}
                   scale={[wordScale, wordScale, 0.01]}
                   position={[
-                    textX - textBoldOffset,
-                    textY,
+                    textX + textBoldOffset * offsetScale,
+                    textY + textBoldOffsetY * offsetScale,
                     zBase - 0.01,
                   ]}
                 />
