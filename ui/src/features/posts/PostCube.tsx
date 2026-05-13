@@ -119,7 +119,7 @@ interface PostBoxProps {
 const fontSize = 0.2;
 const wordScale = 13;
 const textMargin = 0.8;
-const textWrapWidthRatio = 0.76;
+const textWrapWidthRatio = 0.78;
 const textBoldOffset = 0.18;
 
 const postTitleTextColor = {
@@ -329,7 +329,7 @@ function PostBoxCore(props: PostBoxProps) {
   // --- Backdrop (plane) geometry - using optimized geometry manager ---
   const backdropGeo = useMemo(() => {
     const width = frontWidth + 50 * textMargin;
-    const height = frontHeight + 26 * textMargin;
+    const height = frontHeight + 37 * textMargin;
     // Use geometry manager for better memory management
     const geo = new THREE.PlaneGeometry(width, height);
     return geo;
@@ -661,7 +661,7 @@ function PostBoxCore(props: PostBoxProps) {
             material={backdropMaterial}
             position={[
               frontCenterX + 4,
-              frontCenterY,
+              frontCenterY - 5,
               bbox.max.z + textMargin + 22,
             ]}
           />
@@ -670,8 +670,8 @@ function PostBoxCore(props: PostBoxProps) {
           {textGeometries.map((geo, i) => {
             const zBase = bbox.max.z + textMargin - 0.02 + 27;
             const leftEdgeX = frontCenterX + 2 - (textWrapWidth * wordScale) / 2;
-            const textX = leftEdgeX + (lineWidths[i] * wordScale) / 2;
-            const textY = frontCenterY + lineOffsets[i];
+            const textX = leftEdgeX + (lineWidths[i] * wordScale) / 2 + 3;
+            const textY = frontCenterY + lineOffsets[i] - 4;
             return (
               <React.Fragment key={i}>
                 <mesh
