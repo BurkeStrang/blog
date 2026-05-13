@@ -149,7 +149,7 @@ export const GlobalStyle = createGlobalStyle`
     --color-md-th-bg: rgba(0, 0, 0, 0.05);
     --color-md-tr-hover: rgba(0, 0, 0, 0.03);
     --color-md-hr: rgba(0, 0, 0, 0.1);
-    --color-md-code-bg: rgba(220, 220, 220, 0.85);
+    --color-md-code-bg: rgba(205, 207, 211, 0.88);
     --color-md-code-border: rgba(0, 0, 0, 0.12);
     --color-md-code-glass-highlight: rgba(255, 255, 255, 0.15);
     --color-md-code-inset: rgba(255, 255, 255, 0.15);
@@ -163,7 +163,7 @@ export const GlobalStyle = createGlobalStyle`
     --color-md-code-property: #52738a;
     --color-md-code-punctuation: #637568;
     --color-md-code-string: #666750;
-    --color-md-code-tag: #756d8c;
+    --color-md-code-tag: #574f6e;
     --color-md-code-attribute: #507e79;
     --color-md-code-builtin: #52738a;
     --color-md-code-deleted: #986363;

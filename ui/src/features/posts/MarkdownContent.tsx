@@ -214,7 +214,7 @@ const MarkdownWrapper = styled.div`
     font-family: var(--font-family-mono);
     font-size: 0.88em;
     font-weight: 500;
-    padding: 0.16em 0.4em;
+    padding: 0.16em 0.85em;
     border-radius: 5px;
     background: var(--color-md-accent-soft);
     border: 1px solid var(--color-md-accent-soft-strong);
@@ -826,7 +826,7 @@ const CodeBlockTabFlare = styled.div<{ $side: 'left' | 'right' }>`
    on top, so adding another filter creates a visible seam at the bottom. */
 const CodeBlockTab = styled.div`
   height: 1.7rem;
-  padding: 0 0.95rem;
+  padding: 0 1.6rem;
   display: flex;
   align-items: center;
   background: var(--color-md-code-bg);
