@@ -189,7 +189,7 @@ const MarkdownWrapper = styled.div`
     color: var(--color-md-accent);
   }
 
-  /* Blockquote as NOTE callout */
+  /* Blockquote callout */
   blockquote {
     position: relative;
     padding: 1.1rem 1.2rem 1rem 1.3rem;
@@ -203,23 +203,6 @@ const MarkdownWrapper = styled.div`
     box-shadow: 0 0 0 1px var(--color-md-accent-soft);
     font-style: normal;
     color: ${readableLightgrey};
-
-    &::before {
-      content: 'NOTE';
-      position: absolute;
-      top: -0.85rem;
-      left: 1rem;
-      padding: 0.2rem 0.55rem;
-      font-family: var(--font-family);
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      color: var(--color-bg);
-      background: var(--color-md-accent);
-      border: 2px solid #000;
-      border-radius: 999px;
-      box-shadow: 3px 3px 0 #000;
-    }
 
     p:first-child { margin-top: 0; }
     p:last-child { margin-bottom: 0; }

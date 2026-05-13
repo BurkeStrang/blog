@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, Navigate } from "react-router-dom";
 import { Post } from "../../app/AppContent";
 import styled from "styled-components";
-import { backgroundColor, lightgrey, accent } from "../../shared/theme/colors";
+import { backgroundColor, lightgrey, readableLightgrey, accent } from "../../shared/theme/colors";
 import { usePostsData } from "../../shared/contexts/SearchContext";
 import { useAuth } from "../../shared/contexts/AuthContext";
 import { CommentSection } from "../comments";
@@ -173,7 +173,7 @@ const PostBackdrop = styled.div`
 `;
 
 const Content = styled.div`
-  color: ${lightgrey};
+  color: ${readableLightgrey};
   line-height: 1.8;
   font-size: 1.125rem;
   text-align: left;
@@ -347,7 +347,7 @@ const EditButton = styled.button`
   font-family: inherit;
   font-size: 0.875rem;
   background: var(--color-btn-bg);
-  color: ${lightgrey};
+  color: ${readableLightgrey};
   border: 1px solid var(--color-btn-border);
   border-radius: 6px;
   font-weight: 500;
@@ -726,7 +726,12 @@ const SeriesNavButton = styled.button<{ $align: "left" | "right" }>`
     background: var(--color-comment-bg-hover);
     border-color: ${accent};
     box-shadow: 0 0 12px rgba(0, 255, 255, 0.15);
-    color: ${accent};
+    color: ${readableLightgrey};
+  }
+
+  svg {
+    color: ${readableLightgrey};
+    flex-shrink: 0;
   }
 `;
 
@@ -741,16 +746,20 @@ const SeriesNavLabel = styled.span`
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  color: ${readableLightgrey};
   opacity: 0.7;
 `;
 
 const SeriesNavSlug = styled.span`
+  display: block;
   font-size: 0.95rem;
   font-weight: 600;
-  overflow-wrap: anywhere;
+  color: ${readableLightgrey};
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
-
-const NAV_LABEL_MAX_LENGTH = 44;
 
 const SLUG_WORD_REPLACEMENTS: Record<string, string> = {
   api: "API",
@@ -791,33 +800,9 @@ const formatSlugLabel = (slug: string): string => {
     .join(" ");
 };
 
-const truncateNavLabel = (label: string, maxLength = NAV_LABEL_MAX_LENGTH): string => {
-  if (label.length <= maxLength) {
-    return label;
-  }
-
-  const words = label.split(/\s+/);
-  let truncated = "";
-
-  for (const word of words) {
-    const candidate = truncated ? `${truncated} ${word}` : word;
-    if (candidate.length > maxLength - 1) {
-      break;
-    }
-    truncated = candidate;
-  }
-
-  if (!truncated) {
-    return `${label.slice(0, maxLength - 1).trimEnd()}…`;
-  }
-
-  return `${truncated}…`;
-};
-
 const getSeriesNavLabel = (targetSlug: string, allPosts: Post[]): string => {
   const linkedPost = allPosts.find((candidate) => candidate.slug === targetSlug);
-  const sourceLabel = linkedPost?.title?.trim() || formatSlugLabel(targetSlug);
-  return truncateNavLabel(sourceLabel);
+  return linkedPost?.title?.trim() || formatSlugLabel(targetSlug);
 };
 
 interface PostDetailProps {
@@ -1213,7 +1198,7 @@ const PostDetailComponent = function PostDetail({
           </EditForm>
         ) : (
           <>
-            <PostFrame>
+            <PostFrame key={post.slug}>
               <Content>
                 <MarkdownContent content={markdownContent} />
               </Content>
