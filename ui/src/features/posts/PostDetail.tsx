@@ -399,7 +399,7 @@ const DeleteButton = styled.button`
   font-family: inherit;
   font-size: 0.875rem;
   background: var(--color-btn-bg);
-  color: ${lightgrey};
+  color: ${readableLightgrey};
   border: 1px solid var(--color-btn-border);
   border-radius: 6px;
   font-weight: 500;
@@ -471,7 +471,7 @@ const Input = styled.input`
   background: var(--color-input-bg);
   border: 1px solid var(--color-input-border-secondary);
   border-radius: 6px;
-  color: ${lightgrey};
+  color: ${readableLightgrey};
   font-size: 1rem;
   transition: all 0.2s ease;
 
@@ -712,7 +712,7 @@ const SeriesNavButton = styled.button<{ $align: "left" | "right" }>`
   border: 1px solid var(--color-comment-border);
   border-radius: 12px;
   background: var(--color-comment-bg);
-  color: ${lightgrey};
+  color: ${readableLightgrey};
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -720,6 +720,7 @@ const SeriesNavButton = styled.button<{ $align: "left" | "right" }>`
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+  overflow: hidden;
   text-align: ${({ $align }) => $align};
 
   &:hover {
@@ -732,14 +733,17 @@ const SeriesNavButton = styled.button<{ $align: "left" | "right" }>`
   svg {
     color: ${readableLightgrey};
     flex-shrink: 0;
+    opacity: 0.7;
   }
 `;
 
 const SeriesNavText = styled.span`
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: 0.25rem;
   min-width: 0;
+  overflow: hidden;
 `;
 
 const SeriesNavLabel = styled.span`
@@ -755,6 +759,8 @@ const SeriesNavSlug = styled.span`
   font-size: 0.95rem;
   font-weight: 600;
   color: ${readableLightgrey};
+  opacity: 0.6;
+  width: 100%;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;

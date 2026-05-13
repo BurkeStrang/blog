@@ -220,6 +220,22 @@ const MarkdownWrapper = styled.div`
     border: 1px solid var(--color-md-accent-soft-strong);
   }
 
+  && h1 code,
+  && h2 code,
+  && h3 code,
+  && h4 code,
+  && h5 code,
+  && h6 code {
+    color: var(--color-md-accent);
+    font-size: 0.82em;
+    font-weight: inherit;
+    padding: 0 0.12em 0.03em;
+    border: 0;
+    border-radius: 0.22em;
+    background: color-mix(in srgb, var(--color-md-accent-soft) 76%, transparent);
+    box-shadow: inset 0 -0.05em 0 color-mix(in srgb, var(--color-md-accent-soft-strong) 84%, transparent);
+  }
+
   .comment,
   .prolog,
   .doctype,

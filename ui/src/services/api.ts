@@ -135,7 +135,7 @@ class ApiService {
       pagination: { total: number; limit: number; offset: number; hasMore: boolean };
       search?: string;
       sort?: { field: string; order: string };
-    }>('/api/posts', {
+    }>('/api/posts?limit=150', {
       cache: 'posts',
       ttl: 15 * 60 * 1000 // 15 minutes
     });
@@ -154,7 +154,7 @@ class ApiService {
         limit: number;
         totalPages: number;
       };
-    }>(`/api/posts?_t=${timestamp}`, {
+    }>(`/api/posts?limit=150&_t=${timestamp}`, {
       cache: false
     });
     return response.posts;

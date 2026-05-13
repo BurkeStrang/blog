@@ -24,13 +24,13 @@ func GetPostsDB(c *gin.Context) {
 	search := c.Query("search")
 	sortBy := c.DefaultQuery("sort", "created_at")
 	order := c.DefaultQuery("order", "desc")
-	limitStr := c.DefaultQuery("limit", "50")
+	limitStr := c.DefaultQuery("limit", "150")
 	offsetStr := c.DefaultQuery("offset", "0")
 
 	// Parse limit and offset
 	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit <= 0 || limit > 100 {
-		limit = 50 // Default limit with max of 100
+	if err != nil || limit <= 0 || limit > 150 {
+		limit = 150 // Default limit with max of 150
 	}
 
 	offset, err := strconv.Atoi(offsetStr)
