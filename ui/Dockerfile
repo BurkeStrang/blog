@@ -54,5 +54,8 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start nginx. fholzer/nginx-brotli already sets ENTRYPOINT=["nginx"], so pass
+# only the args here — keeping both layers explicit avoids "nginx nginx -g ..."
+# if the base image's entrypoint ever changes.
+ENTRYPOINT ["nginx"]
+CMD ["-g", "daemon off;"]
