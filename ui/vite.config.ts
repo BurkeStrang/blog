@@ -87,24 +87,29 @@ const gltfTexturePlugin = () => ({
       }
     }
 
-    // Update GLTF files to reference correct bin files
-    
-    // Update sphere GLTF (scene-BCTf7sba.gltf)
-    const sphereGltfPath = join(assetsDir, 'scene-BCTf7sba.gltf');
-    if (existsSync(sphereGltfPath)) {
-      let sphereGltf = readFileSync(sphereGltfPath, 'utf8');
-      sphereGltf = sphereGltf.replace('"uri": "scene.bin"', '"uri": "sphere.bin"');
-      writeFileSync(sphereGltfPath, sphereGltf);
-      console.log(`✅ Updated sphere GLTF to reference sphere.bin`);
-    }
-
-    // Update cube GLTF (scene-DPSao1xc.gltf)
-    const cubeGltfPath = join(assetsDir, 'scene-DPSao1xc.gltf');
-    if (existsSync(cubeGltfPath)) {
-      let cubeGltf = readFileSync(cubeGltfPath, 'utf8');
-      cubeGltf = cubeGltf.replace('"uri": "scene.bin"', '"uri": "cube.bin"');
-      writeFileSync(cubeGltfPath, cubeGltf);
-      console.log(`✅ Updated cube GLTF to reference cube.bin`);
+    // Walk every emitted .gltf and rewrite its "uri": "scene.bin" to the
+    // dist-renamed bin (sphere.bin / cube.bin), matched by gltf content. Vite
+    // hashes the gltf filename based on content, so we can't pin a specific
+    // hash — we identify each model by a stable substring of its embedded
+    // metadata (sketchfab author URLs differ between the two models).
+    for (const fileName of readdirSync(assetsDir)) {
+      if (!fileName.endsWith('.gltf')) continue;
+      const gltfPath = join(assetsDir, fileName);
+      let gltf = readFileSync(gltfPath, 'utf8');
+      if (!gltf.includes('"uri": "scene.bin"')) continue;
+      let renamedTo: string | null = null;
+      if (gltf.includes('renandesign3d') || gltf.includes('PreviewSphere')) {
+        renamedTo = 'sphere.bin';
+      } else if (gltf.includes('SonnyG1') || gltf.includes('rubikscube')) {
+        renamedTo = 'cube.bin';
+      }
+      if (!renamedTo) {
+        console.warn(`⚠️  Could not identify ${fileName} — left scene.bin reference intact`);
+        continue;
+      }
+      gltf = gltf.replace('"uri": "scene.bin"', `"uri": "${renamedTo}"`);
+      writeFileSync(gltfPath, gltf);
+      console.log(`✅ Rewrote ${fileName} → ${renamedTo}`);
     }
   }
 });
@@ -262,6 +267,11 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 1000, // Increase limit to 1MB for Three.js
+    // Don't inline 3D model / texture / font assets as base64 data URLs, even if
+    // they fall under the 4KB default. Inlined gltf data URLs can't resolve
+    // sibling .bin references, and preload hints can't target data URLs.
+    assetsInlineLimit: (filePath: string) =>
+      /\.(gltf|glb|bin|avif|webp|woff2?|ttf|json)$/.test(filePath) ? false : undefined,
     rollupOptions: {
       onwarn(warning, warn) {
         // Fail build on warnings
