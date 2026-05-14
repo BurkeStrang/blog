@@ -271,15 +271,17 @@ export default defineConfig({
       output: {
         manualChunks(id: string) {
           if (!id.includes('node_modules')) return;
-          // Three.js core into its own chunk
+          // Three.js core (excluding @react-three/*)
           if (/[\\/]three[\\/]/.test(id) && !/@react-three/.test(id)) return 'three-vendor';
-          // React Three Fiber + its shared deps (zustand, its-fine, scheduler-aware bits)
+          // @react-three/* + fiber-only deps (zustand, its-fine, react-reconciler).
+          // NOTE: scheduler stays with React core below — it shares internal state
+          // with react/react-dom and splitting it causes runtime init errors.
           if (/@react-three[\\/]/.test(id)) return 'react-three';
-          if (/[\\/]zustand[\\/]|[\\/]its-fine[\\/]|[\\/]react-reconciler[\\/]|[\\/]scheduler[\\/]/.test(id)) return 'react-three';
+          if (/[\\/](zustand|its-fine|react-reconciler)[\\/]/.test(id)) return 'react-three';
           // MUI / emotion
           if (/@mui[\\/]|@emotion[\\/]/.test(id)) return 'ui-vendor';
-          // React core
-          if (/[\\/](react|react-dom|react-router|react-router-dom)[\\/]/.test(id)) return 'react-vendor';
+          // React core — keep react, react-dom, scheduler, and react-router together
+          if (/[\\/](react|react-dom|react-router|react-router-dom|scheduler|use-sync-external-store)[\\/]/.test(id)) return 'react-vendor';
         }
       },
       treeshake: {
