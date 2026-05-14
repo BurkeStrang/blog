@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useLayoutEffect } from "react";
-import { PrismAsyncLight as SyntaxHighlighter } from "react-syntax-highlighter";
+import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
+import javascript from "react-syntax-highlighter/dist/esm/languages/prism/javascript";
 import { Page, Header, Content } from "../../shared/theme/GlobalStyles";
 import { useTheme } from "../../shared/contexts/ThemeContext";
 import styled from "styled-components";
 
-SyntaxHighlighter.registerLanguage("javascript", () =>
-  import("react-syntax-highlighter/dist/esm/languages/prism/javascript"),
-);
+SyntaxHighlighter.registerLanguage("javascript", javascript);
 
 const FixedHeader = styled(Header)`
   position: fixed;
