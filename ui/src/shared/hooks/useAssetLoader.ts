@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { Texture, Mesh, MeshStandardMaterial, LinearFilter } from 'three';
 import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader';
 import { TextureCompressor } from '../../engine/rendering';
 
@@ -64,10 +65,17 @@ export function useResourcePreloader() {
     let cancelled = false;
     const textureOptimizer = new TextureCompressor();
     
+    // Draco decoder is served as a static asset from /draco/. The wasm
+    // file (~192 KB) loads on demand the first time a Draco-compressed
+    // GLTF is parsed. Declared outside `try` so `finally` can dispose it.
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('/draco/');
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.setDRACOLoader(dracoLoader);
+    const fontLoader = new FontLoader();
+
     async function preloadResources() {
       try {
-        const gltfLoader = new GLTFLoader();
-        const fontLoader = new FontLoader();
 
         // Load all resources in parallel with adaptive compression
         const loadPromises = [
@@ -127,8 +135,9 @@ export function useResourcePreloader() {
           });
         }
       } finally {
-        // Always dispose the optimizer after operations complete
+        // Always dispose the optimizer + Draco worker pool after operations complete
         textureOptimizer.dispose();
+        dracoLoader.dispose();
       }
     }
     
