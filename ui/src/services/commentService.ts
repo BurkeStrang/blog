@@ -105,8 +105,6 @@ class CommentService {
         ? `${this.baseURL}/comments/${idParam}/like?postId=post-${postId}`
         : `${this.baseURL}/comments/${idParam}/like`;
 
-      console.log('Liking comment:', { idParam, postId, url });
-
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -130,7 +128,6 @@ class CommentService {
         throw new Error(`Failed to like comment: ${response.statusText}`);
       }
 
-      console.log('Successfully liked comment');
     } catch (error) {
       console.error('Error liking comment:', error);
       throw error;
@@ -164,8 +161,6 @@ class CommentService {
         ? `${this.baseURL}/comments/${idParam}/like?postId=post-${postId}`
         : `${this.baseURL}/comments/${idParam}/like`;
 
-      console.log('Unliking comment:', { idParam, postId, url });
-
       const response = await fetch(url, {
         method: 'DELETE',
         headers: {
@@ -189,7 +184,6 @@ class CommentService {
         throw new Error(`Failed to unlike comment: ${response.statusText}`);
       }
 
-      console.log('Successfully unliked comment');
     } catch (error) {
       console.error('Error unliking comment:', error);
       throw error;
