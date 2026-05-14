@@ -4,8 +4,9 @@ FROM node:26-alpine AS builder
 
 WORKDIR /app
 
-# Enable corepack to use pnpm version pinned in package.json#packageManager
-RUN corepack enable
+# Install pnpm (must match package.json#packageManager)
+# node:26-alpine doesn't ship corepack, so install pnpm globally instead.
+RUN npm install -g pnpm@11.1.1
 
 # Copy package files first so dependency layer can be cached when only source changes
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
