@@ -265,6 +265,12 @@ function WaterTile(props: {
 
 WaterTile.displayName = 'WaterTile';
 
+// Module-level flag — true after the OceanScene has rendered post cubes at
+// least once in this browser tab/session. Used to skip the underwater
+// surfacing animation on the first cold mount, so cubes appear at rest
+// position immediately. Resets to false only on a full page reload.
+let postsHaveMountedOnce = false;
+
 // Tiled Ocean Scene with frustum culling
 const OceanScene: React.FC<{
   waterNormals: Texture;
@@ -278,6 +284,13 @@ const OceanScene: React.FC<{
   // Create frustum for tile culling
   const frustum = useMemo(() => new Frustum(), []);
   const cameraMatrix = useMemo(() => new Matrix4(), []);
+
+  // Flip the cold-start flag after the first render commits. Subsequent
+  // mounts of OceanScene in the same tab will get the underwater surfacing
+  // start back. Resets only on a full page reload.
+  useEffect(() => {
+    postsHaveMountedOnce = true;
+  }, []);
 
   useEffect(() => {
     const currentScene = scene;
@@ -871,7 +884,11 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
           // Use consistent starting position based on renderIndex instead of original index
           // This ensures consistent lighting regardless of which post is in which position
           const startPosX = renderIndex * 55 - (postsPerPage - 1) * 25;
-          const startPosY = -1000;
+          // Skip the deep-underwater start on the very first render of the
+          // session — cubes appear at their target position immediately,
+          // saving 1-2s of perceived load time. Subsequent mounts (e.g. after
+          // navigation away and back) keep the surfacing animation.
+          const startPosY = postsHaveMountedOnce ? -1000 : targetPos.y;
           const startPosZ = renderIndex * 40;
 
           // Safety check: ensure positions exist

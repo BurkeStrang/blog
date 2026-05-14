@@ -125,21 +125,30 @@ const preloadCriticalAssetsPlugin = () => ({
     handler(html: string, ctx: { bundle?: Record<string, { fileName: string }> }) {
       if (!ctx.bundle) return html;
       const preloads: string[] = [];
+      let oceanSceneChunk: string | null = null;
       for (const fileName of Object.keys(ctx.bundle)) {
         const href = '/' + fileName;
         if (fileName.endsWith('.gltf')) {
           preloads.push(`<link rel="preload" href="${href}" as="fetch" type="model/gltf+json" crossorigin>`);
         } else if (fileName.endsWith('.avif') && fileName.includes('waternormals')) {
-          // crossorigin must be present because TextureCompressor fetches with CORS;
-          // without it the preload doesn't match and the browser refetches.
           preloads.push(`<link rel="preload" href="${href}" as="image" type="image/avif" crossorigin>`);
         } else if (fileName.endsWith('.json') && fileName.toLowerCase().includes('noto sans')) {
           preloads.push(`<link rel="preload" href="${href}" as="fetch" type="application/json" crossorigin>`);
+        } else if (/OceanScene-[A-Za-z0-9_-]+\.js$/.test(fileName)) {
+          oceanSceneChunk = href;
         }
       }
-      // bin files have stable names (set by gltfTexturePlugin), not hashed
+      // bin files + draco decoder are at stable paths (not hashed)
       preloads.push(`<link rel="preload" href="/assets/sphere.bin" as="fetch" crossorigin>`);
       preloads.push(`<link rel="preload" href="/assets/cube.bin" as="fetch" crossorigin>`);
+      // Draco decoder WASM is needed before any GLTF can be parsed.
+      preloads.push(`<link rel="preload" href="/draco/draco_wasm_wrapper.js" as="script" crossorigin>`);
+      preloads.push(`<link rel="preload" href="/draco/draco_decoder.wasm" as="fetch" type="application/wasm" crossorigin>`);
+      // OceanScene is lazy but always needed on home/posts/about routes — preload
+      // its JS chunk so it overlaps with the initial bundle download.
+      if (oceanSceneChunk) {
+        preloads.push(`<link rel="modulepreload" href="${oceanSceneChunk}" crossorigin>`);
+      }
       if (preloads.length === 0) return html;
       return html.replace('</head>', `  ${preloads.join('\n  ')}\n  </head>`);
     },
