@@ -410,11 +410,6 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   const loadLikeStatus = async () => {
     try {
       const response = await commentService.getCommentLikes(comment);
-      console.log('Loaded like status:', {
-        commentId: comment.id,
-        userLiked: response.user_liked,
-        likeCount: response.like_count
-      });
       setUserLiked(response.user_liked);
       setLikeCount(response.like_count);
     } catch (error) {
@@ -432,12 +427,6 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     const previousLiked = userLiked;
     const previousCount = likeCount;
 
-    console.log('handleLike called:', {
-      commentId: comment.id,
-      currentUserLiked: userLiked,
-      action: userLiked ? 'unlike' : 'like'
-    });
-
     try {
       if (userLiked) {
         // Optimistically update UI
@@ -450,12 +439,10 @@ export const CommentItem: React.FC<CommentItemProps> = ({
         setLikeCount(prev => prev + 1);
         await commentService.likeComment(comment);
       }
-      console.log('Like toggle successful');
     } catch (error) {
       console.error('Failed to toggle like:', error);
 
       // Revert optimistic update
-      console.log('Reverting optimistic update and reloading from server');
       setUserLiked(previousLiked);
       setLikeCount(previousCount);
 

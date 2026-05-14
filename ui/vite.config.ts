@@ -125,7 +125,9 @@ const preloadCriticalAssetsPlugin = () => ({
         if (fileName.endsWith('.gltf')) {
           preloads.push(`<link rel="preload" href="${href}" as="fetch" type="model/gltf+json" crossorigin>`);
         } else if (fileName.endsWith('.avif') && fileName.includes('waternormals')) {
-          preloads.push(`<link rel="preload" href="${href}" as="image" type="image/avif">`);
+          // crossorigin must be present because TextureCompressor fetches with CORS;
+          // without it the preload doesn't match and the browser refetches.
+          preloads.push(`<link rel="preload" href="${href}" as="image" type="image/avif" crossorigin>`);
         } else if (fileName.endsWith('.json') && fileName.toLowerCase().includes('noto sans')) {
           preloads.push(`<link rel="preload" href="${href}" as="fetch" type="application/json" crossorigin>`);
         }
