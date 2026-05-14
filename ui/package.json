@@ -16,6 +16,7 @@
     "lint:check": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings 0",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "optimize:gltf": "node scripts/optimize-gltf.js",
+    "font:subset": "node scripts/subset-font.mjs",
     "gltfjsx": "pnpm dlx gltfjsx"
   },
   "dependencies": {
