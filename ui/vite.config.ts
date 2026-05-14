@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { fileURLToPath, URL } from "url";
 import eslint from "vite-plugin-eslint";
+import { visualizer } from "rollup-plugin-visualizer";
 import { copyFileSync, mkdirSync, existsSync, readFileSync, writeFileSync, rmSync, readdirSync, statSync } from "fs";
 import { join } from "path";
 import { gzipSync, brotliCompressSync, constants } from "zlib";
@@ -108,6 +109,36 @@ const gltfTexturePlugin = () => ({
   }
 });
 
+// Plugin that injects <link rel="preload"> tags for critical 3D assets
+// (font JSON, water normal, GLTF + bin files) so they start streaming as
+// soon as the HTML lands, in parallel with the JS bundle. Asset filenames
+// are hashed by Vite, so the plugin discovers them from the bundle output.
+const preloadCriticalAssetsPlugin = () => ({
+  name: 'preload-critical-assets',
+  transformIndexHtml: {
+    order: 'post' as const,
+    handler(html: string, ctx: { bundle?: Record<string, { fileName: string }> }) {
+      if (!ctx.bundle) return html;
+      const preloads: string[] = [];
+      for (const fileName of Object.keys(ctx.bundle)) {
+        const href = '/' + fileName;
+        if (fileName.endsWith('.gltf')) {
+          preloads.push(`<link rel="preload" href="${href}" as="fetch" type="model/gltf+json" crossorigin>`);
+        } else if (fileName.endsWith('.avif') && fileName.includes('waternormals')) {
+          preloads.push(`<link rel="preload" href="${href}" as="image" type="image/avif">`);
+        } else if (fileName.endsWith('.json') && fileName.toLowerCase().includes('noto sans')) {
+          preloads.push(`<link rel="preload" href="${href}" as="fetch" type="application/json" crossorigin>`);
+        }
+      }
+      // bin files have stable names (set by gltfTexturePlugin), not hashed
+      preloads.push(`<link rel="preload" href="/assets/sphere.bin" as="fetch" crossorigin>`);
+      preloads.push(`<link rel="preload" href="/assets/cube.bin" as="fetch" crossorigin>`);
+      if (preloads.length === 0) return html;
+      return html.replace('</head>', `  ${preloads.join('\n  ')}\n  </head>`);
+    },
+  },
+});
+
 // Plugin to generate compressed versions of text files
 const compressionPlugin = () => ({
   name: 'compression',
@@ -195,7 +226,19 @@ export default defineConfig({
     }),
     excludeModelsPlugin(),
     gltfTexturePlugin(),
+    preloadCriticalAssetsPlugin(),
     compressionPlugin(),
+    ...(process.env.ANALYZE
+      ? [
+          visualizer({
+            filename: "dist/stats.html",
+            template: "treemap",
+            gzipSize: true,
+            brotliSize: true,
+            open: true,
+          }),
+        ]
+      : []),
   ],
   assetsInclude: ["**/*.ktx2"],
   resolve: {
@@ -226,12 +269,17 @@ export default defineConfig({
         warn(warning);
       },
       output: {
-        manualChunks: {
-          // Separate Three.js into its own chunk
-          'three-vendor': ['three'],
-          'react-three': ['@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
-          'ui-vendor': ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
-          'react-vendor': ['react', 'react-dom', 'react-router-dom']
+        manualChunks(id: string) {
+          if (!id.includes('node_modules')) return;
+          // Three.js core into its own chunk
+          if (/[\\/]three[\\/]/.test(id) && !/@react-three/.test(id)) return 'three-vendor';
+          // React Three Fiber + its shared deps (zustand, its-fine, scheduler-aware bits)
+          if (/@react-three[\\/]/.test(id)) return 'react-three';
+          if (/[\\/]zustand[\\/]|[\\/]its-fine[\\/]|[\\/]react-reconciler[\\/]|[\\/]scheduler[\\/]/.test(id)) return 'react-three';
+          // MUI / emotion
+          if (/@mui[\\/]|@emotion[\\/]/.test(id)) return 'ui-vendor';
+          // React core
+          if (/[\\/](react|react-dom|react-router|react-router-dom)[\\/]/.test(id)) return 'react-vendor';
         }
       },
       treeshake: {

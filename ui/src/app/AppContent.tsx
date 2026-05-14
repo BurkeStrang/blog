@@ -9,9 +9,6 @@ import { LoadingCubes } from "../shared/components";
 import type { Vector3 } from "three";
 import { backgroundColor } from "../shared/theme/colors";
 import { useAssetLoader, usePostsApi } from "../shared/hooks";
-import { memoryTracker } from "../engine/memory/MemoryTracker";
-import { memoryMonitor } from "../engine/memory/MemoryProfiler";
-import { cleanupResourcePoolIntervals } from "../engine/memory/ResourcePool";
 import { usePostsData } from "../shared/contexts/SearchContext";
 import { ThemeProvider } from "../shared/contexts/ThemeContext";
 import { apiService } from "../services/api";
@@ -145,12 +142,13 @@ const AppContent: React.FC = memo(() => {
     }
   }, [location.pathname]);
 
-  // Memory tracking (async to avoid blocking)
+  // Memory tracking (async to avoid blocking — engine modules dynamically loaded)
   useEffect(() => {
     if (canvasReady) {
-      // Use setTimeout to make memory tracking non-blocking
       setTimeout(() => {
-        memoryTracker.takeSnapshot("AppContent-Ready");
+        void import("../engine/memory/MemoryTracker").then(({ memoryTracker }) => {
+          memoryTracker.takeSnapshot("AppContent-Ready");
+        });
       }, 0);
     }
   }, [canvasReady]);
@@ -228,13 +226,19 @@ const AppContent: React.FC = memo(() => {
         handleEmergencyCleanup as EventListener,
       );
 
-      // Cleanup all development intervals and memory monitoring
-      memoryMonitor.dispose();
-      cleanupResourcePoolIntervals();
-      // Force a final memory snapshot
-      setTimeout(() => {
-        memoryTracker.takeSnapshot("AppContent-Cleanup");
-      }, 100);
+      // Cleanup all development intervals and memory monitoring — modules
+      // are dynamically loaded so they don't bloat the initial chunk.
+      void Promise.all([
+        import("../engine/memory/MemoryProfiler"),
+        import("../engine/memory/ResourcePool"),
+        import("../engine/memory/MemoryTracker"),
+      ]).then(([{ memoryMonitor }, { cleanupResourcePoolIntervals }, { memoryTracker }]) => {
+        memoryMonitor.dispose();
+        cleanupResourcePoolIntervals();
+        setTimeout(() => {
+          memoryTracker.takeSnapshot("AppContent-Cleanup");
+        }, 100);
+      });
     };
   }, [resources]);
 

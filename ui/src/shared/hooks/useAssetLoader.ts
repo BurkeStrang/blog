@@ -7,7 +7,7 @@ import { TextureCompressor } from '../../engine/rendering';
 import waterNormalsUrl from '../../assets/textures/waternormals.avif?url';
 import sphereUrl from '../../assets/models/sphere/scene.gltf?url';
 import blockModelUrl from '../../assets/models/rubikscube/scene.gltf?url';
-import fontJson from '../../assets/fonts/Noto Sans_Regular.json';
+import fontJsonUrl from '../../assets/fonts/Noto Sans_Regular.json?url';
 
 type FontData = Parameters<FontLoader['parse']>[0];
 
@@ -68,14 +68,17 @@ export function useResourcePreloader() {
       try {
         const gltfLoader = new GLTFLoader();
         const fontLoader = new FontLoader();
-        
-        // Load font
-        if (!cancelled) {
-          resourcesRef.current.fonts.inter = fontLoader.parse(fontJson as unknown as FontData);
-        }
-        
+
         // Load all resources in parallel with adaptive compression
         const loadPromises = [
+          // Fetch font JSON as a separate asset so it doesn't bloat the JS bundle.
+          fetch(fontJsonUrl)
+            .then((r) => r.json() as Promise<FontData>)
+            .then((data) => {
+              if (!cancelled) {
+                resourcesRef.current.fonts.inter = fontLoader.parse(data);
+              }
+            }),
           // Optimized water normals - adaptive compression based on device
           textureOptimizer.optimizeTexture(waterNormalsUrl, {
             maxSize: compressionSettings.waterNormalsSize,

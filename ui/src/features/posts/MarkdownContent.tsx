@@ -1,17 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { compressToEncodedURIComponent } from 'lz-string';
 import ReactMarkdown from 'react-markdown';
-import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
-import bash from 'react-syntax-highlighter/dist/esm/languages/prism/bash';
-import cpp from 'react-syntax-highlighter/dist/esm/languages/prism/cpp';
-import csharp from 'react-syntax-highlighter/dist/esm/languages/prism/csharp';
-import css from 'react-syntax-highlighter/dist/esm/languages/prism/css';
-import go from 'react-syntax-highlighter/dist/esm/languages/prism/go';
-import javascript from 'react-syntax-highlighter/dist/esm/languages/prism/javascript';
-import jsx from 'react-syntax-highlighter/dist/esm/languages/prism/jsx';
-import markup from 'react-syntax-highlighter/dist/esm/languages/prism/markup';
-import tsx from 'react-syntax-highlighter/dist/esm/languages/prism/tsx';
-import typescript from 'react-syntax-highlighter/dist/esm/languages/prism/typescript';
+import { PrismAsyncLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import remarkGfm from 'remark-gfm';
 import styled from 'styled-components';
 import { bluish, readableLightgrey, secondary } from '../../shared/theme/colors';
@@ -23,17 +13,19 @@ const readableH3Dark = `color-mix(in srgb, ${headingH3Base} 34%, ${readableLight
 const readableH4Light = `color-mix(in srgb, ${headingH4Base} 24%, black)`;
 const readableH4Dark = `color-mix(in srgb, ${headingH4Base} 30%, ${readableLightgrey})`;
 
-SyntaxHighlighter.registerLanguage('bash', bash);
-SyntaxHighlighter.registerLanguage('cpp', cpp);
-SyntaxHighlighter.registerLanguage('csharp', csharp);
-SyntaxHighlighter.registerLanguage('css', css);
-SyntaxHighlighter.registerLanguage('go', go);
-SyntaxHighlighter.registerLanguage('html', markup);
-SyntaxHighlighter.registerLanguage('javascript', javascript);
-SyntaxHighlighter.registerLanguage('jsx', jsx);
-SyntaxHighlighter.registerLanguage('markup', markup);
-SyntaxHighlighter.registerLanguage('tsx', tsx);
-SyntaxHighlighter.registerLanguage('typescript', typescript);
+// Register Prism languages lazily — each becomes its own chunk loaded only
+// when a code block of that language is rendered.
+SyntaxHighlighter.registerLanguage('bash', () => import('react-syntax-highlighter/dist/esm/languages/prism/bash'));
+SyntaxHighlighter.registerLanguage('cpp', () => import('react-syntax-highlighter/dist/esm/languages/prism/cpp'));
+SyntaxHighlighter.registerLanguage('csharp', () => import('react-syntax-highlighter/dist/esm/languages/prism/csharp'));
+SyntaxHighlighter.registerLanguage('css', () => import('react-syntax-highlighter/dist/esm/languages/prism/css'));
+SyntaxHighlighter.registerLanguage('go', () => import('react-syntax-highlighter/dist/esm/languages/prism/go'));
+SyntaxHighlighter.registerLanguage('html', () => import('react-syntax-highlighter/dist/esm/languages/prism/markup'));
+SyntaxHighlighter.registerLanguage('javascript', () => import('react-syntax-highlighter/dist/esm/languages/prism/javascript'));
+SyntaxHighlighter.registerLanguage('jsx', () => import('react-syntax-highlighter/dist/esm/languages/prism/jsx'));
+SyntaxHighlighter.registerLanguage('markup', () => import('react-syntax-highlighter/dist/esm/languages/prism/markup'));
+SyntaxHighlighter.registerLanguage('tsx', () => import('react-syntax-highlighter/dist/esm/languages/prism/tsx'));
+SyntaxHighlighter.registerLanguage('typescript', () => import('react-syntax-highlighter/dist/esm/languages/prism/typescript'));
 
 const MarkdownWrapper = styled.div`
   font-family: var(--font-family);
