@@ -116,9 +116,9 @@ interface PostBoxProps {
 }
 
 const fontSize = 0.2;
-const wordScale = 13;
+const wordScale = 16;
 const textMargin = 0.8;
-const textWrapWidthRatio = 0.78;
+const textWrapWidthRatio = 0.75;
 const textBoldOffset = 0.1;
 const textBoldOffsetY = 0.05;
 
@@ -261,21 +261,21 @@ function PostBoxCore(props: PostBoxProps) {
   const textGeometries = useMemo(() => {
     // Create geometries only when the actual text lines change
     return lines.map((line) => {
-      const cacheKey = `${line}-${fontSize}`;
-      
+      const cacheKey = `${line}-${fontSize}-b`;
+
       // Check cache first
       if (textGeometryCache.has(cacheKey)) {
         return textGeometryCache.get(cacheKey)!;
       }
 
-      // Create new geometry
+      // Create new geometry with a small bevel to fatten the stroke (bold effect)
       const geo = new TextGeometry(line, {
         font,
         size: fontSize,
-        bevelEnabled: false, // Disable bevel for better performance
-        bevelSize: 0,
-        bevelThickness: 0,
-        bevelSegments: 0,
+        bevelEnabled: true,
+        bevelSize: 0.002,
+        bevelThickness: 0.003,
+        bevelSegments: 2,
       });
       geo.computeBoundingBox();
       geo.center();
@@ -313,7 +313,7 @@ function PostBoxCore(props: PostBoxProps) {
       ),
     [textGeometries],
   );
-  const lineGap = 50 / wordScale;
+  const lineGap = 62 / wordScale;
   const totalTextHeight = useMemo(
     () =>
       lineHeights.reduce((sum, h) => sum + h, 0) +

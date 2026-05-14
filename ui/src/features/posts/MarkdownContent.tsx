@@ -68,15 +68,18 @@ const MarkdownWrapper = styled.div`
     background: none;
   }
 
-  /* H1 — massive display, tight tracking, uppercase */
+  /* H1 — massive display, tight tracking, uppercase. Word wrap matches the
+     PostCube title (greedy first-fit), not the balanced wrapping used on
+     other headings. */
   && h1 {
     font-size: clamp(2.8rem, 8vw, 5.5rem);
     font-weight: 800;
     letter-spacing: -0.06em;
-    line-height: 0.9;
-    margin: 0.6rem 0 0.5rem 0;
+    line-height: 0.8;
+    margin: 0.5rem 0 0.4rem 0;
     text-transform: uppercase;
     max-width: 14ch;
+    text-wrap: wrap;
   }
 
   && h1 br { line-height: 0; }
