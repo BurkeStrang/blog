@@ -4,7 +4,7 @@
 
 ## observability
 
-The Go API emits OpenTelemetry traces, correlated request logs, Redis spans/metrics, and Prometheus metrics.
+The Go API emits OpenTelemetry traces, correlated request logs, and Prometheus metrics. (Production runs with `OTEL_TRACES_EXPORTER=none`; the stack below is for local development only.)
 
 Run the local Grafana/Prometheus/Tempo stack:
 

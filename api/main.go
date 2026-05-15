@@ -40,9 +40,10 @@ func main() {
 	}
 	defer database.CloseCosmos()
 
-	// Connect to customredis if configured; otherwise use the in-memory cache.
-	// Skipping the call entirely when REDIS_ADDR is empty avoids a multi-second
-	// ping timeout on cold starts where no Redis is deployed (e.g. Container Apps).
+	// Connect to Redis if REDIS_ADDR is set; otherwise use the in-memory cache.
+	// Skipping InitRedisCache when the variable is empty avoids the multi-second
+	// ping timeout on cold starts in environments where no Redis is deployed
+	// (e.g. Azure Container Apps).
 	if redisAddr := os.Getenv("REDIS_ADDR"); redisAddr != "" {
 		middleware.InitRedisCache(redisAddr)
 	} else {

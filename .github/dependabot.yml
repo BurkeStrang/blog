@@ -30,26 +30,6 @@ updates:
       - "dependencies"
       - "docker"
 
-  # UI Docker base image
-  - package-ecosystem: "docker"
-    directory: "/ui"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    labels:
-      - "dependencies"
-      - "docker"
-
-  # Helm charts (nginx-ingress, cert-manager)
-  - package-ecosystem: "helm"
-    directory: "/helm"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    labels:
-      - "dependencies"
-      - "helm"
-
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"

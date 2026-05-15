@@ -20,7 +20,7 @@ type redisCacheEntry struct {
 	ETag        string    `json:"etag"`
 }
 
-// RedisCache is a Cache backend backed by a Redis-compatible server (customredis).
+// RedisCache is a Cache backend backed by a Redis-compatible server.
 type RedisCache struct {
 	client *redis.Client
 	ttl    time.Duration
@@ -205,9 +205,9 @@ func (r *RedisCache) ValidateAndCleanCache() map[string]interface{} {
 	return result
 }
 
-// InitRedisCache connects to the Redis-compatible server (customredis) at addr,
-// verifies the connection, and replaces the global cache vars.
-// Falls back to the existing in-memory caches if the connection fails.
+// InitRedisCache connects to the Redis-compatible server at addr, verifies the
+// connection, and replaces the global cache vars. Falls back to the existing
+// in-memory caches if the connection fails.
 func InitRedisCache(addr string) {
 	client := redis.NewClient(&redis.Options{
 		Addr:            addr,
@@ -229,7 +229,7 @@ func InitRedisCache(addr string) {
 	defer cancel()
 
 	if err := client.Ping(ctx).Err(); err != nil {
-		log.Printf("customredis unavailable at %s (%v) — using in-memory cache", addr, err)
+		log.Printf("Redis unavailable at %s (%v) — using in-memory cache", addr, err)
 		client.Close()
 		return
 	}
@@ -238,5 +238,5 @@ func InitRedisCache(addr string) {
 	AnalyticsCache = NewRedisCache(client, 2*time.Minute, "analytics")
 	APICache = NewRedisCache(client, 5*time.Minute, "api")
 
-	log.Printf("customredis connected at %s — cache backend: redis", addr)
+	log.Printf("Redis connected at %s — cache backend: redis", addr)
 }
