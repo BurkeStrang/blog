@@ -6,6 +6,26 @@ import { visualizer } from "rollup-plugin-visualizer";
 import { copyFileSync, mkdirSync, existsSync, readFileSync, writeFileSync, rmSync, readdirSync, statSync } from "fs";
 import { join } from "path";
 import { gzipSync, brotliCompressSync, constants } from "zlib";
+import { createHash } from "crypto";
+
+// Compute the deterministic hashed filename for a model bin. Used by both the
+// gltfTexturePlugin (which writes the file to dist) and the preload plugin
+// (which references it in <link rel="preload">). Hash comes from src content
+// so both plugins arrive at the same filename without needing to coordinate.
+const hashedBinFileName = (modelName: 'sphere' | 'cube'): string | null => {
+  const srcPath = join(
+    process.cwd(),
+    'src',
+    'assets',
+    'models',
+    modelName === 'sphere' ? 'sphere' : 'rubikscube',
+    'scene.bin',
+  );
+  if (!existsSync(srcPath)) return null;
+  const content = readFileSync(srcPath);
+  const hash = createHash('sha256').update(content).digest('hex').slice(0, 8);
+  return `${modelName}-${hash}.bin`;
+};
 
 // Custom plugin to copy GLTF textures and fix bin file references
 // Plugin to exclude models folder from public assets
@@ -25,7 +45,15 @@ const gltfTexturePlugin = () => ({
   writeBundle() {
     const assetsDir = join(process.cwd(), 'dist', 'assets');
     const srcModelsDir = join(process.cwd(), 'src', 'assets', 'models');
-    
+
+    // Tracks the hashed dist filenames so the gltf rewrite below can point
+    // each gltf at the correct hashed bin instead of the stable name that
+    // used to cause cross-deploy cache mismatches.
+    const binFileNames: { sphere: string | null; cube: string | null } = {
+      sphere: null,
+      cube: null,
+    };
+
     // Create assets/textures directory
     const assetsTexturesDir = join(assetsDir, 'textures');
     if (!existsSync(assetsTexturesDir)) {
@@ -51,12 +79,19 @@ const gltfTexturePlugin = () => ({
         }
       });
 
-      // Copy and rename sphere bin file
+      // Copy sphere bin file with a content hash in the filename, so each
+      // deploy that changes the bin content gets a new URL and bypasses
+      // browser cache. Stable filenames here previously caused stale-bin
+      // cache hits across deploys: the gltf was re-hashed but the bin
+      // wasn't, so browsers served their cached old bin alongside the new
+      // gltf → vertex/UV layout mismatch → broken render until manual
+      // refresh.
       const sphereBinSrc = join(sphereDir, 'scene.bin');
-      const sphereBinDest = join(assetsDir, 'sphere.bin');
-      if (existsSync(sphereBinSrc)) {
-        copyFileSync(sphereBinSrc, sphereBinDest);
-        console.log(`✅ Copied sphere.bin to assets/`);
+      const sphereName = hashedBinFileName('sphere');
+      if (existsSync(sphereBinSrc) && sphereName) {
+        copyFileSync(sphereBinSrc, join(assetsDir, sphereName));
+        binFileNames.sphere = sphereName;
+        console.log(`✅ Copied ${sphereName} to assets/`);
       }
     }
 
@@ -78,12 +113,13 @@ const gltfTexturePlugin = () => ({
         }
       });
 
-      // Copy and rename cube bin file
+      // Copy cube bin file with a content hash (see sphere bin comment).
       const cubeBinSrc = join(cubeDir, 'scene.bin');
-      const cubeBinDest = join(assetsDir, 'cube.bin');
-      if (existsSync(cubeBinSrc)) {
-        copyFileSync(cubeBinSrc, cubeBinDest);
-        console.log(`✅ Copied cube.bin to assets/`);
+      const cubeName = hashedBinFileName('cube');
+      if (existsSync(cubeBinSrc) && cubeName) {
+        copyFileSync(cubeBinSrc, join(assetsDir, cubeName));
+        binFileNames.cube = cubeName;
+        console.log(`✅ Copied ${cubeName} to assets/`);
       }
     }
 
@@ -99,9 +135,9 @@ const gltfTexturePlugin = () => ({
       if (!gltf.includes('"uri": "scene.bin"')) continue;
       let renamedTo: string | null = null;
       if (gltf.includes('renandesign3d') || gltf.includes('PreviewSphere')) {
-        renamedTo = 'sphere.bin';
+        renamedTo = binFileNames.sphere;
       } else if (gltf.includes('SonnyG1') || gltf.includes('rubikscube')) {
-        renamedTo = 'cube.bin';
+        renamedTo = binFileNames.cube;
       }
       if (!renamedTo) {
         console.warn(`⚠️  Could not identify ${fileName} — left scene.bin reference intact`);
@@ -140,8 +176,13 @@ const preloadCriticalAssetsPlugin = () => ({
           preloads.push({ href, as: 'script', rel: 'modulepreload' });
         }
       }
-      preloads.push({ href: '/assets/sphere.bin', as: 'fetch' });
-      preloads.push({ href: '/assets/cube.bin', as: 'fetch' });
+      // Bin files have content-hashed filenames computed from src/. Same
+      // helper as gltfTexturePlugin uses, so the preload URLs always match
+      // the emitted asset names.
+      const sphereBin = hashedBinFileName('sphere');
+      const cubeBin = hashedBinFileName('cube');
+      if (sphereBin) preloads.push({ href: '/assets/' + sphereBin, as: 'fetch' });
+      if (cubeBin) preloads.push({ href: '/assets/' + cubeBin, as: 'fetch' });
       preloads.push({ href: '/draco/draco_wasm_wrapper.js', as: 'script' });
       preloads.push({ href: '/draco/draco_decoder.wasm', as: 'fetch', type: 'application/wasm' });
       if (preloads.length === 0) return html;

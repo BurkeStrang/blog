@@ -29,6 +29,14 @@ const Cube = styled.div<{ $size: number; $delay: number }>`
   margin: 0 5px;
   animation: ${pulse} 1.5s ease-in-out infinite;
   animation-delay: ${props => props.$delay}s;
+  /* Force a dedicated compositor layer so the scale animation runs on the GPU
+     and keeps ticking even when the main thread is busy parsing three-vendor,
+     decoding GLTFs, or mounting React Three Fiber. Without this the browser
+     drops the animation back to the main thread and it visibly pauses during
+     load — defeating the loader's purpose. */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 `;
 
 const LoadingCubes: React.FC<LoadingCubesProps> = ({ size = 120 }) => (
