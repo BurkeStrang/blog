@@ -747,12 +747,17 @@ func SearchPostsDB(c *gin.Context) {
 // GetPopularPostsDB returns posts sorted by view count (redirects to GetPostsDB with sort parameters)
 func GetPopularPostsDB(c *gin.Context) {
 	// Set default sort parameters for popular posts
-	if c.Query("sort") == "" {
-		c.Request.URL.RawQuery += "&sort=page_views&order=desc"
+	query := c.Request.URL.Query()
+	if query.Get("sort") == "" {
+		query.Set("sort", "page_views")
 	}
-	if c.Query("limit") == "" {
-		c.Request.URL.RawQuery += "&limit=10"
+	if query.Get("order") == "" {
+		query.Set("order", "desc")
 	}
+	if query.Get("limit") == "" {
+		query.Set("limit", "10")
+	}
+	c.Request.URL.RawQuery = query.Encode()
 
 	// Use the main GetPostsDB function
 	GetPostsDB(c)

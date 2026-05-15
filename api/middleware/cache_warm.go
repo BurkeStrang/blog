@@ -20,7 +20,7 @@ import (
 // per-request caching after that.
 var hotListPaths = []string{
 	"/api/posts",
-	"/api/posts/popular",
+	"/api/posts/popular?limit=10&order=desc&sort=page_views",
 }
 
 type postCacheWarmTarget struct {
