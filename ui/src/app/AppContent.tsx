@@ -3,7 +3,6 @@ import { flushSync } from "react-dom";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { SideBar } from "../features/layout";
 import { CanvasBackground, GlobalStyle } from "../shared/theme/GlobalStyles";
-import { LazyOceanCanvas } from "../features/ocean";
 import styled from "styled-components";
 import { LoadingCubes } from "../shared/components";
 import type { Vector3 } from "three";
@@ -15,6 +14,12 @@ import { apiService } from "../services/api";
 import { cacheInvalidation } from "../services/cache/CacheManager";
 import { installMobileHapticsListener } from "../services/haptics";
 
+// LazyOceanCanvas is itself lazy-loaded so its three-vendor / react-three /
+// OceanScene dependency graph stays out of the initial bundle. Routes that
+// never set shouldLoadCanvas (e.g. /posts/:slug) won't fetch them at all.
+const LazyOceanCanvas = lazy(() =>
+  import("../features/ocean").then((m) => ({ default: m.LazyOceanCanvas })),
+);
 const About = lazy(() => import("../features/pages/About"));
 const Posts = lazy(() => import("../features/posts/Posts"));
 const NewPost = lazy(() => import("../features/posts/NewPost"));
@@ -99,10 +104,20 @@ const AppContent: React.FC = memo(() => {
     return new Set(filteredPosts.map((post) => post.slug));
   }, [filteredPosts]);
 
-  const [shouldLoadCanvas, setShouldLoadCanvas] = useState(false);
+  // Compute synchronously per render so the asset loader can gate on it
+  // without an extra effect roundtrip. Routes that don't mount the canvas
+  // (e.g. /posts/:slug) skip 3D asset loading entirely.
+  const isCanvasRoute =
+    location.pathname === "/" ||
+    location.pathname === "/posts" ||
+    location.pathname === "/about";
+  const [shouldLoadCanvas, setShouldLoadCanvas] = useState(isCanvasRoute);
 
-  // Preload all assets once
-  const { isLoading, error, resources } = useAssetLoader();
+  // Preload heavy 3D assets only when a canvas route is active. The
+  // assetLoaderImpl module (containing three, GLTFLoader, etc.) is
+  // dynamic-imported by the hook only when enabled — keeps three-vendor
+  // out of the entry dep graph on post-detail routes.
+  const { isLoading, error, resources } = useAssetLoader(isCanvasRoute);
   const [canvasLoaded, setCanvasLoaded] = useState(false);
   const [pendingDetailSlug, setPendingDetailSlug] = useState<string | null>(null);
   const [pendingRoutePath, setPendingRoutePath] = useState<string | null>(null);
@@ -358,10 +373,15 @@ const AppContent: React.FC = memo(() => {
           hidden={isOAuthCallback || (hidePostsChrome && !isAboutPage) || isNewPost}
         >
           <CanvasBackground>
-            <LazyOceanCanvas
-              {...oceanCanvasProps}
-              isPaused={(hidePostsChrome && !isAboutPage) || isOAuthCallback || isNewPost}
-            />
+            {/* LazyOceanCanvas is React.lazy so it needs a Suspense boundary.
+                Fallback is null because PersistentCanvasWrapper already hides
+                the area during load and useAssetLoader gates `resourcesReady`. */}
+            <Suspense fallback={null}>
+              <LazyOceanCanvas
+                {...oceanCanvasProps}
+                isPaused={(hidePostsChrome && !isAboutPage) || isOAuthCallback || isNewPost}
+              />
+            </Suspense>
           </CanvasBackground>
         </PersistentCanvasWrapper>
       )}

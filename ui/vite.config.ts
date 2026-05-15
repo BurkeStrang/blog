@@ -124,33 +124,33 @@ const preloadCriticalAssetsPlugin = () => ({
     order: 'post' as const,
     handler(html: string, ctx: { bundle?: Record<string, { fileName: string }> }) {
       if (!ctx.bundle) return html;
-      const preloads: string[] = [];
-      let oceanSceneChunk: string | null = null;
+      // Discover hashed assets in the bundle. Build a list of preload specs
+      // and inject them via inline script that checks the current pathname,
+      // so post-detail routes don't fetch 3D code/assets they'll never use.
+      const preloads: Array<{ href: string; as: string; type?: string; rel?: string }> = [];
       for (const fileName of Object.keys(ctx.bundle)) {
         const href = '/' + fileName;
         if (fileName.endsWith('.gltf')) {
-          preloads.push(`<link rel="preload" href="${href}" as="fetch" type="model/gltf+json" crossorigin>`);
+          preloads.push({ href, as: 'fetch', type: 'model/gltf+json' });
         } else if (fileName.endsWith('.avif') && fileName.includes('waternormals')) {
-          preloads.push(`<link rel="preload" href="${href}" as="image" type="image/avif" crossorigin>`);
+          preloads.push({ href, as: 'image', type: 'image/avif' });
         } else if (fileName.endsWith('.json') && fileName.toLowerCase().includes('noto sans')) {
-          preloads.push(`<link rel="preload" href="${href}" as="fetch" type="application/json" crossorigin>`);
+          preloads.push({ href, as: 'fetch', type: 'application/json' });
         } else if (/OceanScene-[A-Za-z0-9_-]+\.js$/.test(fileName)) {
-          oceanSceneChunk = href;
+          preloads.push({ href, as: 'script', rel: 'modulepreload' });
         }
       }
-      // bin files + draco decoder are at stable paths (not hashed)
-      preloads.push(`<link rel="preload" href="/assets/sphere.bin" as="fetch" crossorigin>`);
-      preloads.push(`<link rel="preload" href="/assets/cube.bin" as="fetch" crossorigin>`);
-      // Draco decoder WASM is needed before any GLTF can be parsed.
-      preloads.push(`<link rel="preload" href="/draco/draco_wasm_wrapper.js" as="script" crossorigin>`);
-      preloads.push(`<link rel="preload" href="/draco/draco_decoder.wasm" as="fetch" type="application/wasm" crossorigin>`);
-      // OceanScene is lazy but always needed on home/posts/about routes — preload
-      // its JS chunk so it overlaps with the initial bundle download.
-      if (oceanSceneChunk) {
-        preloads.push(`<link rel="modulepreload" href="${oceanSceneChunk}" crossorigin>`);
-      }
+      preloads.push({ href: '/assets/sphere.bin', as: 'fetch' });
+      preloads.push({ href: '/assets/cube.bin', as: 'fetch' });
+      preloads.push({ href: '/draco/draco_wasm_wrapper.js', as: 'script' });
+      preloads.push({ href: '/draco/draco_decoder.wasm', as: 'fetch', type: 'application/wasm' });
       if (preloads.length === 0) return html;
-      return html.replace('</head>', `  ${preloads.join('\n  ')}\n  </head>`);
+
+      // Inline script runs synchronously during HTML parse, before any other
+      // resource fetches. Skips preloads on /posts/:slug since that route
+      // never mounts the 3D canvas — saves ~1MB of unused asset downloads.
+      const script = `<script>(function(){var p=${JSON.stringify(preloads)};var path=location.pathname;var isPostDetail=/^\\/posts\\/[^/]+$/.test(path);if(isPostDetail)return;for(var i=0;i<p.length;i++){var s=p[i],l=document.createElement('link');l.rel=s.rel||'preload';l.href=s.href;if(s.as)l.as=s.as;if(s.type)l.type=s.type;l.crossOrigin='anonymous';document.head.appendChild(l);}})();</script>`;
+      return html.replace('</head>', `  ${script}\n  </head>`);
     },
   },
 });
