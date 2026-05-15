@@ -149,7 +149,7 @@ export const GlobalStyle = createGlobalStyle`
     --color-md-th-bg: rgba(0, 0, 0, 0.05);
     --color-md-tr-hover: rgba(0, 0, 0, 0.03);
     --color-md-hr: rgba(0, 0, 0, 0.1);
-    --color-md-code-bg: rgba(206, 207, 211, 0.88);
+    --color-md-code-bg: rgba(205, 205, 211, 0.88);
     --color-md-code-border: rgba(0, 0, 0, 0.12);
     --color-md-code-glass-highlight: rgba(255, 255, 255, 0.15);
     --color-md-code-inset: rgba(255, 255, 255, 0.15);
