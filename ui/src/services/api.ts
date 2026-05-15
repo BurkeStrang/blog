@@ -128,14 +128,17 @@ class ApiService {
     }
   }
 
-  // Get all posts with caching (legacy format for backward compatibility)
+  // Get all posts with caching (legacy format for backward compatibility).
+  // Endpoint is called with NO query string so it matches the cache warmer's
+  // URL (api/middleware/cache_warm.go:27). The server defaults to limit=150,
+  // so omitting the param doesn't change response shape.
   async getPosts(): Promise<Post[]> {
     const response = await this.fetch<{
       posts: Post[];
       pagination: { total: number; limit: number; offset: number; hasMore: boolean };
       search?: string;
       sort?: { field: string; order: string };
-    }>('/api/posts?limit=150', {
+    }>('/api/posts', {
       cache: 'posts',
       ttl: 15 * 60 * 1000 // 15 minutes
     });
