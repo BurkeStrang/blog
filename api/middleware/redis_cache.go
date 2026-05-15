@@ -43,6 +43,12 @@ func (r *RedisCache) Get(cacheKey string) (*CacheEntry, bool) {
 func (r *RedisCache) GetWithContext(ctx context.Context, cacheKey string) (*CacheEntry, bool) {
 	raw, err := r.client.Get(ctx, r.key(cacheKey)).Bytes()
 	if err != nil {
+		// redis.Nil is the normal "key not present" sentinel — don't log it.
+		// Any other error (protocol, EOF, timeout) is interesting; surfaces
+		// hidden cache-backend bugs like partial-send issues on large values.
+		if err != redis.Nil {
+			log.Printf("RedisCache: GET error for key %s: %v", cacheKey, err)
+		}
 		return nil, false
 	}
 
