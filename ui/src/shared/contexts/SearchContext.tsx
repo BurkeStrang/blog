@@ -54,19 +54,14 @@ const PaginationContext = createContext<PaginationContextType | undefined>(undef
 
 // ── pure helpers (defined outside to avoid re-creation) ───────────────────────
 
-const SERVER_SEARCH_MIN_CHARS = 3;
-
 const stripHtmlTags = (html: string): string =>
   html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-
-const postSearchText = (post: Post): string =>
-  `${post.title} ${post.body || ""}`.toLowerCase();
 
 const searchPosts = (posts: Post[], query: string): Post[] => {
   if (!query.trim()) return posts;
   const terms = query.toLowerCase().trim().split(/\s+/);
   return posts.filter((post) => {
-    const text = postSearchText(post);
+    const text = `${post.title.toLowerCase()} ${stripHtmlTags(post.body).toLowerCase()}`;
     return terms.every((t) => text.includes(t));
   });
 };
@@ -80,7 +75,7 @@ const literalMatchRank = (post: Post, query: string): number => {
   const phrase = query.toLowerCase().trim();
   if (!phrase) return 0;
   const title = post.title.toLowerCase();
-  const body = stripHtmlTags(post.body || "").toLowerCase();
+  const body = stripHtmlTags(post.body).toLowerCase();
   const isMultiWord = /\s/.test(phrase);
 
   if (isMultiWord) {
@@ -140,8 +135,6 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [isSorting, setIsSorting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [initialPostsSnapshot, setInitialPostsSnapshot] = useState<Post[]>([]);
-  const [serverSearchPosts, setServerSearchPosts] = useState<Post[] | null>(null);
-  const [serverSearchQuery, setServerSearchQuery] = useState("");
 
   const timeoutRefs = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
   const recentApiCalls = useRef<Map<string, number>>(new Map());
@@ -175,34 +168,6 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     setCurrentPage(1);
   }, [debouncedQuery, sortBy, sortDirection]);
-
-  useEffect(() => {
-    const normalizedQuery = debouncedQuery.trim();
-    if (normalizedQuery.length < SERVER_SEARCH_MIN_CHARS) {
-      setServerSearchPosts(null);
-      setServerSearchQuery("");
-      return;
-    }
-
-    let active = true;
-    apiService
-      .getPostsEnhanced({ search: normalizedQuery })
-      .then((response) => {
-        if (!active) return;
-        setServerSearchPosts(response.posts || []);
-        setServerSearchQuery(normalizedQuery);
-      })
-      .catch((error) => {
-        if (!active) return;
-        console.error("Server post search failed:", error);
-        setServerSearchPosts(null);
-        setServerSearchQuery("");
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [debouncedQuery]);
 
   // Stable setter that captures initial snapshot for trending
   const setAllPosts = useCallback((posts: Post[]) => {
@@ -267,25 +232,10 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const deferredSortBy = useDeferredValue(sortBy);
   const deferredSortDirection = useDeferredValue(sortDirection);
-  const normalizedDebouncedQuery = debouncedQuery.trim();
-  const activePosts =
-    serverSearchPosts !== null && serverSearchQuery === normalizedDebouncedQuery
-      ? serverSearchPosts
-      : allPosts;
-  const shouldFilterLocally =
-    normalizedDebouncedQuery.length > 0 &&
-    normalizedDebouncedQuery.length < SERVER_SEARCH_MIN_CHARS;
 
   const filteredPosts = useMemo(
-    () =>
-      sortPosts(
-        shouldFilterLocally ? searchPosts(activePosts, debouncedQuery) : activePosts,
-        deferredSortBy,
-        deferredSortDirection,
-        initialPostsSnapshot,
-        debouncedQuery,
-      ),
-    [activePosts, debouncedQuery, deferredSortBy, deferredSortDirection, initialPostsSnapshot, shouldFilterLocally],
+    () => sortPosts(searchPosts(allPosts, debouncedQuery), deferredSortBy, deferredSortDirection, initialPostsSnapshot, debouncedQuery),
+    [allPosts, debouncedQuery, deferredSortBy, deferredSortDirection, initialPostsSnapshot],
   );
 
   // Each context value is independently memoized — consumers only re-render when

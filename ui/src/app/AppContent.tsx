@@ -37,7 +37,6 @@ export interface Post {
   next?: string;
   title: string;
   body: string;
-  bodyTruncated?: boolean;
   position?: Vector3;
   date?: Date;
   pageViews?: number;

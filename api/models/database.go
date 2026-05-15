@@ -6,16 +6,15 @@ import (
 
 // Post represents a blog post (for API compatibility with Cosmos DB)
 type Post struct {
-	ID            uint      `json:"id"`
-	Slug          string    `json:"slug"`
-	Previous      string    `json:"previous,omitempty"`
-	Next          string    `json:"next,omitempty"`
-	Title         string    `json:"title"`
-	Body          string    `json:"body"`
-	BodyTruncated bool      `json:"bodyTruncated,omitempty"`
-	Author        string    `json:"author"`
-	CreatedAt     time.Time `json:"date"`
-	UpdatedAt     time.Time `json:"-"`
+	ID        uint      `json:"id"`
+	Slug      string    `json:"slug"`
+	Previous  string    `json:"previous,omitempty"`
+	Next      string    `json:"next,omitempty"`
+	Title     string    `json:"title"`
+	Body      string    `json:"body"`
+	Author    string    `json:"author"`
+	CreatedAt time.Time `json:"date"`
+	UpdatedAt time.Time `json:"-"`
 
 	// Analytics (embedded for API compatibility)
 	PageViews   int        `json:"pageViews"`

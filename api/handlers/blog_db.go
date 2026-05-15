@@ -18,20 +18,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const postSummaryBodyRunes = 320
-
-func summarizePost(post *models.Post) {
-	text := strings.Join(strings.Fields(post.Body), " ")
-	runes := []rune(text)
-	if len(runes) > postSummaryBodyRunes {
-		post.Body = string(runes[:postSummaryBodyRunes])
-		post.BodyTruncated = true
-		return
-	}
-
-	post.Body = text
-}
-
 // GetPostsDB handles GET /api/posts with Cosmos DB storage, search, and sorting
 func GetPostsDB(c *gin.Context) {
 	// Parse query parameters
@@ -147,9 +133,7 @@ func GetPostsDB(c *gin.Context) {
 	// Convert CosmosPost to Post for API compatibility
 	var posts []models.Post
 	for _, cosmosPost := range cosmosPosts {
-		post := cosmosPost.ToPost()
-		summarizePost(post)
-		posts = append(posts, *post)
+		posts = append(posts, *cosmosPost.ToPost())
 	}
 
 	// Return paginated response (simplified for now - Cosmos DB pagination is complex)
@@ -763,17 +747,12 @@ func SearchPostsDB(c *gin.Context) {
 // GetPopularPostsDB returns posts sorted by view count (redirects to GetPostsDB with sort parameters)
 func GetPopularPostsDB(c *gin.Context) {
 	// Set default sort parameters for popular posts
-	query := c.Request.URL.Query()
-	if query.Get("sort") == "" {
-		query.Set("sort", "pageViews")
+	if c.Query("sort") == "" {
+		c.Request.URL.RawQuery += "&sort=page_views&order=desc"
 	}
-	if query.Get("order") == "" {
-		query.Set("order", "desc")
+	if c.Query("limit") == "" {
+		c.Request.URL.RawQuery += "&limit=10"
 	}
-	if query.Get("limit") == "" {
-		query.Set("limit", "10")
-	}
-	c.Request.URL.RawQuery = query.Encode()
 
 	// Use the main GetPostsDB function
 	GetPostsDB(c)

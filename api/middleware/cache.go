@@ -83,20 +83,8 @@ func cacheSet(ctx context.Context, cache Cache, key string, data []byte, content
 // generateCacheKey builds a cache key from the request method, path, query, and user.
 func generateCacheKey(c *gin.Context) string {
 	key := fmt.Sprintf("%s:%s", c.Request.Method, c.Request.URL.Path)
-	query := c.Request.URL.Query()
-	if c.Request.URL.Path == "/api/posts/popular" {
-		if query.Get("sort") == "" {
-			query.Set("sort", "pageViews")
-		}
-		if query.Get("order") == "" {
-			query.Set("order", "desc")
-		}
-		if query.Get("limit") == "" {
-			query.Set("limit", "10")
-		}
-	}
-	if encodedQuery := query.Encode(); encodedQuery != "" {
-		key += "?" + encodedQuery
+	if c.Request.URL.RawQuery != "" {
+		key += "?" + c.Request.URL.RawQuery
 	}
 	if userID, exists := c.Get("userID"); exists {
 		key += fmt.Sprintf(":user:%v", userID)
