@@ -1,0 +1,12 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/assets/*",
+      "/basis/*",
+      "/draco/*",
+      "/models/*",
+      "/*.{js,css,ico,png,jpg,jpeg,svg,gif,webp,avif,woff,woff2,ttf,otf,gltf,glb,bin,json,txt,xml,map}"
+    ]
+  }
+}
