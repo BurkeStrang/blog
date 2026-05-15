@@ -56,17 +56,35 @@ output "key_vault_uri" {
   value       = azurerm_key_vault.blog.vault_uri
 }
 
-output "aks_cluster_name" {
-  description = "AKS cluster name"
-  value       = azurerm_kubernetes_cluster.blog.name
+# Container Apps outputs
+output "containerapp_name" {
+  description = "Container App name (used by deploy.sh when pushing new images)"
+  value       = azurerm_container_app.api.name
 }
 
-output "aks_resource_group" {
-  description = "AKS resource group"
-  value       = azurerm_kubernetes_cluster.blog.resource_group_name
+output "containerapp_fqdn" {
+  description = "Container App default ingress FQDN (use this URL for pre-DNS-cutover testing)"
+  value       = azurerm_container_app.api.latest_revision_fqdn
 }
 
-output "aks_kubelet_identity" {
-  description = "AKS kubelet managed identity object ID"
-  value       = azurerm_kubernetes_cluster.blog.kubelet_identity[0].object_id
+output "containerapp_environment_name" {
+  description = "Container App Environment name"
+  value       = azurerm_container_app_environment.blog.name
+}
+
+# Static Web Apps outputs
+output "staticwebapp_name" {
+  description = "Static Web App name"
+  value       = azurerm_static_web_app.ui.name
+}
+
+output "staticwebapp_default_hostname" {
+  description = "Static Web App default hostname (use this URL for pre-DNS-cutover testing)"
+  value       = azurerm_static_web_app.ui.default_host_name
+}
+
+output "staticwebapp_api_key" {
+  description = "Static Web App deployment token (passed to `swa deploy --deployment-token`)"
+  value       = azurerm_static_web_app.ui.api_key
+  sensitive   = true
 }

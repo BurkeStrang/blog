@@ -74,20 +74,34 @@ variable "jwt_secret" {
   default     = ""
 }
 
-variable "aks_system_vm_size" {
-  description = "VM size for AKS system node pool"
-  type        = string
-  default     = "Standard_D2s_v3"
+# Container Apps (replacing AKS for the API)
+variable "containerapp_min_replicas" {
+  description = "Minimum Container App replicas (1 keeps a warm instance so the periodic cache warmer runs)"
+  type        = number
+  default     = 1
 }
 
-variable "aks_api_vm_size" {
-  description = "VM size for AKS API node pool"
-  type        = string
-  default     = "Standard_B2s"
+variable "containerapp_max_replicas" {
+  description = "Maximum Container App replicas"
+  type        = number
+  default     = 2
 }
 
-variable "aks_ui_vm_size" {
-  description = "VM size for AKS UI node pool"
+variable "containerapp_cpu" {
+  description = "vCPU per Container App replica"
+  type        = number
+  default     = 0.25
+}
+
+variable "containerapp_memory" {
+  description = "Memory per Container App replica (must pair with cpu — see Azure Container Apps cpu/memory matrix)"
   type        = string
-  default     = "Standard_B2s"
+  default     = "0.5Gi"
+}
+
+# Static Web Apps (replacing AKS for the UI)
+variable "staticwebapp_location" {
+  description = "Azure region for Static Web Apps Free tier (Free is only offered in a few regions; East US 2 is closest to East US)"
+  type        = string
+  default     = "East US 2"
 }
