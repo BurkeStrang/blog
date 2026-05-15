@@ -287,9 +287,15 @@ func CacheMiddleware(cache Cache, cacheable func(*gin.Context) bool) gin.Handler
 
 		if entry, exists := cacheGet(c.Request.Context(), cache, cacheKey); exists {
 			c.Set(cacheStatusContextKey, "HIT")
+			// c.Abort() stops gin from invoking subsequent handlers in the
+			// chain — without it, `return` only exits this middleware and the
+			// real handler still runs (re-querying Cosmos, then trying to
+			// write a second response). Confirmed in production logs:
+			// "Cache HIT" was followed by "Executing Cosmos DB query".
 			if ifNoneMatch := c.GetHeader("If-None-Match"); ifNoneMatch != "" && ifNoneMatch == entry.ETag {
 				log.Printf("Cache HIT (304 Not Modified): %s", cacheKey)
 				c.Status(http.StatusNotModified)
+				c.Abort()
 				return
 			}
 			log.Printf("Cache HIT: %s (%d bytes)", cacheKey, len(entry.Data))
@@ -297,6 +303,7 @@ func CacheMiddleware(cache Cache, cacheable func(*gin.Context) bool) gin.Handler
 			c.Header("Cache-Control", cacheControl)
 			c.Header("X-Cache", "HIT")
 			c.Data(entry.StatusCode, entry.ContentType, entry.Data)
+			c.Abort()
 			return
 		}
 
