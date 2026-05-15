@@ -29,13 +29,24 @@ type postCacheWarmTarget struct {
 }
 
 // WarmPostsCache primes the posts cache through the router so startup uses the same cache path as live traffic.
+//
+// Invalidates the list-endpoint cache keys first so the warm always issues a
+// real Cosmos query and writes a fresh entry, regardless of any stale entries
+// left over in Redis from a prior pod's lifetime. Without this, a warm hit
+// could short-circuit to a stale cached response (or worse, to a key the
+// frontend never asks for) — and then real user traffic would still pay
+// cold-Cosmos cost on the next genuine miss.
 func WarmPostsCache(router http.Handler) {
 	log.Println("Warming posts cache")
 
 	for _, path := range hotListPaths {
+		cacheKey := "GET:" + path
+		PostsCache.Invalidate(cacheKey)
 		if err := warmCacheRequest(router, path); err != nil {
 			log.Printf("Posts cache warm failed for %s: %v", path, err)
+			continue
 		}
+		log.Printf("Posts cache warm succeeded for %s", path)
 	}
 
 	targets, err := fetchPostCacheWarmTargets()
