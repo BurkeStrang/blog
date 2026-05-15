@@ -16,8 +16,8 @@ import { dirname, basename, join } from "node:path";
 // visible at its on-screen size. The cube is also small but has hard edges, so
 // keep more of its detail.
 const TARGETS = [
-  { gltf: "src/assets/models/sphere/scene.gltf", ratio: 0.05 },
-  { gltf: "src/assets/models/rubikscube/scene.gltf", ratio: 0.2 },
+  { gltf: "src/assets/models/sphere/scene.gltf", ratio: 0.04 },
+  { gltf: "src/assets/models/rubikscube/scene.gltf", ratio: 0.1 },
 ];
 
 const io = new NodeIO().registerDependencies({

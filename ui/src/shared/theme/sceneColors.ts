@@ -145,9 +145,9 @@ export const LIGHT_SCENE_THEME: SceneTheme = {
   sceneLightColor: 0xf1f1f1,
   sceneGroundColor: 0xf1f1f1,
   mainLightIntensity: 2.2,
-  fillLightIntensity: 5.2,
-  frontLightIntensity: 4.2,
-  rimLightIntensity: 8.5,
+  fillLightIntensity: 3.2,
+  frontLightIntensity: 3.2,
+  rimLightIntensity: 4.5,
   ambientSceneIntensity: 9.8,
   hemisphereLightIntensity: 5.3,
   cubeBodyColor: 0xd7d9dc,
@@ -168,7 +168,7 @@ export const LIGHT_SCENE_THEME: SceneTheme = {
   sphereArrowAccentColor: 0x00dddd,
   sphereArrowAccentOpacity: 1.0,
   sphereLabelBackdropColor: 0xf1f1f1,
-  sphereLabelBackdropOpacity: 0.6,
+  sphereLabelBackdropOpacity: 0.9,
   sphereLabelOpacity: 0.4,
 };
 
