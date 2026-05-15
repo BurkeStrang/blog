@@ -8,11 +8,20 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"time"
 
 	"blogapi/database"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/data/azcosmos"
 )
+
+// Endpoints re-warmed on the periodic ticker. Only the high-traffic list
+// routes — individual post details are warmed once at startup and rely on
+// per-request caching after that.
+var hotListPaths = []string{
+	"/api/posts",
+	"/api/posts/popular",
+}
 
 type postCacheWarmTarget struct {
 	ID   string `json:"id"`
@@ -23,10 +32,7 @@ type postCacheWarmTarget struct {
 func WarmPostsCache(router http.Handler) {
 	log.Println("Warming posts cache")
 
-	for _, path := range []string{
-		"/api/posts",
-		"/api/posts/popular",
-	} {
+	for _, path := range hotListPaths {
 		if err := warmCacheRequest(router, path); err != nil {
 			log.Printf("Posts cache warm failed for %s: %v", path, err)
 		}
@@ -84,6 +90,43 @@ func WarmCommentsCache(router http.Handler) {
 	}
 
 	log.Printf("Comments cache warm complete: %d comment list routes primed", warmed)
+}
+
+// StartPeriodicPostsWarm spawns a goroutine that re-warms the posts list
+// endpoints every `interval` to keep them ahead of the Redis cache TTL.
+//
+// The Redis TTL on PostsCache is 15 minutes; pick an interval shorter than
+// that (e.g. 10m) so the cache is always populated when real users arrive,
+// even after long idle periods. Without this, the first visitor after the
+// TTL window pays the full Cosmos DB query cost (~8s on this dataset).
+//
+// Returns a stop function; call it on graceful shutdown.
+func StartPeriodicPostsWarm(router http.Handler, interval time.Duration) func() {
+	stop := make(chan struct{})
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-stop:
+				return
+			case <-ticker.C:
+				for _, path := range hotListPaths {
+					// Invalidate first so the request actually re-fetches from
+					// Cosmos and stores a fresh entry. Without this the warm
+					// request would just HIT the still-valid cache and never
+					// refresh the TTL — defeating the whole point.
+					cacheKey := "GET:" + path
+					PostsCache.Invalidate(cacheKey)
+					if err := warmCacheRequest(router, path); err != nil {
+						log.Printf("Periodic posts cache warm failed for %s: %v", path, err)
+					}
+				}
+			}
+		}
+	}()
+	log.Printf("Periodic posts cache warmer started (interval=%s)", interval)
+	return func() { close(stop) }
 }
 
 func warmCacheRequest(router http.Handler, path string) error {

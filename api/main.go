@@ -171,6 +171,13 @@ func main() {
 	middleware.WarmPostsCache(r)
 	middleware.WarmCommentsCache(r)
 
+	// Re-warm the posts list cache every 10 minutes (the Redis TTL is 15
+	// minutes — picking 10m guarantees there's always a fresh, populated
+	// entry waiting for the next visitor, even after long idle periods.
+	// Without this, the first user after the TTL window pays the full
+	// Cosmos query cost.
+	middleware.StartPeriodicPostsWarm(r, 10*time.Minute)
+
 	r.Run(":8080")
 }
 
