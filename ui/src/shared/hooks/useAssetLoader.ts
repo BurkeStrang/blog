@@ -13,6 +13,11 @@ interface LoadingState {
  * the heavy `assetLoaderImpl` module is dynamic-imported only when enabled,
  * so three.js + loaders never enter the bundle dependency graph of the
  * initial chunk on routes that don't need the 3D canvas.
+ *
+ * Once assets are loaded they STAY loaded until the hook unmounts — toggling
+ * `enabled` back to false (navigating to a non-canvas route) doesn't dispose
+ * them, so returning to a canvas route is instant. Disposal only fires on
+ * unmount (e.g. full page reload).
  */
 export function useResourcePreloader(enabled = true) {
   const [loadingState, setLoadingState] = useState<LoadingState>({
@@ -25,6 +30,8 @@ export function useResourcePreloader(enabled = true) {
     models: {},
     fonts: {},
   });
+  const hasLoadedRef = useRef(false);
+  const handleRef = useRef<{ dispose: () => void } | null>(null);
 
   const compressionSettings = useMemo(() => {
     const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory || 4;
@@ -37,23 +44,29 @@ export function useResourcePreloader(enabled = true) {
     };
   }, []);
 
+  // Trigger asset loading when the hook becomes enabled. Once loaded, this
+  // effect early-returns on every subsequent `enabled` toggle — resources
+  // are kept alive so re-entering a canvas route is instant.
   useEffect(() => {
-    if (!enabled) {
-      setLoadingState({ isLoading: false, error: null });
+    if (!enabled || hasLoadedRef.current) {
+      // If we're already loaded but state is still showing loading (rare),
+      // sync it so consumers can render.
+      if (hasLoadedRef.current) {
+        setLoadingState((s) => (s.isLoading ? { isLoading: false, error: null } : s));
+      }
       return;
     }
+
     let cancelled = false;
-    let handle: { dispose: () => void } | null = null;
     setLoadingState({ isLoading: true, error: null });
 
-    // Dynamic import so three.js, GLTFLoader, etc. land in their own chunk,
-    // not in the entry bundle. Only fetched when enabled.
     void import("./assetLoaderImpl")
       .then(({ loadAssets }) =>
         loadAssets(resourcesRef, compressionSettings, () => cancelled),
       )
       .then((h) => {
-        handle = h;
+        handleRef.current = h;
+        hasLoadedRef.current = true;
         if (!cancelled) setLoadingState({ isLoading: false, error: null });
       })
       .catch((err: unknown) => {
@@ -65,11 +78,22 @@ export function useResourcePreloader(enabled = true) {
         }
       });
 
+    // Cleanup ONLY cancels the in-flight load. Does NOT dispose loaded assets;
+    // disposal is handled by the separate unmount-only effect below.
     return () => {
       cancelled = true;
-      handle?.dispose();
     };
   }, [enabled, compressionSettings]);
+
+  // Dispose loaded resources on hook unmount only (e.g. full page reload).
+  // Empty deps so this cleanup never fires from `enabled` toggling.
+  useEffect(() => {
+    return () => {
+      handleRef.current?.dispose();
+      handleRef.current = null;
+      hasLoadedRef.current = false;
+    };
+  }, []);
 
   return {
     ...loadingState,
