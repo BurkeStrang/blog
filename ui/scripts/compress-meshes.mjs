@@ -17,7 +17,7 @@ import { dirname, basename, join } from "node:path";
 // keep more of its detail.
 const TARGETS = [
   { gltf: "src/assets/models/sphere/scene.gltf", ratio: 0.05 },
-  { gltf: "src/assets/models/rubikscube/scene.gltf", ratio: 0.4 },
+  { gltf: "src/assets/models/rubikscube/scene.gltf", ratio: 0.2 },
 ];
 
 const io = new NodeIO().registerDependencies({
