@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -145,7 +146,9 @@ func newMeterProvider(res *resource.Resource) (*sdkmetric.MeterProvider, error) 
 
 // Middleware adds Gin request spans and records Prometheus-friendly HTTP metrics.
 func Middleware(serviceName string) gin.HandlerFunc {
-	return otelgin.Middleware(serviceName)
+	return otelgin.Middleware(serviceName, otelgin.WithFilter(func(req *http.Request) bool {
+		return req.URL.Path != "/health"
+	}))
 }
 
 // MetricsHandler exposes the Prometheus scrape endpoint.

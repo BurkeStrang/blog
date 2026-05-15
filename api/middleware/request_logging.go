@@ -15,6 +15,10 @@ func RequestLoggingMiddleware() gin.HandlerFunc {
 		start := time.Now()
 		c.Next()
 
+		if c.Request.URL.Path == "/health" {
+			return
+		}
+
 		duration := time.Since(start)
 		cacheStatus := c.GetString(cacheStatusContextKey)
 		cacheBackend := c.GetString(cacheBackendContextKey)
