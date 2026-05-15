@@ -848,6 +848,7 @@ const PostDetailComponent = function PostDetail({
     return allPosts.find((p) => p.slug === slug);
   }, [allPosts, slug]);
   const [fullPost, setFullPost] = useState<Post | null>(null);
+  const [isFullPostLoading, setIsFullPostLoading] = useState(false);
   const post = fullPost ?? summaryPost;
   const hasTrackedRef = useRef<string | null>(null);
   const articleRef = useRef<HTMLElement>(null);
@@ -911,23 +912,28 @@ const PostDetailComponent = function PostDetail({
     let active = true;
     setFullPost(null);
 
-    if (!slug || (summaryPost && !summaryPost.bodyTruncated && summaryPost.body)) {
+    if (!slug || !summaryPost?.bodyTruncated) {
+      setIsFullPostLoading(false);
       return;
     }
 
+    setIsFullPostLoading(true);
     apiService
-      .getPostUncached(slug)
+      .getPost(slug)
       .then((fetchedPost) => {
         if (active) setFullPost(fetchedPost);
       })
       .catch((error) => {
         console.error("Failed to fetch full post:", error);
+      })
+      .finally(() => {
+        if (active) setIsFullPostLoading(false);
       });
 
     return () => {
       active = false;
     };
-  }, [slug, summaryPost]);
+  }, [slug, summaryPost?.bodyTruncated]);
 
   React.useLayoutEffect(() => {
     document.documentElement.classList.add("detail-page");
@@ -1025,7 +1031,7 @@ const PostDetailComponent = function PostDetail({
   }
 
   // No need to sanitize markdown - react-markdown handles it safely
-  const markdownContent = post.body;
+  const markdownContent = isFullPostLoading && summaryPost?.bodyTruncated ? "" : post.body;
 
   // Edit functionality
   const handleEdit = React.useCallback(() => {
