@@ -40,12 +40,14 @@ func main() {
 	}
 	defer database.CloseCosmos()
 
-	// Connect to customredis (falls back to in-memory if unavailable)
-	redisAddr := os.Getenv("REDIS_ADDR")
-	if redisAddr == "" {
-		redisAddr = "localhost:6379"
+	// Connect to customredis if configured; otherwise use the in-memory cache.
+	// Skipping the call entirely when REDIS_ADDR is empty avoids a multi-second
+	// ping timeout on cold starts where no Redis is deployed (e.g. Container Apps).
+	if redisAddr := os.Getenv("REDIS_ADDR"); redisAddr != "" {
+		middleware.InitRedisCache(redisAddr)
+	} else {
+		log.Println("REDIS_ADDR not set — using in-memory cache")
 	}
-	middleware.InitRedisCache(redisAddr)
 
 	r := gin.New()
 	if err := r.SetTrustedProxies(parseTrustedProxies(os.Getenv("TRUSTED_PROXIES"))); err != nil {
