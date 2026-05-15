@@ -204,6 +204,12 @@ class ApiService {
     });
   }
 
+  async getPostUncached(slug: string): Promise<Post> {
+    return this.fetch<Post>(`/api/posts/${slug}`, {
+      cache: false
+    });
+  }
+
   // Track post view (no caching, invalidates analytics)
   async trackPostView(slug: string): Promise<void> {
     try {
