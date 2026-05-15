@@ -6,13 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a full-stack blog application with a **Go/Gin API backend** and **React/Vite frontend** featuring 3D Three.js visualization:
 
-- **API** (`/api/`): Go backend with Gin framework, SQLite database (GORM), OAuth authentication, and comprehensive caching middleware
+- **API** (`/api/`): Go backend with Gin framework, Azure Cosmos DB (NoSQL document store), OAuth authentication, and in-process multi-layer caching middleware
 - **UI** (`/ui/`): React frontend with Vite, Three.js/React Three Fiber for 3D scenes, Material-UI components, and performance-optimized rendering
 
 ### Key Technologies
-- **Backend**: Go 1.24, Gin, GORM, SQLite, JWT authentication, Google OAuth2
+- **Backend**: Go 1.24, Gin, Azure Cosmos DB SDK, JWT authentication, Google OAuth2
 - **Frontend**: React 19, Vite 6, Three.js, @react-three/fiber, Material-UI, TypeScript
 - **3D Engine**: Custom optimization engine with memory management, LOD system, texture compression
+- **Hosting**: Azure Container Apps (API) + Azure Static Web Apps (UI), see `terraform/`
 
 ## Development Commands
 
@@ -60,10 +61,10 @@ terraform output -raw cosmosdb_primary_key  # Get Cosmos DB key
 - `main.go` - Main server with routing, middleware, OAuth setup
 - `handlers/` - HTTP request handlers for posts, comments, auth
 - `middleware/` - Auth, caching, security, validation middleware
-- `database/` - Database initialization and JSON migration
-- `models/` - Database models and schemas
+- `database/` - Cosmos DB initialization and seed-data import
+- `models/` - NoSQL document models
 - `config/` - OAuth and environment configuration
-- `data/` - SQLite database and JSON data files
+- `observability/` - OpenTelemetry traces + Prometheus metrics setup
 
 ### Frontend (`/ui/`)
 - `src/app/` - Main app components and routing
@@ -87,9 +88,9 @@ terraform output -raw cosmosdb_primary_key  # Get Cosmos DB key
 
 ## Database & Caching
 
-- **SQLite** with GORM for data persistence
-- **Multi-layer caching**: Posts cache, analytics cache, API cache
-- **JSON migration** system imports data from `data/posts.json` and `data/analytics.json`
+- **Azure Cosmos DB** (NoSQL) for data persistence — containers: `posts`, `comments`, `users`
+- **Multi-layer in-process caching**: Posts cache, analytics cache, API cache (`api/middleware/redis_cache.go` despite the name — the file implements a Redis-shaped interface; production runs the in-memory fallback)
+- **Cache warming**: `WarmPostsCache` / `WarmCommentsCache` run at startup; `StartPeriodicPostsWarm` re-primes posts every 10 min so the first user after a TTL window doesn't pay the full Cosmos query
 - **Cache management** endpoints for admin users (`/admin/cache/*`)
 
 ## Performance Optimizations
@@ -118,14 +119,11 @@ The build process includes:
 
 ## Database Architecture
 
-**Current Status**: Cosmos DB (Migration Complete)
-- Branch: `features/cosmosmigration`
-- **Primary Database**: Azure Cosmos DB with NoSQL document structure
-- **Legacy**: GORM/SQLite dependencies remain in `go.mod` but are not actively used
-- **Initialization**: `api/database/cosmos.go` and `api/main.go:19`
+- **Primary Database**: Azure Cosmos DB (NoSQL document store), free tier enabled
+- **Initialization**: `api/database/cosmos.go` (called from `api/main.go`)
 - **Models**: NoSQL document models in `api/models/cosmos_models.go`
-- **Infrastructure**: Terraform deployment with free tier configuration
-- See `COSMOS_MIGRATION.md` for complete setup and deployment guide
+- **Infrastructure**: Provisioned in `terraform/main.tf` (`azurerm_cosmosdb_*` resources)
+- **Legacy**: GORM/SQLite dependencies may still appear in `go.mod` but are not used at runtime
 
 ## Testing & Quality
 
@@ -177,20 +175,42 @@ go run main.go         # Local development server
 
 ### Required Environment Variables (API)
 ```bash
-# Cosmos DB (current migration) - DEPLOYED AND READY
-COSMOS_DB_ENDPOINT=https://blog.documents.azure.com:443/
-COSMOS_DB_KEY=your-primary-key  # Get from Azure Portal or Terraform output
+# Cosmos DB
+COSMOS_DB_ENDPOINT=https://<account>.documents.azure.com:443/
+COSMOS_DB_KEY=your-primary-key            # az keyvault secret show, or terraform output -raw cosmosdb_primary_key
 COSMOS_DB_DATABASE_NAME=blog
 
-# OAuth (optional)
+# OAuth (optional for local dev; required in prod)
 GOOGLE_CLIENT_ID=your-client-id
 GOOGLE_CLIENT_SECRET=your-client-secret
 JWT_SECRET=your-jwt-secret
+
+# Optional
+REDIS_ADDR=                               # leave empty in prod; the API falls back to in-memory cache
+OTEL_TRACES_EXPORTER=none                 # disables OTLP trace export when no collector is reachable
+FRONTEND_URL=https://brxstrng.com         # extra CORS allowed origin
+GOOGLE_REDIRECT_URL=https://api.brxstrng.com/auth/google/callback
 ```
 
-**Note**: Cosmos DB account is deployed with free tier enabled. Get the primary key from Azure Portal or via `terraform output -raw cosmosdb_primary_key`.
+In production these are injected into the Container App from Key Vault via the user-assigned identity (see `terraform/containerapp.tf`).
 
 ### Development Ports
 - API: `:8080` (Go/Gin server)
 - UI Dev: `:3000` (Vite dev server)
 - UI Preview: `:3000` (Vite preview server)
+
+## Deployment
+
+Production runs on Azure:
+- **UI**: Azure Static Web Apps (`swa-blog-ui-prod`), Free tier, custom domains `brxstrng.com` + `www.brxstrng.com`. SPA deep-route fallback is configured in `ui/public/staticwebapp.config.json`.
+- **API**: Azure Container Apps (`ca-blog-api-prod`) in environment `cae-blog-prod`, pulling images from ACR `acrblogbrxstngprod` via a user-assigned managed identity, with secrets resolved from Key Vault. Custom domain `api.brxstrng.com`, managed TLS.
+- **Database**: Cosmos DB (`cosmos-blog-brxstng-prod`), free tier.
+
+### Deploy commands
+```bash
+./deploy.sh                 # build + push API image, roll Container App, build + deploy UI
+./deploy.sh api             # API only
+./deploy.sh ui              # UI only
+```
+
+`deploy.sh` reads ACR + SWA deployment token from `terraform output`; `terraform apply` from `terraform/` must have run successfully at least once.
