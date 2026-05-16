@@ -162,13 +162,13 @@ export const LIGHT_SCENE_THEME: SceneTheme = {
   sphereRoughness: 0.5,
   sphereEnvMapIntensity: 0.1,
   sphereGlowColor: 0x9a9a9a,
-  sphereGlowOpacity: 0.3,
+  sphereGlowOpacity: 0.2,
   sphereArrowBodyColor: 0x007a7a,
   sphereArrowBodyOpacity: 0.85,
   sphereArrowAccentColor: 0x00dddd,
   sphereArrowAccentOpacity: 1.0,
   sphereLabelBackdropColor: 0xf1f1f1,
-  sphereLabelBackdropOpacity: 0.9,
+  sphereLabelBackdropOpacity: 0.3,
   sphereLabelOpacity: 0.4,
 };
 
