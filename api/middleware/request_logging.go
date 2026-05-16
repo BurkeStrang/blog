@@ -18,6 +18,10 @@ func RequestLoggingMiddleware() gin.HandlerFunc {
 		if c.Request.URL.Path == "/health" {
 			return
 		}
+		// Synthetic cache-warmer requests shouldn't show up in access logs.
+		if IsWarmerRequest(c.Request) {
+			return
+		}
 
 		duration := time.Since(start)
 		cacheStatus := c.GetString(cacheStatusContextKey)

@@ -296,6 +296,10 @@ func CacheMiddleware(cache Cache, cacheable func(*gin.Context) bool) gin.Handler
 		cacheKey := generateCacheKey(c)
 		cacheControl := fmt.Sprintf("public, max-age=%d", int(cache.TTL().Seconds()))
 		c.Set(cacheBackendContextKey, cacheBackendName(cache))
+		// Synthetic requests from the cache warmer shouldn't emit HIT/MISS
+		// logs — otherwise the periodic refresh inflates the production
+		// MISS count and makes hit-rate metrics meaningless.
+		quiet := IsWarmerRequest(c.Request)
 
 		if entry, exists := cacheGet(c.Request.Context(), cache, cacheKey); exists {
 			c.Set(cacheStatusContextKey, "HIT")
@@ -305,12 +309,16 @@ func CacheMiddleware(cache Cache, cacheable func(*gin.Context) bool) gin.Handler
 			// write a second response). Confirmed in production logs:
 			// "Cache HIT" was followed by "Executing Cosmos DB query".
 			if ifNoneMatch := c.GetHeader("If-None-Match"); ifNoneMatch != "" && ifNoneMatch == entry.ETag {
-				log.Printf("Cache HIT (304 Not Modified): %s", cacheKey)
+				if !quiet {
+					log.Printf("Cache HIT (304 Not Modified): %s", cacheKey)
+				}
 				c.Status(http.StatusNotModified)
 				c.Abort()
 				return
 			}
-			log.Printf("Cache HIT: %s (%d bytes)", cacheKey, len(entry.Data))
+			if !quiet {
+				log.Printf("Cache HIT: %s (%d bytes)", cacheKey, len(entry.Data))
+			}
 			c.Header("ETag", entry.ETag)
 			c.Header("Cache-Control", cacheControl)
 			c.Header("X-Cache", "HIT")
@@ -320,7 +328,9 @@ func CacheMiddleware(cache Cache, cacheable func(*gin.Context) bool) gin.Handler
 		}
 
 		c.Set(cacheStatusContextKey, "MISS")
-		log.Printf("Cache MISS: %s", cacheKey)
+		if !quiet {
+			log.Printf("Cache MISS: %s", cacheKey)
+		}
 		writer := &responseWriter{ResponseWriter: c.Writer, body: make([]byte, 0)}
 		c.Writer = writer
 		c.Next()

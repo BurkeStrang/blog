@@ -103,13 +103,13 @@ func WarmCommentsCache(router http.Handler) {
 	log.Printf("Comments cache warm complete: %d comment list routes primed", warmed)
 }
 
-// StartPeriodicPostsWarm spawns a goroutine that re-warms the posts list
-// endpoints every `interval` to keep them ahead of the Redis cache TTL.
+// StartPeriodicPostsWarm spawns a goroutine that re-warms the posts list and
+// post-detail endpoints every `interval` to keep them ahead of the cache TTL.
 //
-// The Redis TTL on PostsCache is 15 minutes; pick an interval shorter than
-// that (e.g. 10m) so the cache is always populated when real users arrive,
-// even after long idle periods. Without this, the first visitor after the
-// TTL window pays the full Cosmos DB query cost (~8s on this dataset).
+// The TTL on PostsCache is 15 minutes; pick an interval shorter than that
+// (e.g. 10m) so the cache is always populated when real users arrive, even
+// after long idle periods. Without this, the first visitor after the TTL
+// window pays the full Cosmos DB query cost (~8s on this dataset).
 //
 // Returns a stop function; call it on graceful shutdown.
 func StartPeriodicPostsWarm(router http.Handler, interval time.Duration) func() {
@@ -122,17 +122,8 @@ func StartPeriodicPostsWarm(router http.Handler, interval time.Duration) func() 
 			case <-stop:
 				return
 			case <-ticker.C:
-				for _, path := range hotListPaths {
-					// Invalidate first so the request actually re-fetches from
-					// Cosmos and stores a fresh entry. Without this the warm
-					// request would just HIT the still-valid cache and never
-					// refresh the TTL — defeating the whole point.
-					cacheKey := "GET:" + path
-					PostsCache.Invalidate(cacheKey)
-					if err := warmCacheRequest(router, path); err != nil {
-						log.Printf("Periodic posts cache warm failed for %s: %v", path, err)
-					}
-				}
+				refreshHotListCaches(router)
+				refreshPostDetailCaches(router)
 			}
 		}
 	}()
@@ -140,8 +131,55 @@ func StartPeriodicPostsWarm(router http.Handler, interval time.Duration) func() 
 	return func() { close(stop) }
 }
 
+func refreshHotListCaches(router http.Handler) {
+	for _, path := range hotListPaths {
+		// Invalidate first so the request actually re-fetches from Cosmos
+		// and stores a fresh entry. Without this the warm request would
+		// just HIT the still-valid cache and never refresh the TTL —
+		// defeating the whole point.
+		PostsCache.Invalidate("GET:" + path)
+		if err := warmCacheRequest(router, path); err != nil {
+			log.Printf("Periodic posts cache warm failed for %s: %v", path, err)
+		}
+	}
+}
+
+func refreshPostDetailCaches(router http.Handler) {
+	targets, err := fetchPostCacheWarmTargets()
+	if err != nil {
+		log.Printf("Periodic post-detail warm: slug fetch failed: %v", err)
+		return
+	}
+	for _, target := range targets {
+		slug := target.Slug
+		if slug == "" {
+			slug = target.ID
+		}
+		if slug == "" {
+			continue
+		}
+		path := fmt.Sprintf("/api/posts/%s", slug)
+		PostsCache.Invalidate("GET:" + path)
+		if err := warmCacheRequest(router, path); err != nil {
+			log.Printf("Periodic post-detail warm failed for %s: %v", path, err)
+		}
+	}
+}
+
+// WarmerHeader is set on synthetic requests issued by the cache warmer so
+// downstream middleware can suppress access logs and HIT/MISS logs that would
+// otherwise pollute production telemetry with warmer-generated noise.
+const WarmerHeader = "X-Cache-Warmer"
+
+// IsWarmerRequest reports whether the given request was issued by the cache
+// warmer (rather than a real client).
+func IsWarmerRequest(r *http.Request) bool {
+	return r.Header.Get(WarmerHeader) == "1"
+}
+
 func warmCacheRequest(router http.Handler, path string) error {
 	req := httptest.NewRequest(http.MethodGet, path, nil)
+	req.Header.Set(WarmerHeader, "1")
 	recorder := httptest.NewRecorder()
 
 	router.ServeHTTP(recorder, req)
