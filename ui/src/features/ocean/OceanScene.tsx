@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useMemo, useState } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { useLocation } from "react-router-dom";
+import styled from "styled-components";
 import { useTheme } from "../../shared/contexts/ThemeContext";
 import { DARK_SCENE_THEME, LIGHT_SCENE_THEME } from "../../shared/theme/sceneColors";
 import {
@@ -34,6 +35,37 @@ declare module "three" {
 }
 
 const LINEAR_ENCODING = 3000;
+const KEYBOARD_HOVER_DELAY_MS = 820;
+
+const KeyboardControlLayer = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+`;
+
+const KeyboardControlGroup = styled.div`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+`;
+
+const KeyboardControlButton = styled.button`
+  pointer-events: none;
+`;
+
+function isInteractiveKeyboardTarget(target: EventTarget | null): boolean {
+  return target instanceof HTMLElement
+    && !!target.closest(
+      'button, a, input, select, textarea, summary, [role="button"], [contenteditable="true"]',
+    );
+}
 
 function ThemeSync({ isDark }: { isDark: boolean }) {
   const { gl } = useThree();
@@ -503,6 +535,9 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   const [scrollToIndex, setScrollToIndex] = useState<number | undefined>(
     undefined,
   );
+  const [focusedPostSlug, setFocusedPostSlug] = useState<string | null>(null);
+  const [focusedNavArrow, setFocusedNavArrow] = useState<"left" | "right" | null>(null);
+  const keyboardHoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Check if we're on the About route
   const isAboutRoute = location.pathname === "/about";
@@ -534,7 +569,12 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && hoveredPost.slug) {
+      if (
+        hoveredPost.slug
+        && !isInteractiveKeyboardTarget(e.target)
+        && (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar')
+      ) {
+        e.preventDefault();
         onPostClickRef.current?.(hoveredPost.slug);
       }
     };
@@ -547,6 +587,10 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
     return () => {
       timeoutIds.current.forEach(id => clearTimeout(id));
       timeoutIds.current.clear();
+      if (keyboardHoverTimeoutRef.current) {
+        clearTimeout(keyboardHoverTimeoutRef.current);
+        keyboardHoverTimeoutRef.current = null;
+      }
     };
   }, []);
 
@@ -587,6 +631,37 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   const handlePostCubeClick = useCallback((slug: string) => {
     onPostClick?.(slug);
   }, [onPostClick]);
+
+  const handlePostControlFocus = useCallback((slug: string, index: number) => {
+    if (keyboardHoverTimeoutRef.current) {
+      clearTimeout(keyboardHoverTimeoutRef.current);
+      keyboardHoverTimeoutRef.current = null;
+    }
+
+    setFocusedNavArrow(null);
+    setFocusedPostSlug(null);
+    setScrollToIndex(index);
+
+    keyboardHoverTimeoutRef.current = setTimeout(() => {
+      setFocusedPostSlug(slug);
+      keyboardHoverTimeoutRef.current = null;
+    }, KEYBOARD_HOVER_DELAY_MS);
+  }, []);
+
+  const handlePostControlBlur = useCallback((slug: string) => {
+    if (keyboardHoverTimeoutRef.current) {
+      clearTimeout(keyboardHoverTimeoutRef.current);
+      keyboardHoverTimeoutRef.current = null;
+    }
+
+    setFocusedPostSlug((current) => (current === slug ? null : current));
+  }, []);
+
+  useEffect(() => {
+    if (focusedPostSlug && !postsToRender.some((post) => post.slug === focusedPostSlug)) {
+      setFocusedPostSlug(null);
+    }
+  }, [focusedPostSlug, postsToRender]);
 
   // Reset scroll target after scrolling
   useEffect(() => {
@@ -831,120 +906,169 @@ const OceanDemoCanvas: React.FC<OceanDemoCanvasProps> = ({
   }
 
   return (
-    <Canvas
-      linear
-      frameloop={isPaused ? "never" : "always"}
-      onCreated={handleCreated}
+    <div
       style={{
         position: "absolute",
         top: 0,
         left: 0,
         width: "100%",
         height: "100%",
-        opacity: sceneLoaded ? 1 : 0,
-        /* No transition for instant response */
       }}
-      camera={{ position: startPos.toArray(), fov: 73 }}
-      shadows={false}
     >
-      {/* Scene content */}
-      <OceanCamera
-        positions={offsetPositions}
-        lerpFactor={0.08}
-        stepSize={1}
-        scrollToIndex={scrollToIndex}
-        maxPositionIndex={maxPositionIndex}
-      />
-      <ThemeSync isDark={isDark} />
-      <ThemeSky isDark={isDark} />
-      <ambientLight intensity={0.5} color={colors.ambientLightColor} />
-      <fog attach="fog" args={[colors.fogColor, 1000, 8000]} />
-      <OceanScene
-        waterNormals={resources.textures.waterNormals!}
-        isDark={isDark}
-      />
-      {!isAboutRoute && (
-        <PostNavigation
-          offset={[30, -16, -30]}
-          onLeftClick={handleLeftClick}
-          onRightClick={handleRightClick}
-          sphereModel={resources.models.sphere!}
-          font={resources.fonts.inter!}
-          currentPage={currentPage}
-          totalPosts={totalPosts}
-          showLeftArrow={currentPage > 1}
-          showRightArrow={currentPage < totalPages}
+      <Canvas
+        linear
+        frameloop={isPaused ? "never" : "always"}
+        onCreated={handleCreated}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          opacity: sceneLoaded ? 1 : 0,
+          /* No transition for instant response */
+        }}
+        camera={{ position: startPos.toArray(), fov: 73 }}
+        shadows={false}
+      >
+        {/* Scene content */}
+        <OceanCamera
+          positions={offsetPositions}
+          lerpFactor={0.08}
+          stepSize={1}
+          scrollToIndex={scrollToIndex}
+          maxPositionIndex={maxPositionIndex}
+        />
+        <ThemeSync isDark={isDark} />
+        <ThemeSky isDark={isDark} />
+        <ambientLight intensity={0.5} color={colors.ambientLightColor} />
+        <fog attach="fog" args={[colors.fogColor, 1000, 8000]} />
+        <OceanScene
+          waterNormals={resources.textures.waterNormals!}
           isDark={isDark}
         />
-      )}
-      {postsToRender.map((post, renderIndex) => {
-          // Use renderIndex for positioning (0, 1, 2, etc.)
-          const targetPos = compactedPositions[renderIndex];
+        {!isAboutRoute && (
+          <PostNavigation
+            offset={[30, -16, -30]}
+            onLeftClick={handleLeftClick}
+            onRightClick={handleRightClick}
+            sphereModel={resources.models.sphere!}
+            font={resources.fonts.inter!}
+            currentPage={currentPage}
+            totalPosts={totalPosts}
+            showLeftArrow={currentPage > 1}
+            showRightArrow={currentPage < totalPages}
+            isDark={isDark}
+            focusedArrow={focusedNavArrow}
+          />
+        )}
+        {postsToRender.map((post, renderIndex) => {
+            // Use renderIndex for positioning (0, 1, 2, etc.)
+            const targetPos = compactedPositions[renderIndex];
 
-          // Use consistent starting position based on renderIndex instead of original index
-          // This ensures consistent lighting regardless of which post is in which position
-          const startPosX = renderIndex * 55 - (postsPerPage - 1) * 25;
-          // Skip the deep-underwater start on the very first render of the
-          // session — cubes appear at their target position immediately,
-          // saving 1-2s of perceived load time. Subsequent mounts (e.g. after
-          // navigation away and back) keep the surfacing animation.
-          const startPosY = postsHaveMountedOnce ? -1000 : targetPos.y;
-          const startPosZ = renderIndex * 40;
+            // Use consistent starting position based on renderIndex instead of original index
+            // This ensures consistent lighting regardless of which post is in which position
+            const startPosX = renderIndex * 55 - (postsPerPage - 1) * 25;
+            // Skip the deep-underwater start on the very first render of the
+            // session — cubes appear at their target position immediately,
+            // saving 1-2s of perceived load time. Subsequent mounts (e.g. after
+            // navigation away and back) keep the surfacing animation.
+            const startPosY = postsHaveMountedOnce ? -1000 : targetPos.y;
+            const startPosZ = renderIndex * 40;
 
-          // Safety check: ensure positions exist
-          if (!targetPos) return null;
+            // Safety check: ensure positions exist
+            if (!targetPos) return null;
 
-          return (
-            <PostCube
-              key={post.slug}
-              slug={post.slug}
-              index={renderIndex}
-              title={post.title}
-              position={[startPosX, startPosY, startPosZ]}
-              targetPosition={[targetPos.x, targetPos.y, targetPos.z]}
-              onClick={handlePostCubeClick}
-              rubiksCubeModel={resources.models.rubiksCube!}
-              font={resources.fonts.inter!}
-              isVisible={true}
-              sortingActive={isSorting}
-              isDark={isDark}
+            return (
+              <PostCube
+                key={post.slug}
+                slug={post.slug}
+                index={renderIndex}
+                title={post.title}
+                position={[startPosX, startPosY, startPosZ]}
+                targetPosition={[targetPos.x, targetPos.y, targetPos.z]}
+                onClick={handlePostCubeClick}
+                rubiksCubeModel={resources.models.rubiksCube!}
+                font={resources.fonts.inter!}
+                isVisible={true}
+                sortingActive={isSorting}
+                isDark={isDark}
+                keyboardFocused={focusedPostSlug === post.slug}
+              />
+            );
+          })}
+
+        {!isAboutRoute && (
+          <group>
+            <directionalLight
+              position={[-1000, 1000, 800]}
+              intensity={colors.mainLightIntensity}
+              color={0xccccff}
             />
-          );
-        })}
+            <directionalLight
+              position={[-500, 600, -20]}
+              intensity={colors.fillLightIntensity}
+              color={colors.sceneLightColor}
+            />
+            <directionalLight
+              position={[1000, -900, 900]}
+              intensity={colors.frontLightIntensity}
+              color={colors.sceneLightColor}
+            />
+            <directionalLight
+              position={[99, 900, -900]}
+              intensity={colors.rimLightIntensity}
+              color={colors.sceneLightColor}
+            />
+            <ambientLight intensity={colors.ambientSceneIntensity} color={colors.sceneLightColor} />
+            <hemisphereLight
+              color={0xaaafff}
+              groundColor={colors.sceneGroundColor}
+              intensity={colors.hemisphereLightIntensity}
+              position={[0, 900, 0]}
+            />
+          </group>
+        )}
+      </Canvas>
 
-      {!isAboutRoute && (
-        <group>
-          <directionalLight
-            position={[-1000, 1000, 800]}
-            intensity={colors.mainLightIntensity}
-            color={0xccccff}
-          />
-          <directionalLight
-            position={[-500, 600, -20]}
-            intensity={colors.fillLightIntensity}
-            color={colors.sceneLightColor}
-          />
-          <directionalLight
-            position={[1000, -900, 900]}
-            intensity={colors.frontLightIntensity}
-            color={colors.sceneLightColor}
-          />
-          <directionalLight
-            position={[99, 900, -900]}
-            intensity={colors.rimLightIntensity}
-            color={colors.sceneLightColor}
-          />
-          <ambientLight intensity={colors.ambientSceneIntensity} color={colors.sceneLightColor} />
-          <hemisphereLight
-            color={0xaaafff}
-            groundColor={colors.sceneGroundColor}
-            intensity={colors.hemisphereLightIntensity}
-            position={[0, 900, 0]}
-          />
-        </group>
+      {!isAboutRoute && (postsToRender.length > 0 || currentPage > 1 || currentPage < totalPages) && (
+        <KeyboardControlLayer>
+          <KeyboardControlGroup role="toolbar" aria-label="Keyboard post controls">
+            {currentPage > 1 && (
+              <KeyboardControlButton
+                type="button"
+                onClick={handleLeftClick}
+                onFocus={() => setFocusedNavArrow("left")}
+                onBlur={() => setFocusedNavArrow((current) => (current === "left" ? null : current))}
+              >
+                Previous posts page
+              </KeyboardControlButton>
+            )}
+            {postsToRender.map((post, renderIndex) => (
+              <KeyboardControlButton
+                key={`a11y-${post.slug}`}
+                type="button"
+                onClick={() => handlePostCubeClick(post.slug)}
+                onFocus={() => handlePostControlFocus(post.slug, renderIndex)}
+                onBlur={() => handlePostControlBlur(post.slug)}
+              >
+                Open post {post.title}
+              </KeyboardControlButton>
+            ))}
+            {currentPage < totalPages && (
+              <KeyboardControlButton
+                type="button"
+                onClick={handleRightClick}
+                onFocus={() => setFocusedNavArrow("right")}
+                onBlur={() => setFocusedNavArrow((current) => (current === "right" ? null : current))}
+              >
+                Next posts page
+              </KeyboardControlButton>
+            )}
+          </KeyboardControlGroup>
+        </KeyboardControlLayer>
       )}
-
-    </Canvas>
+    </div>
   );
 };
 

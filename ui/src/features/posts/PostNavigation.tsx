@@ -18,6 +18,7 @@ interface FollowerSphereProps {
   showLeftArrow?: boolean;
   showRightArrow?: boolean;
   isDark?: boolean;
+  focusedArrow?: "left" | "right" | null;
 }
 
 export default function FollowerSphere({
@@ -31,10 +32,13 @@ export default function FollowerSphere({
   showLeftArrow = true,
   showRightArrow = true,
   isDark = true,
+  focusedArrow = null,
 }: FollowerSphereProps) {
   const navGroupRef = useRef<Group>(null!);
   const leftHoveredRef = useRef(false);
   const rightHoveredRef = useRef(false);
+  const leftPointerHoveredRef = useRef(false);
+  const rightPointerHoveredRef = useRef(false);
   const leftHoverT = useRef(0);
   const rightHoverT = useRef(0);
   const { camera, gl } = useThree();
@@ -158,7 +162,7 @@ export default function FollowerSphere({
     m.name = "leftArrow-outline";
     m.position.set(-1.4, -0.27, -1.29);
     m.rotation.set(-1.43, -1.17, -1.22);
-    m.visible = false;
+    m.scale.setScalar(0.0001);
     return m;
   }, [leftGeo, greenOutlineMat]);
 
@@ -175,7 +179,7 @@ export default function FollowerSphere({
     m.name = "rightArrow-outline";
     m.position.set(2.85, -0.53, -0.30);
     m.rotation.set(1.43, 1.27, 1.42);
-    m.visible = false;
+    m.scale.setScalar(0.0001);
     return m;
   }, [rightGeo, greenOutlineMat]);
 
@@ -248,6 +252,14 @@ export default function FollowerSphere({
     return group;
   }, []);
 
+  function syncHoverState() {
+    "use no memo";
+    leftHoveredRef.current =
+      showLeftArrow && (leftPointerHoveredRef.current || focusedArrow === "left");
+    rightHoveredRef.current =
+      showRightArrow && (rightPointerHoveredRef.current || focusedArrow === "right");
+  }
+
   useLayoutEffect(() => {
     navGroupRef.current.add(sphereGroup);
     return () => { navGroupRef.current.remove(sphereGroup); };
@@ -265,27 +277,29 @@ export default function FollowerSphere({
 
   useLayoutEffect(() => {
     if (!showLeftArrow) {
+      leftPointerHoveredRef.current = false;
       leftHoveredRef.current = false;
       leftHoverT.current = 0;
     }
     leftArrowMesh.visible = showLeftArrow;
     leftArrowHitMesh.visible = showLeftArrow;
-    leftArrowOutlineMesh.visible = showLeftArrow && leftHoveredRef.current;
+    syncHoverState();
     navGroupRef.current.add(leftArrowMesh, leftArrowOutlineMesh, leftArrowHitMesh);
     return () => { navGroupRef.current.remove(leftArrowMesh, leftArrowOutlineMesh, leftArrowHitMesh); };
-  }, [leftArrowMesh, leftArrowOutlineMesh, leftArrowHitMesh, showLeftArrow]);
+  }, [focusedArrow, leftArrowMesh, leftArrowOutlineMesh, leftArrowHitMesh, showLeftArrow]);
 
   useLayoutEffect(() => {
     if (!showRightArrow) {
+      rightPointerHoveredRef.current = false;
       rightHoveredRef.current = false;
       rightHoverT.current = 0;
     }
     rightArrowMesh.visible = showRightArrow;
     rightArrowHitMesh.visible = showRightArrow;
-    rightArrowOutlineMesh.visible = showRightArrow && rightHoveredRef.current;
+    syncHoverState();
     navGroupRef.current.add(rightArrowMesh, rightArrowOutlineMesh, rightArrowHitMesh);
     return () => { navGroupRef.current.remove(rightArrowMesh, rightArrowOutlineMesh, rightArrowHitMesh); };
-  }, [rightArrowMesh, rightArrowOutlineMesh, rightArrowHitMesh, showRightArrow]);
+  }, [focusedArrow, rightArrowMesh, rightArrowOutlineMesh, rightArrowHitMesh, showRightArrow]);
 
   // Update sphere materials reactively when theme changes
   useEffect(() => {
@@ -322,7 +336,7 @@ export default function FollowerSphere({
     // Scale arrows up on hover
     const ls = 0.92 + 0.24 * leftHoverT.current;
     leftArrowMesh.scale.setScalar(ls);
-    leftArrowOutlineMesh.scale.setScalar(ls);
+    leftArrowOutlineMesh.scale.setScalar(leftHoveredRef.current ? ls : 0.0001);
     leftArrowHitMesh.scale.setScalar(ls);
     const leftHoverY = -0.30 - 0.10 * leftHoverT.current;
     leftArrowMesh.position.set(-1.4, leftHoverY, -1.29);
@@ -331,7 +345,7 @@ export default function FollowerSphere({
 
     const rs = 1.04 + 0.24 * rightHoverT.current;
     rightArrowMesh.scale.setScalar(rs);
-    rightArrowOutlineMesh.scale.setScalar(rs);
+    rightArrowOutlineMesh.scale.setScalar(rightHoveredRef.current ? rs : 0.0001);
     rightArrowHitMesh.scale.setScalar(rs);
   });
 
@@ -350,30 +364,26 @@ export default function FollowerSphere({
   const handlePointerOver = (e: ThreeEvent<PointerEvent>) => {
     const name = e.object.name;
     if (showLeftArrow && (name === "leftArrow" || name === "leftArrow-outline")) {
-      leftHoveredRef.current = true;
-      const obj = navGroupRef.current.getObjectByName("leftArrow-outline");
-      if (obj) obj.visible = true;
+      leftPointerHoveredRef.current = true;
+      syncHoverState();
       gl.domElement?.style.setProperty("cursor", "pointer");
     }
     if (showRightArrow && (name === "rightArrow" || name === "rightArrow-outline")) {
-      rightHoveredRef.current = true;
-      const obj = navGroupRef.current.getObjectByName("rightArrow-outline");
-      if (obj) obj.visible = true;
+      rightPointerHoveredRef.current = true;
+      syncHoverState();
       gl.domElement?.style.setProperty("cursor", "pointer");
     }
   };
   const handlePointerOut = (e: ThreeEvent<PointerEvent>) => {
     const name = e.object.name;
     if (name === "leftArrow" || name === "leftArrow-outline") {
-      leftHoveredRef.current = false;
-      const obj = navGroupRef.current.getObjectByName("leftArrow-outline");
-      if (obj) obj.visible = showLeftArrow && leftHoveredRef.current;
+      leftPointerHoveredRef.current = false;
+      syncHoverState();
       gl.domElement?.style.setProperty("cursor", "auto");
     }
     if (name === "rightArrow" || name === "rightArrow-outline") {
-      rightHoveredRef.current = false;
-      const obj = navGroupRef.current.getObjectByName("rightArrow-outline");
-      if (obj) obj.visible = showRightArrow && rightHoveredRef.current;
+      rightPointerHoveredRef.current = false;
+      syncHoverState();
       gl.domElement?.style.setProperty("cursor", "auto");
     }
   };

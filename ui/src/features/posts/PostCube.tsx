@@ -113,6 +113,7 @@ interface PostBoxProps {
   targetPosition?: [number, number, number]; // Target position for compacting
   sortingActive?: boolean; // New prop to indicate sorting is happening
   isDark?: boolean;
+  keyboardFocused?: boolean;
 }
 
 const fontSize = 0.2;
@@ -145,6 +146,7 @@ function PostBoxCore(props: PostBoxProps) {
     targetPosition,
     sortingActive = false,
     isDark = true,
+    keyboardFocused = false,
   } = props;
   const { gl } = useThree();
   const colors = getSceneTheme(isDark);
@@ -163,6 +165,34 @@ function PostBoxCore(props: PostBoxProps) {
   const manualHoverOffsetRef = useRef(new THREE.Vector3());
   const manualHoverOffsetReadyRef = useRef(false);
   const manualHoverAmountRef = useRef(0);
+  const pointerHoverRef = useRef(false);
+  const keyboardHoverRef = useRef(false);
+
+  function syncManualHoverState() {
+    "use no memo";
+    const shouldHover =
+      (pointerHoverRef.current || keyboardHoverRef.current)
+      && isVisible
+      && sortingPhase === "none";
+
+    if (shouldHover) {
+      if (!manualHoverRef.current) {
+        manualHoverOffsetReadyRef.current = false;
+      }
+      manualHoverRef.current = true;
+      if (keyboardHoverRef.current || !hoveredPost.isAuto || hoveredPost.slug === slug) {
+        hoveredPost.slug = slug;
+        hoveredPost.isAuto = false;
+      }
+      return;
+    }
+
+    manualHoverRef.current = false;
+    manualHoverOffsetReadyRef.current = false;
+    if (hoveredPost.slug === slug && !hoveredPost.isAuto) {
+      hoveredPost.slug = null;
+    }
+  }
 
   // Enable auto-hover after 1 second delay on first load
   useEffect(() => {
@@ -456,6 +486,15 @@ function PostBoxCore(props: PostBoxProps) {
   }, [backdropGeo, blockScene]);
 
   useEffect(() => {
+    keyboardHoverRef.current = keyboardFocused;
+    syncManualHoverState();
+  }, [keyboardFocused, isVisible, slug, sortingPhase]);
+
+  useEffect(() => {
+    syncManualHoverState();
+  }, [isVisible, slug, sortingPhase]);
+
+  useEffect(() => {
     return () => { backdropMaterial.dispose(); };
   }, [backdropMaterial]);
 
@@ -648,16 +687,13 @@ function PostBoxCore(props: PostBoxProps) {
   // --- Pointer events ---
   const handlePointerOver = () => {
     if (!isVisible || sortingPhase !== "none") return;
-    manualHoverRef.current = true;
-    manualHoverOffsetReadyRef.current = false;
-    // Don't steal slug from a centered (auto-hovered) box
-    if (!hoveredPost.isAuto) hoveredPost.slug = slug;
+    pointerHoverRef.current = true;
+    syncManualHoverState();
     if (gl.domElement) gl.domElement.style.setProperty("cursor", "pointer");
   };
   const handlePointerOut = () => {
-    manualHoverRef.current = false;
-    // Only clear slug if we own it and it wasn't set by auto-hover
-    if (hoveredPost.slug === slug && !hoveredPost.isAuto) hoveredPost.slug = null;
+    pointerHoverRef.current = false;
+    syncManualHoverState();
     if (gl.domElement) gl.domElement.style.setProperty("cursor", "auto");
   };
 
