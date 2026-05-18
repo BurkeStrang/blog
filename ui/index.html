@@ -4,8 +4,37 @@
   <meta charset="UTF-8" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
-  <meta name="theme-color" content="#00ffff" />
+  <meta name="theme-color" content="#010101" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="BRXSTRNG's blog and interactive Three.js-powered portfolio." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="[BRXSTRNG]" />
+  <meta property="og:description" content="BRXSTRNG's blog and interactive Three.js-powered portfolio." />
+  <meta property="og:image" content="https://brxstrng.com/thumbnail.svg" />
+  <meta property="og:image:type" content="image/svg+xml" />
+  <meta property="og:image:alt" content="BRXSTRNG blog thumbnail" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="[BRXSTRNG]" />
+  <meta name="twitter:description" content="BRXSTRNG's blog and interactive Three.js-powered portfolio." />
+  <meta name="twitter:image" content="https://brxstrng.com/thumbnail.svg" />
+  <script>
+    (() => {
+      const storageKey = "theme";
+      const themeColors = {
+        dark: "#010101",
+        light: "#e6e6e6",
+      };
+
+      const savedTheme = localStorage.getItem(storageKey);
+      const systemTheme = window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
+      const theme = savedTheme === "light" || savedTheme === "dark" ? savedTheme : systemTheme;
+
+      document.documentElement.setAttribute("data-theme", theme);
+      document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute("content", themeColors[theme]);
+    })();
+  </script>
   <title>[BRXSTRNG]</title>
 </head>
 <body>

@@ -4,6 +4,11 @@ import { useAuth } from './AuthContext';
 
 type Theme = 'dark' | 'light';
 
+const META_THEME_COLORS: Record<Theme, string> = {
+  dark: '#010101',
+  light: '#e6e6e6',
+};
+
 interface ThemeContextValue {
   theme: Theme;
   toggleTheme: () => void;
@@ -36,6 +41,13 @@ function resolveInitialTheme(): Theme {
   return readLocalTheme() ?? readSystemTheme();
 }
 
+function applyTheme(theme: Theme): void {
+  document.documentElement.setAttribute('data-theme', theme);
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute('content', META_THEME_COLORS[theme]);
+}
+
 interface ThemeProviderProps {
   children: React.ReactNode;
 }
@@ -44,7 +56,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const userEmail = useAuth().user?.email;
   const [theme, setTheme] = useState<Theme>(() => {
     const resolved = resolveInitialTheme();
-    document.documentElement.setAttribute('data-theme', resolved);
+    applyTheme(resolved);
     return resolved;
   });
 
@@ -53,7 +65,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   // Apply theme to DOM synchronously before paint
   useLayoutEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    applyTheme(theme);
   }, [theme]);
 
   // Persist to single localStorage key on every change
