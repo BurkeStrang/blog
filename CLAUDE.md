@@ -39,12 +39,11 @@ pnpm optimize:gltf          # Compress GLTF models with Draco
 
 ### Backend (API)
 ```bash
-cd api
+cd api-dotnet
 
-# Development  
-go run main.go              # Start API server on :8080
-go build                    # Build binary
-./main                      # Run compiled binary
+# Development
+dotnet run                  # Start API standalone on :8080
+dotnet build                # Compile
 
 # Infrastructure (Terraform)
 cd terraform
@@ -55,6 +54,24 @@ terraform output            # Show deployment outputs
 terraform output -raw cosmosdb_primary_key  # Get Cosmos DB key
 ```
 
+### Orchestration (Aspire)
+```bash
+# Run API + UI together with the Aspire dashboard
+dotnet run --project aspire/Blog.AppHost
+# Dashboard URL is printed to stdout; usually http://localhost:18888
+```
+
+The AppHost (`/aspire/Blog.AppHost/AppHost.cs`) launches the .NET API as a project resource and the Vite dev server via `AddExecutable("pnpm", ..., "dev")`. It forwards the API endpoint to the UI as `VITE_API_URL` and the dashboard's OTLP/HTTP endpoint as `VITE_OTEL_EXPORTER_OTLP_ENDPOINT` — both API spans and browser spans land in the same dashboard, sharing trace ids via W3C `traceparent`.
+
+`/aspire/Blog.ServiceDefaults` is referenced by the API and called as `builder.AddServiceDefaults()` in `Program.cs`. It configures OpenTelemetry traces/metrics/logs with both an OTLP exporter (Aspire dashboard locally) and the Azure Monitor exporter (`UseAzureMonitor()` is enabled when `APPLICATIONINSIGHTS_CONNECTION_STRING` is set in prod).
+
+Browser-side telemetry lives in `ui/src/shared/observability/telemetry.ts` and is initialised once from `main.tsx`. It branches on env vars:
+- `VITE_APPLICATIONINSIGHTS_CONNECTION_STRING` set → Application Insights JS SDK
+- otherwise `VITE_OTEL_EXPORTER_OTLP_ENDPOINT` set → OTel web SDK posting to that OTLP/HTTP endpoint
+- neither set → no-op (e.g. `pnpm dev` without Aspire)
+
+App Insights provisioning in Azure is a follow-up — add `azurerm_application_insights` to `terraform/` and inject `APPLICATIONINSIGHTS_CONNECTION_STRING` into the Container App env + `VITE_APPLICATIONINSIGHTS_CONNECTION_STRING` into the SWA build settings when ready.
+
 ## Project Structure
 
 ### Backend (`/api/`)
@@ -64,7 +81,7 @@ terraform output -raw cosmosdb_primary_key  # Get Cosmos DB key
 - `database/` - Cosmos DB initialization and seed-data import
 - `models/` - NoSQL document models
 - `config/` - OAuth and environment configuration
-- `observability/` - OpenTelemetry traces + Prometheus metrics setup
+- Observability lives in `aspire/Blog.ServiceDefaults/` — referenced by the API and called via `builder.AddServiceDefaults()` (OTLP locally, Azure Monitor in prod)
 
 ### Frontend (`/ui/`)
 - `src/app/` - Main app components and routing

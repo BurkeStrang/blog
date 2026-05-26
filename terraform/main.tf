@@ -276,3 +276,33 @@ resource "azurerm_log_analytics_workspace" "blog" {
 # AKS cluster, node pools, and the AcrPull role assignment that backed them
 # were removed when the workload moved to Azure Container Apps + Static Web Apps.
 # See terraform/containerapp.tf and terraform/staticwebapp.tf.
+
+# Application Insights — workspace-based so all telemetry lives in the same
+# Log Analytics workspace that backs the Container Apps environment.
+resource "azurerm_application_insights" "blog" {
+  name                = "appi-blog-${var.environment}"
+  location            = azurerm_resource_group.blog.location
+  resource_group_name = azurerm_resource_group.blog.name
+  workspace_id        = azurerm_log_analytics_workspace.blog.id
+  application_type    = "web"
+
+  tags = {
+    Environment = var.environment
+    Project     = "blog"
+    ManagedBy   = "terraform"
+  }
+}
+
+# Stash the connection string in Key Vault so the Container App can mount it
+# as a secret-backed env var (same pattern as the other API secrets).
+resource "azurerm_key_vault_secret" "appinsights_connection_string" {
+  name         = "appinsights-connection-string"
+  value        = azurerm_application_insights.blog.connection_string
+  key_vault_id = azurerm_key_vault.blog.id
+
+  depends_on = [azurerm_role_assignment.terraform_kv_admin]
+
+  tags = {
+    ManagedBy = "terraform"
+  }
+}

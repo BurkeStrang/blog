@@ -1,0 +1,21 @@
+# Scoped to api-dotnet/Dockerfile. Build context is the repo root, so these
+# patterns match against repo-relative paths. BuildKit picks this file up
+# automatically when building with `-f api-dotnet/Dockerfile`.
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+.git/
+.vs/
+.idea/
+*.user
+.env
+.env.local
+**/appsettings.Development.json
+**/appsettings.Local.json
+ui/
+api/
+terraform/
+aspire/Blog.AppHost/
+**/Dockerfile
+**/.dockerignore

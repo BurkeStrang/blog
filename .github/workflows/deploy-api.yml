@@ -4,7 +4,7 @@ on:
   push:
     branches: [master]
     paths:
-      - "api/**"
+      - "api-dotnet/**"
       - ".github/workflows/deploy-api.yml"
   workflow_dispatch:
 

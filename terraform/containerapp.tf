@@ -79,6 +79,12 @@ resource "azurerm_container_app" "api" {
     key_vault_secret_id = azurerm_key_vault_secret.jwt_secret.id
   }
 
+  secret {
+    name                = "appinsights-connection-string"
+    identity            = azurerm_user_assigned_identity.containerapp.id
+    key_vault_secret_id = azurerm_key_vault_secret.appinsights_connection_string.id
+  }
+
   template {
     min_replicas = var.containerapp_min_replicas
     max_replicas = var.containerapp_max_replicas
@@ -105,14 +111,15 @@ resource "azurerm_container_app" "api" {
         name  = "GOOGLE_REDIRECT_URL"
         value = "https://api.brxstrng.com/auth/google/callback"
       }
-      # Tempo is going away; tell OpenTelemetry to skip trace exporter setup.
-      env {
-        name  = "OTEL_TRACES_EXPORTER"
-        value = "none"
-      }
       env {
         name        = "COSMOS_DB_KEY"
         secret_name = "cosmos-db-key"
+      }
+      # Detected by Blog.ServiceDefaults — when set, UseAzureMonitor() lights
+      # up and traces/metrics/logs flow to App Insights.
+      env {
+        name        = "APPLICATIONINSIGHTS_CONNECTION_STRING"
+        secret_name = "appinsights-connection-string"
       }
       env {
         name        = "GOOGLE_CLIENT_ID"

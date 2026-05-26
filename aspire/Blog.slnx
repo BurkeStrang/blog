@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/aspire/">
+    <Project Path="Blog.AppHost/Blog.AppHost.csproj" />
+    <Project Path="Blog.ServiceDefaults/Blog.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/api/">
+    <Project Path="../api-dotnet/BlogApi.csproj" />
+  </Folder>
+</Solution>

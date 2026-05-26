@@ -27,6 +27,7 @@ CONTAINERAPP_NAME="ca-blog-api-prod"
 cd terraform
 ACR_SERVER=$(terraform output -raw acr_login_server)
 SWA_TOKEN=$(terraform output -raw staticwebapp_api_key)
+APPINSIGHTS_CONN=$(terraform output -raw appinsights_connection_string)
 cd ..
 
 GIT_SHA=$(git rev-parse --short HEAD)
@@ -37,7 +38,9 @@ if [ "$DEPLOY_API" = true ]; then
   echo ""
   echo "Building and pushing API..."
   az acr login --name "${ACR_SERVER%%.*}"
-  docker build -t "${ACR_SERVER}/blog-api:${GIT_SHA}" -t "${ACR_SERVER}/blog-api:latest" api/
+  # api-dotnet/: .NET 10 ASP.NET Core port of the original Go service. Image
+  # name stays "blog-api" so terraform/containerapp.tf doesn't need to change.
+  docker build -f api-dotnet/Dockerfile -t "${ACR_SERVER}/blog-api:${GIT_SHA}" -t "${ACR_SERVER}/blog-api:latest" .
   docker push "${ACR_SERVER}/blog-api:${GIT_SHA}"
   docker push "${ACR_SERVER}/blog-api:latest"
 
@@ -54,7 +57,10 @@ fi
 if [ "$DEPLOY_UI" = true ]; then
   echo ""
   echo "Building UI..."
-  (cd ui && VITE_API_URL=https://api.brxstrng.com pnpm build)
+  (cd ui && \
+    VITE_API_URL=https://api.brxstrng.com \
+    VITE_APPLICATIONINSIGHTS_CONNECTION_STRING="$APPINSIGHTS_CONN" \
+    pnpm build)
 
   echo ""
   echo "Deploying UI to Static Web App..."

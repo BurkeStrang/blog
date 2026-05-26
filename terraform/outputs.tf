@@ -88,3 +88,15 @@ output "staticwebapp_api_key" {
   value       = azurerm_static_web_app.ui.api_key
   sensitive   = true
 }
+
+# Application Insights outputs
+output "appinsights_name" {
+  description = "Application Insights resource name"
+  value       = azurerm_application_insights.blog.name
+}
+
+output "appinsights_connection_string" {
+  description = "Application Insights connection string (passed to UI build as VITE_APPLICATIONINSIGHTS_CONNECTION_STRING)"
+  value       = azurerm_application_insights.blog.connection_string
+  sensitive   = true
+}

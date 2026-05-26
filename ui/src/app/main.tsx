@@ -1,6 +1,9 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import { initTelemetry } from "../shared/observability/telemetry";
+
+initTelemetry();
 
 const container = document.getElementById("root")!;
 const root = createRoot(container);

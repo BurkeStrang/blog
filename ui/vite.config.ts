@@ -264,6 +264,7 @@ export default defineConfig({
               // Exclude engine utilities, services, and shared contexts from React Compiler optimization
               return !filename.includes('/engine/') &&
                      !filename.includes('/shared/contexts/') &&
+                     !filename.includes('/shared/observability/') &&
                      !filename.includes('/services/') &&
                      !filename.includes('/cache/') &&
                      !filename.includes('MarkdownContent');
