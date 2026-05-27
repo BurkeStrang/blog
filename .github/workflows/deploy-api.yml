@@ -5,6 +5,7 @@ on:
     branches: [master]
     paths:
       - "api-dotnet/**"
+      - "aspire/Blog.ServiceDefaults/**"
       - ".github/workflows/deploy-api.yml"
   workflow_dispatch:
 
@@ -34,9 +35,10 @@ jobs:
       - name: Build and push API image
         run: |
           docker build \
+            -f api-dotnet/Dockerfile \
             -t "$ACR_SERVER/blog-api:$IMAGE_TAG" \
             -t "$ACR_SERVER/blog-api:latest" \
-            api/
+            .
           docker push "$ACR_SERVER/blog-api:$IMAGE_TAG"
           docker push "$ACR_SERVER/blog-api:latest"
 

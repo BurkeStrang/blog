@@ -1,0 +1,178 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Pulls secrets from the project's Azure Key Vault (and a few terraform
+# outputs) and pushes them into:
+#   - api-dotnet/ dotnet user-secrets   (for `dotnet run` / Aspire)
+#   - ui/.env.local                     (for `pnpm dev` / Vite)
+#
+# Usage:
+#   ./sync-secrets.sh            # both api + ui
+#   ./sync-secrets.sh api        # api only
+#   ./sync-secrets.sh ui         # ui only
+#   ./sync-secrets.sh --dry-run  # print actions, don't apply
+
+repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+resource_group="${TF_RESOURCE_GROUP:-rg-blog-prod}"
+api_project="$repo_root/api-dotnet/BlogApi.csproj"
+ui_env_file="$repo_root/ui/.env.local"
+local_api_url="${LOCAL_API_URL:-http://localhost:8080}"
+local_google_redirect="${LOCAL_GOOGLE_REDIRECT_URL:-http://localhost:8080/auth/google/callback}"
+
+sync_api=false
+sync_ui=false
+dry_run=0
+
+if [[ $# -eq 0 ]]; then
+  sync_api=true
+  sync_ui=true
+else
+  for arg in "$@"; do
+    case "$arg" in
+      api)       sync_api=true ;;
+      ui)        sync_ui=true ;;
+      --dry-run) dry_run=1 ;;
+      -h|--help)
+        sed -n '3,15p' "$0"
+        exit 0
+        ;;
+      *)
+        echo "Unknown argument: $arg" >&2
+        echo "Usage: ./sync-secrets.sh [api] [ui] [--dry-run]" >&2
+        exit 1
+        ;;
+    esac
+  done
+fi
+
+if [[ "$sync_api" = false && "$sync_ui" = false ]]; then
+  sync_api=true
+  sync_ui=true
+fi
+
+command -v az >/dev/null || { echo "az CLI not found on PATH" >&2; exit 1; }
+if [[ "$sync_api" = true ]]; then
+  command -v dotnet >/dev/null || { echo "dotnet CLI not found on PATH" >&2; exit 1; }
+fi
+
+vault_name="$(az keyvault list \
+  --resource-group "$resource_group" \
+  --query "[0].name" -o tsv 2>/dev/null || true)"
+
+if [[ -z "$vault_name" ]]; then
+  echo "Error: no Key Vault found in resource group '$resource_group'" >&2
+  echo "Set TF_RESOURCE_GROUP if the RG isn't rg-blog-prod, or run 'az login' first." >&2
+  exit 1
+fi
+
+echo "Key Vault: $vault_name"
+
+fetch_secret() {
+  az keyvault secret show \
+    --vault-name "$vault_name" \
+    --name "$1" \
+    --query value -o tsv 2>/dev/null || true
+}
+
+echo "Fetching secrets from Key Vault..."
+cosmos_db_key=$(fetch_secret "cosmos-db-key")
+google_client_id=$(fetch_secret "google-client-id")
+google_client_secret=$(fetch_secret "google-client-secret")
+jwt_secret=$(fetch_secret "jwt-secret")
+admin_emails=$(fetch_secret "admin-emails")
+appinsights_conn=$(fetch_secret "appinsights-connection-string")
+
+echo "Looking up Cosmos DB endpoint..."
+cosmos_db_endpoint=$(az cosmosdb list \
+  --resource-group "$resource_group" \
+  --query "[0].documentEndpoint" -o tsv 2>/dev/null || true)
+cosmos_account=$(az cosmosdb list \
+  --resource-group "$resource_group" \
+  --query "[0].name" -o tsv 2>/dev/null || true)
+cosmos_db_database=""
+if [[ -n "$cosmos_account" ]]; then
+  cosmos_db_database=$(az cosmosdb sql database list \
+    --resource-group "$resource_group" \
+    --account-name "$cosmos_account" \
+    --query "[0].name" -o tsv 2>/dev/null || true)
+fi
+
+missing=()
+[[ -z "$cosmos_db_key" ]]        && missing+=("cosmos-db-key")
+[[ -z "$cosmos_db_endpoint" ]]   && missing+=("Cosmos DB endpoint (az)")
+[[ -z "$cosmos_db_database" ]]   && missing+=("Cosmos DB database (az)")
+[[ -z "$jwt_secret" ]]           && missing+=("jwt-secret")
+[[ -z "$google_client_id" ]]     && missing+=("google-client-id")
+[[ -z "$google_client_secret" ]] && missing+=("google-client-secret")
+
+if (( ${#missing[@]} > 0 )); then
+  echo "Warning: missing values:" >&2
+  printf '  - %s\n' "${missing[@]}" >&2
+fi
+
+if [[ "$sync_api" = true ]]; then
+  echo ""
+  echo "Syncing dotnet user-secrets for $api_project ..."
+
+  if ! grep -q '<UserSecretsId>' "$api_project"; then
+    if [[ "$dry_run" -eq 1 ]]; then
+      echo "[dry-run] dotnet user-secrets init --project $api_project"
+    else
+      dotnet user-secrets init --project "$api_project" >/dev/null
+    fi
+  fi
+
+  set_secret() {
+    local key="$1" value="$2"
+    if [[ -z "$value" ]]; then
+      echo "  - skip   $key (no value)"
+      return
+    fi
+    if [[ "$dry_run" -eq 1 ]]; then
+      echo "  - [dry]  $key"
+    else
+      dotnet user-secrets set "$key" "$value" --project "$api_project" >/dev/null
+      echo "  - set    $key"
+    fi
+  }
+
+  set_secret "COSMOS_DB_ENDPOINT"                 "$cosmos_db_endpoint"
+  set_secret "COSMOS_DB_KEY"                      "$cosmos_db_key"
+  set_secret "COSMOS_DB_DATABASE_NAME"            "$cosmos_db_database"
+  set_secret "JWT_SECRET"                         "$jwt_secret"
+  set_secret "GOOGLE_CLIENT_ID"                   "$google_client_id"
+  set_secret "GOOGLE_CLIENT_SECRET"               "$google_client_secret"
+  set_secret "GOOGLE_REDIRECT_URL"                "$local_google_redirect"
+  set_secret "ADMIN_EMAILS"                       "$admin_emails"
+  set_secret "APPLICATIONINSIGHTS_CONNECTION_STRING" "$appinsights_conn"
+fi
+
+if [[ "$sync_ui" = true ]]; then
+  echo ""
+  echo "Writing $ui_env_file ..."
+
+  ui_contents=$(cat <<EOF
+# Generated by sync-secrets.sh on $(date -Iseconds)
+# Do not commit. Re-run ./sync-secrets.sh to refresh.
+
+VITE_API_URL=$local_api_url
+VITE_APPLICATIONINSIGHTS_CONNECTION_STRING=$appinsights_conn
+EOF
+)
+
+  if [[ "$dry_run" -eq 1 ]]; then
+    echo "[dry-run] would write:"
+    printf '%s\n' "$ui_contents" | sed 's/^/    /'
+  else
+    if [[ -f "$ui_env_file" ]]; then
+      cp "$ui_env_file" "$ui_env_file.bak"
+      echo "  - backed up existing file to $ui_env_file.bak"
+    fi
+    printf '%s\n' "$ui_contents" > "$ui_env_file"
+    chmod 600 "$ui_env_file"
+    echo "  - wrote $ui_env_file"
+  fi
+fi
+
+echo ""
+echo "Done."
