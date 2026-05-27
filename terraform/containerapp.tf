@@ -85,6 +85,15 @@ resource "azurerm_container_app" "api" {
     key_vault_secret_id = azurerm_key_vault_secret.appinsights_connection_string.id
   }
 
+  secret {
+    name                = "admin-emails"
+    identity            = azurerm_user_assigned_identity.containerapp.id
+    # versionless_id, not .id — Container App's planned value would otherwise
+    # pin to a specific KV secret version, and any rotation (via az CLI or
+    # tf.sh-driven re-apply) produces an "inconsistent final plan" error.
+    key_vault_secret_id = azurerm_key_vault_secret.admin_emails.versionless_id
+  }
+
   template {
     min_replicas = var.containerapp_min_replicas
     max_replicas = var.containerapp_max_replicas
@@ -132,6 +141,10 @@ resource "azurerm_container_app" "api" {
       env {
         name        = "JWT_SECRET"
         secret_name = "jwt-secret"
+      }
+      env {
+        name        = "ADMIN_EMAILS"
+        secret_name = "admin-emails"
       }
 
       liveness_probe {

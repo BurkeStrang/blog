@@ -1,11 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BlogApi.Configuration;
+using BlogApi.Infrastructure.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace BlogApi.Auth;
+namespace BlogApi.Infrastructure.Auth;
 
 public sealed class JwtService
 {

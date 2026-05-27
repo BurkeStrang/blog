@@ -1,4 +1,4 @@
-namespace BlogApi.Data.Entities;
+namespace BlogApi.Domain.Entities;
 
 public sealed class CommentLike : CommentContainerDocument
 {

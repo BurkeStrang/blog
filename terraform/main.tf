@@ -243,6 +243,22 @@ resource "azurerm_key_vault_secret" "jwt_secret" {
   }
 }
 
+resource "azurerm_key_vault_secret" "admin_emails" {
+  name         = "admin-emails"
+  value        = var.admin_emails
+  key_vault_id = azurerm_key_vault.blog.id
+
+  depends_on = [azurerm_role_assignment.terraform_kv_admin]
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+
+  tags = {
+    ManagedBy = "terraform"
+  }
+}
+
 # Azure Container Registry
 resource "azurerm_container_registry" "blog" {
   name                = var.acr_name
@@ -272,6 +288,8 @@ resource "azurerm_log_analytics_workspace" "blog" {
     ManagedBy   = "terraform"
   }
 }
+
+
 
 # AKS cluster, node pools, and the AcrPull role assignment that backed them
 # were removed when the workload moved to Azure Container Apps + Static Web Apps.

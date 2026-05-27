@@ -1,10 +1,10 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
-using BlogApi.Configuration;
+using BlogApi.Infrastructure.Configuration;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 
-namespace BlogApi.Auth;
+namespace BlogApi.Infrastructure.Auth;
 
 public sealed class GoogleAuthService
 {

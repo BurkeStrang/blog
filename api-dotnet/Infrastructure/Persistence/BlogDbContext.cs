@@ -1,7 +1,7 @@
-using BlogApi.Data.Entities;
+using BlogApi.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace BlogApi.Data;
+namespace BlogApi.Infrastructure.Persistence;
 
 public sealed class BlogDbContext : DbContext
 {

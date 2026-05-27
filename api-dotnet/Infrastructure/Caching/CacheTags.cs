@@ -1,4 +1,4 @@
-namespace BlogApi.Services;
+namespace BlogApi.Infrastructure.Caching;
 
 public static class CacheTags
 {

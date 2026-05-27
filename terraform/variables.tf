@@ -74,6 +74,13 @@ variable "jwt_secret" {
   default     = ""
 }
 
+variable "admin_emails" {
+  description = "Comma-separated list of email addresses granted the Admin role. Sourced from Key Vault on subsequent applies via tf.sh."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 # Container Apps (replacing AKS for the API)
 variable "containerapp_min_replicas" {
   description = "Minimum Container App replicas (1 keeps a warm instance so the periodic cache warmer runs)"

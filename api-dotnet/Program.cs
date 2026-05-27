@@ -1,10 +1,14 @@
-using BlogApi.Auth;
-using BlogApi.Configuration;
-using BlogApi.Data;
-using BlogApi.Data.Repositories;
-using BlogApi.Endpoints;
-using BlogApi.Middleware;
-using BlogApi.Services;
+using BlogApi.Common.Extensions;
+using BlogApi.Features.AdminCache;
+using BlogApi.Features.Auth;
+using BlogApi.Features.Comments;
+using BlogApi.Features.Posts;
+using BlogApi.Features.UserPreferences;
+using BlogApi.Infrastructure.Auth;
+using BlogApi.Infrastructure.Caching;
+using BlogApi.Infrastructure.Configuration;
+using BlogApi.Infrastructure.Middleware;
+using BlogApi.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -43,13 +47,14 @@ builder.Services.Configure<JwtOptions>(opts =>
 builder.Services.Configure<AdminOptions>(opts =>
 {
   var raw = builder.Configuration["ADMIN_EMAILS"];
-  // Default mirrors handlers/auth.go so day-one behavior is identical.
-  var fallback = new[] { "bstrangwork@gmail.com", "burke.strang@gmail.com" };
+  if (string.IsNullOrWhiteSpace(raw))
+  {
+    throw new InvalidOperationException(
+        "Admin emails are not configured. Set ADMIN_EMAILS to a comma-separated list of admin email addresses.");
+  }
   opts.GetType().GetProperty(nameof(AdminOptions.Emails))!.SetValue(
       opts,
-      string.IsNullOrWhiteSpace(raw)
-          ? fallback
-          : raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+      raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
 });
 
 // ── data ──────────────────────────────────────────────────────────────────
@@ -64,20 +69,11 @@ builder.Services.AddDbContext<BlogDbContext>((sp, options) =>
   options.UseCosmos(cosmos.Endpoint, cosmos.Key, cosmos.DatabaseName);
 });
 
-builder.Services.AddScoped<IPostRepository, PostRepository>();
-builder.Services.AddScoped<ICommentRepository, CommentRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserPreferencesRepository, UserPreferencesRepository>();
-
 // ── caching ───────────────────────────────────────────────────────────────
 builder.Services.AddHybridCache();
 
-// ── services ──────────────────────────────────────────────────────────────
-builder.Services.AddScoped<PostQueryService>();
-builder.Services.AddScoped<CommentQueryService>();
-builder.Services.AddScoped<PostCommandService>();
-builder.Services.AddScoped<CommentCommandService>();
-builder.Services.AddScoped<UserPreferencesService>();
+// ── features ──────────────────────────────────────────────────────────────
+builder.Services.AddFeatureHandlers();
 builder.Services.AddHostedService<CacheWarmer>();
 
 // ── auth ──────────────────────────────────────────────────────────────────
@@ -122,7 +118,7 @@ if (!string.IsNullOrWhiteSpace(frontendUrl))
 builder.Services.AddCors(opts =>
 {
   opts.AddDefaultPolicy(policy => policy
-      .WithOrigins([..allowedOrigins])
+      .WithOrigins([.. allowedOrigins])
       .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
       .WithHeaders("Origin", "Content-Type", "Accept", "Authorization", "traceparent", "tracestate", "baggage", "Request-Id", "Request-Context")
       .WithExposedHeaders("Content-Length", "Request-Context")
@@ -138,10 +134,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapDefaultEndpoints();
-app.MapPostEndpoints();
-app.MapCommentEndpoints();
+app.MapPostsEndpoints();
+app.MapCommentsEndpoints();
 app.MapUserPreferencesEndpoints();
 app.MapAuthEndpoints();
-app.MapAdminEndpoints();
+app.MapAdminCacheEndpoints();
 
 app.Run();

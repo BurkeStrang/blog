@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 
-namespace BlogApi.Auth;
+namespace BlogApi.Infrastructure.Auth;
 
 public sealed class OAuthStateStore
 {

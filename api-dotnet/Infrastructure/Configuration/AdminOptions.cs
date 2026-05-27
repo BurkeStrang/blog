@@ -1,4 +1,4 @@
-namespace BlogApi.Configuration;
+namespace BlogApi.Infrastructure.Configuration;
 
 public sealed class AdminOptions
 {

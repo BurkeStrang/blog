@@ -1,4 +1,4 @@
-namespace BlogApi.Middleware;
+namespace BlogApi.Infrastructure.Middleware;
 
 public sealed class SecurityHeadersMiddleware
 {

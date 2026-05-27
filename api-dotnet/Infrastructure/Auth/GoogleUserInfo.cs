@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace BlogApi.Auth;
+namespace BlogApi.Infrastructure.Auth;
 
 public sealed class GoogleUserInfo
 {

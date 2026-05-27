@@ -23,5 +23,6 @@ fetch_secret() {
 export TF_VAR_google_client_id=$(fetch_secret "google-client-id")
 export TF_VAR_google_client_secret=$(fetch_secret "google-client-secret")
 export TF_VAR_jwt_secret=$(fetch_secret "jwt-secret")
+export TF_VAR_admin_emails=$(fetch_secret "admin-emails")
 
 terraform "$@"

@@ -1,14 +1,24 @@
 version: 2
 updates:
-  # Go API dependencies
-  - package-ecosystem: "gomod"
-    directory: "/api"
+  # Dotnet API dependencies
+  - package-ecosystem: "nuget"
+    directory: "/api-dotnet"
     schedule:
       interval: "weekly"
       day: "monday"
     labels:
       - "dependencies"
-      - "go"
+      - "dotnet"
+
+  # Dotnet ASPIRE dependencies
+  - package-ecosystem: "nuget"
+    directory: "/aspire"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "dotnet"
 
   # UI npm/pnpm dependencies
   - package-ecosystem: "npm"

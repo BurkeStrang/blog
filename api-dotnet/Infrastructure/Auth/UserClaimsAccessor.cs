@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace BlogApi.Auth;
+namespace BlogApi.Infrastructure.Auth;
 
 public static class UserClaimsAccessor
 {
