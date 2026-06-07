@@ -87,12 +87,29 @@ export default defineConfig([
     files: [
       "src/engine/**/*.{ts,tsx}",
       "src/shared/contexts/**/*.{ts,tsx}",
-      "src/services/**/*.{ts,tsx}",
-      "src/cache/**/*.{ts,tsx}",
+      "src/shared/services/**/*.{ts,tsx}",
+      "src/shared/theme/**/*.{ts,tsx}",
+      "src/features/*/api.ts",
+      "src/features/*/model.ts",
       "src/**/MarkdownContent.{ts,tsx}",
     ],
     rules: {
       "react-compiler/react-compiler": "off",
+    },
+  },
+  // Feature boundaries: a feature can import from its own folder and from
+  // shared/, but it can only reach into a sibling feature via that feature's
+  // public index (e.g. `../posts`), not via internal files (`../posts/ui/X`).
+  // Keep the alternation in sync with the folders under src/features/.
+  {
+    files: ["src/features/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        patterns: [{
+          regex: "^\\.\\.(?:/\\.\\.)*/(auth|comments|layout|ocean|pages|posts)/.+$",
+          message: "Import sibling features through their public index (e.g. `../posts`), not internal paths. Add to features/<name>/index.ts if it should be public.",
+        }],
+      }],
     },
   },
 ]);

@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { readableLightgrey, accent, backgroundColor } from '../../shared/theme/colors';
-import { commentService, type Comment } from '../../services/commentService';
+import { readableLightgrey, accent, backgroundColor } from '../../../shared/theme/colors';
+import { commentService } from '../api';
+import type { Comment } from '../model';
 import { CommentForm } from './CommentForm';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
 import ReplyIcon from '@mui/icons-material/Reply';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { User } from '../../shared/types/user';
+import { User } from '../../../shared/types/user';
 
 const readableAccent = `color-mix(in srgb, ${accent} 65%, black)`;
 

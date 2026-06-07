@@ -643,7 +643,7 @@ const SidebarNav: React.FC<SidebarNavProps> = React.memo(({ onNavigateStart }) =
                           <LoginRoundedIcon sx={{ fontSize: "1.1rem" }} />
                         </SidebarActionIcon>
                         <SidebarActionText>
-                          <SidebarActionLabel>{loginLoading ? "Logging in..." : "Google OAuth login"}</SidebarActionLabel>
+                          <SidebarActionLabel>{loginLoading ? "Logging in..." : "Google login"}</SidebarActionLabel>
                         </SidebarActionText>
                       </SidebarActionContent>
                     </SidebarButton>

@@ -22,7 +22,7 @@ import { Water } from "three/examples/jsm/objects/Water";
 import OceanCamera from "./OceanCamera";
 import { PostCube, hoveredPost } from "../posts";
 import { PostNavigation } from "../posts";
-import type { Post } from "../../app/AppContent";
+import type { Post } from "../posts";
 import { memoryProfiler } from "../../engine/memory";
 import { performanceMonitor } from "../../engine";
 import { usePagination } from "../../shared/contexts/SearchContext";

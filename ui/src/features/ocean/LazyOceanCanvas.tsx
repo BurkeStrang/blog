@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, memo, useCallback, useMemo, useState, useEffect } from 'react';
 import LoadingCubes from '../../shared/components/LoadingCubes';
-import type { Post } from '../../app/AppContent';
+import type { Post } from '../posts';
 
 // Lazy load the heavy OceanDemoCanvas component
 const OceanDemoCanvas = lazy(() => import('./OceanScene').then(module => ({

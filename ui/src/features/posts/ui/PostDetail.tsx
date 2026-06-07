@@ -1,13 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, Navigate } from "react-router-dom";
-import { Post } from "../../app/AppContent";
-import styled from "styled-components";
-import { backgroundColor, lightgrey, readableLightgrey, accent } from "../../shared/theme/colors";
-import { usePostsData } from "../../shared/contexts/SearchContext";
-import { useAuth } from "../../shared/contexts/AuthContext";
-import { CommentSection } from "../comments";
-import { apiService } from "../../services/api";
-import { isAdmin } from "../../shared/types/user";
+import type { Post } from "../model";
+import { usePostsData } from "../../../shared/contexts/SearchContext";
+import { useAuth } from "../../../shared/contexts/AuthContext";
+import { CommentSection } from "../../comments";
+import { deletePost, updatePost } from "../api";
+import { isAdmin } from "../../../shared/types/user";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -15,757 +13,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { MarkdownContent } from "./MarkdownContent";
-
-const Article = styled.article`
-  width: calc(100vw - 0.75rem);
-  height: 100vh;
-  height: 100svh;
-  padding: 1.75rem 1rem 3rem 2rem;
-  padding-right: 2.75rem;
-  margin: 0 0.75rem 0 0;
-  background: transparent;
-  font-family: var(--font-family);
-  position: relative;
-  box-sizing: border-box;
-  overflow-y: auto;
-  overflow-x: hidden;
-  overscroll-behavior-y: contain;
-  touch-action: pan-y;
-  scrollbar-gutter: stable;
-  scrollbar-width: auto;
-  scrollbar-color: auto;
-
-  @supports not selector(::-webkit-scrollbar) {
-    scrollbar-color: transparent transparent;
-  }
-  &.scrollbar-visible {
-    @supports not selector(::-webkit-scrollbar) {
-      scrollbar-color: var(--color-post-scrollbar-thumb) transparent;
-    }
-  }
-
-  &::-webkit-scrollbar {
-    width: 1.1rem;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: transparent;
-    border: 0.14rem solid ${backgroundColor};
-    border-radius: 999px;
-    min-height: 3rem;
-  }
-
-  &.scrollbar-visible::-webkit-scrollbar-thumb {
-    background-color: var(--color-post-scrollbar-thumb);
-  }
-
-  &.scrollbar-visible::-webkit-scrollbar-thumb:hover {
-    background-color: var(--color-post-scrollbar-thumb-hover);
-  }
-
-  /* Center the content within the full-width container */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  /* Ensure child elements respect the max-width */
-  > * {
-    width: 100%;
-    max-width: 1000px;
-    box-sizing: border-box;
-  }
-
-  @media (max-width: 768px) {
-    width: calc(100vw - 0.65rem);
-    margin-right: 0.65rem;
-    padding: 1.5rem 1.5rem 5rem 1.5rem;
-    padding-right: 2.25rem;
-
-    > * {
-      max-width: 100%;
-    }
-  }
-
-  @media (max-width: 480px) {
-    width: calc(100vw - 0.55rem);
-    margin-right: 0.55rem;
-    padding: 1.25rem 1.25rem 4.5rem 1.25rem;
-    padding-right: 2rem;
-  }
-
-  /* iPhone 12 and similar devices */
-  @media (max-width: 390px) {
-    padding: 1rem 1rem 4rem 1rem;
-    padding-right: 1.75rem;
-    width: calc(100vw - 0.45rem);
-    margin-right: 0.45rem;
-
-    > * {
-      max-width: 100%;
-      width: 100%;
-    }
-  }
-`;
-
-const PostFrame = styled.div`
-  position: relative;
-  width: 100%;
-  margin: 0.5rem auto 1rem auto;
-`;
-
-const PostBackdrop = styled.div`
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-
-  --grid-size: 100px;
-
-  background-color: ${backgroundColor};
-
-  background-image:
-    linear-gradient(rgba(0, 220, 200, 0.105) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 220, 200, 0.105) 1px, transparent 1px),
-    repeating-linear-gradient(
-      to bottom,
-      rgba(0, 220, 200, 0.025) 0,
-      rgba(0, 220, 200, 0.025) 1px,
-      transparent 1px,
-      transparent 5px
-    );
-
-  background-size:
-    var(--grid-size) var(--grid-size),
-    var(--grid-size) var(--grid-size),
-    auto;
-
-  [data-theme="dark"] & {
-    background-image:
-      linear-gradient(rgba(0, 220, 200, 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 220, 200, 0.06) 1px, transparent 1px),
-      repeating-linear-gradient(
-        to bottom,
-        rgba(0, 220, 200, 0.012) 0,
-        rgba(0, 220, 200, 0.012) 1px,
-        transparent 1px,
-        transparent 5px
-      );
-  }
-
-  @media (max-width: 700px) {
-    --grid-size: 40px;
-    [data-theme="dark"] & {
-      background-image:
-        linear-gradient(rgba(0, 220, 200, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 220, 200, 0.03) 1px, transparent 1px),
-        repeating-linear-gradient(
-          to bottom,
-          rgba(0, 220, 200, 0.012) 0,
-          rgba(0, 220, 200, 0.012) 1px,
-          transparent 1px,
-          transparent 5px
-        );
-    }
-`;
-
-const Content = styled.div`
-  color: ${readableLightgrey};
-  line-height: 1.8;
-  font-size: 1.125rem;
-  text-align: left;
-  padding: clamp(1.4rem, 3vw, 2.4rem);
-  width: 100%;
-  box-sizing: border-box;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-
-  > * + * {
-    margin-top: 1em;
-  }
-
-  p {
-    margin-bottom: 1.5em;
-  }
-
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    color: ${accent};
-    font-weight: 600;
-    margin-top: 2em;
-    margin-bottom: 1em;
-    text-align: left;
-  }
-
-  h2 {
-    font-size: 1.5em;
-  }
-  h3 {
-    font-size: 1.3em;
-  }
-  h4 {
-    font-size: 1.1em;
-  }
-
-  blockquote {
-    border-left: 4px solid ${accent};
-    padding-left: 1.5rem;
-    margin: 2rem 0;
-    font-style: italic;
-    color: ${accent};
-    text-align: left;
-  }
-
-  ul,
-  ol {
-    text-align: left;
-    padding-left: 2rem;
-    margin: 1.5rem 0;
-  }
-
-  li {
-    margin-bottom: 0.5em;
-  }
-
-  a {
-    color: #4a7ba7;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    word-break: break-word;
-    border-bottom: 1px solid rgba(74, 123, 167, 0.3);
-
-    &:hover {
-      color: #3d5e8c;
-      border-bottom-color: #3d5e8c;
-    }
-  }
-
-  @media (max-width: 768px) {
-    font-size: 1rem;
-    line-height: 1.7;
-    max-width: 100%;
-
-    ul,
-    ol {
-      padding-left: 1.5rem;
-    }
-  }
-
-  @media (max-width: 480px) {
-    font-size: 1rem;
-    line-height: 1.65;
-
-    ul,
-    ol {
-      padding-left: 1.25rem;
-      margin: 1.25rem 0;
-    }
-
-    blockquote {
-      padding-left: 1rem;
-      margin: 1.25rem 0;
-    }
-
-    h2 {
-      font-size: 1.375em;
-      margin-top: 1.75em;
-    }
-    h3 {
-      font-size: 1.25em;
-      margin-top: 1.5em;
-    }
-    h4 {
-      font-size: 1.125em;
-    }
-  }
-
-  /* iPhone 12 and similar devices */
-  @media (max-width: 390px) {
-    font-size: 0.95rem;
-    line-height: 1.6;
-    max-width: 100%;
-    width: 100%;
-
-    ul,
-    ol {
-      padding-left: 1rem;
-      margin: 1rem 0;
-    }
-
-    blockquote {
-      padding-left: 0.75rem;
-      margin: 1rem 0;
-      font-size: 0.9rem;
-    }
-
-    h2 {
-      font-size: 1.25em;
-      margin-top: 1.5em;
-    }
-    h3 {
-      font-size: 1.125em;
-      margin-top: 1.25em;
-    }
-    h4 {
-      font-size: 1.0625em;
-    }
-  }
-`;
-
-const BackButtonContainer = styled.div`
-  display: flex;
-  align-items: center;
-  position: fixed;
-  bottom: 2rem;
-  left: 2rem;
-  z-index: 1000;
-  gap: 0.5rem;
-
-  @media (max-width: 768px) {
-    bottom: 1.5rem;
-    left: 1.5rem;
-    gap: 0.5rem;
-  }
-
-  @media (max-width: 480px) {
-    bottom: 1rem;
-    left: 1rem;
-    gap: 0.5rem;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-`;
-
-const EditButton = styled.button`
-  padding: 0.5rem 1rem;
-  font-family: inherit;
-  font-size: 0.875rem;
-  background: var(--color-btn-bg);
-  color: ${readableLightgrey};
-  border: 1px solid var(--color-btn-border);
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  backdrop-filter: blur(10px);
-
-  &:hover {
-    background: var(--color-btn-bg-hover);
-    border-color: ${accent};
-    color: ${accent};
-    transform: translateX(-2px);
-  }
-
-  &:active {
-    transform: translateX(0);
-  }
-
-  svg {
-    font-size: 0.875rem;
-  }
-
-  @media (max-width: 768px) {
-    padding: 0.45rem 0.875rem;
-    font-size: 0.8rem;
-    gap: 0.3rem;
-
-    svg {
-      font-size: 0.8rem;
-    }
-  }
-
-  @media (max-width: 480px) {
-    padding: 0.4rem 0.75rem;
-    font-size: 0.75rem;
-    gap: 0.25rem;
-
-    svg {
-      font-size: 0.75rem;
-    }
-  }
-`;
-
-const DeleteButton = styled.button`
-  padding: 0.5rem 1rem;
-  font-family: inherit;
-  font-size: 0.875rem;
-  background: var(--color-btn-bg);
-  color: ${readableLightgrey};
-  border: 1px solid var(--color-btn-border);
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  backdrop-filter: blur(10px);
-
-  &:hover {
-    background: rgba(255, 0, 0, 0.2);
-    border-color: #ff4444;
-    color: #ff4444;
-    transform: translateX(-2px);
-  }
-
-  &:active {
-    transform: translateX(0);
-  }
-
-  svg {
-    font-size: 0.875rem;
-  }
-
-  @media (max-width: 768px) {
-    padding: 0.45rem 0.875rem;
-    font-size: 0.8rem;
-    gap: 0.3rem;
-
-    svg {
-      font-size: 0.8rem;
-    }
-  }
-
-  @media (max-width: 480px) {
-    padding: 0.4rem 0.75rem;
-    font-size: 0.75rem;
-    gap: 0.25rem;
-
-    svg {
-      font-size: 0.75rem;
-    }
-  }
-`;
-
-const EditForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  max-width: 800px;
-  width: 100%;
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-`;
-
-const Label = styled.label`
-  color: ${accent};
-  font-weight: 600;
-  font-size: 0.9rem;
-`;
-
-const Input = styled.input`
-  padding: 0.75rem;
-  background: var(--color-input-bg);
-  border: 1px solid var(--color-input-border-secondary);
-  border-radius: 6px;
-  color: ${readableLightgrey};
-  font-size: 1rem;
-  transition: all 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${accent};
-    background: var(--color-input-bg-focus);
-  }
-
-  &::placeholder {
-    color: ${lightgrey};
-    opacity: 0.4;
-  }
-`;
-
-const TextArea = styled.textarea`
-  padding: 0.75rem;
-  background: var(--color-input-bg);
-  border: 1px solid var(--color-input-border-secondary);
-  border-radius: 6px;
-  color: ${lightgrey};
-  font-size: 1rem;
-  min-height: 300px;
-  resize: vertical;
-  transition: all 0.2s ease;
-  font-family: inherit;
-  line-height: 1.5;
-
-  &:focus {
-    outline: none;
-    border-color: ${accent};
-    background: var(--color-input-bg-focus);
-  }
-
-  &::placeholder {
-    color: ${lightgrey};
-    opacity: 0.4;
-  }
-`;
-
-const FormActions = styled.div`
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-`;
-
-const SaveButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  background: ${accent};
-  color: ${backgroundColor};
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 255, 255, 0.3);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
-
-const CancelButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  background: transparent;
-  color: ${lightgrey};
-  border: 1px solid var(--color-input-border-secondary);
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: var(--color-input-bg);
-    border-color: ${accent};
-    color: ${accent};
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-`;
-
-const DeleteConfirmOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const DeleteConfirmDialog = styled.div`
-  background: ${backgroundColor};
-  padding: 2rem;
-  border-radius: 12px;
-  border: 1px solid var(--color-input-border-secondary);
-  max-width: 400px;
-  width: 90%;
-  text-align: center;
-`;
-
-const DeleteConfirmTitle = styled.h3`
-  color: #ff4444;
-  margin-bottom: 1rem;
-  font-size: 1.25rem;
-`;
-
-const DeleteConfirmMessage = styled.p`
-  color: ${lightgrey};
-  margin-bottom: 2rem;
-  line-height: 1.5;
-`;
-
-const DeleteConfirmActions = styled.div`
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-`;
-
-const ConfirmDeleteButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  background: #ff4444;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: #ff3333;
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
-
-const CommentsCollapse = styled.div<{ $expanded: boolean }>`
-  width: 100%;
-  display: ${({ $expanded }) => ($expanded ? "block" : "none")};
-`;
-
-const CommentsToggleButton = styled.button`
-  width: 100%;
-  padding: 1rem 1.5rem;
-  margin: 2rem 0;
-  background: var(--color-comment-bg);
-  border: 1px solid var(--color-comment-border);
-  border-radius: 8px;
-  color: color-mix(in srgb, ${accent} 65%, black);
-  font-family: inherit;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-
-  &:hover {
-    background: var(--color-comment-bg-hover);
-    border-color: ${accent};
-    box-shadow: 0 0 12px rgba(0, 255, 255, 0.2);
-  }
-
-  svg {
-    font-size: 1.5rem;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 0.9rem;
-    padding: 0.875rem 1.25rem;
-
-    svg {
-      font-size: 1.25rem;
-    }
-  }
-
-  @media (max-width: 480px) {
-    font-size: 0.85rem;
-    padding: 0.75rem 1rem;
-
-    svg {
-      font-size: 1.15rem;
-    }
-  }
-`;
-
-const PostSeriesNav = styled.nav`
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  margin: 2rem 0 0;
-
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const SeriesNavSpacer = styled.div`
-  display: none;
-
-  @media (min-width: 601px) {
-    display: block;
-  }
-`;
-
-const SeriesNavButton = styled.button<{ $align: "left" | "right" }>`
-  width: 100%;
-  min-height: 4.5rem;
-  padding: 1rem 1.25rem;
-  border: 1px solid var(--color-comment-border);
-  border-radius: 12px;
-  background: var(--color-comment-bg);
-  color: ${readableLightgrey};
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  overflow: hidden;
-  text-align: ${({ $align }) => $align};
-
-  &:hover {
-    background: var(--color-comment-bg-hover);
-    border-color: ${accent};
-    box-shadow: 0 0 12px rgba(0, 255, 255, 0.15);
-    color: ${readableLightgrey};
-  }
-
-  svg {
-    color: ${readableLightgrey};
-    flex-shrink: 0;
-    opacity: 0.7;
-  }
-`;
-
-const SeriesNavText = styled.span`
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-width: 0;
-  overflow: hidden;
-`;
-
-const SeriesNavLabel = styled.span`
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: ${readableLightgrey};
-  opacity: 0.7;
-`;
-
-const SeriesNavSlug = styled.span`
-  display: block;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: ${readableLightgrey};
-  opacity: 0.6;
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
+import "./post-detail.css";
 
 const SLUG_WORD_REPLACEMENTS: Record<string, string> = {
   api: "API",
@@ -1037,7 +285,7 @@ const PostDetailComponent = function PostDetail({
           date: editForm.date ? new Date(editForm.date) : undefined,
         };
 
-        await apiService.updatePost(post.id.toString(), updateData);
+        await updatePost(post.id.toString(), updateData);
         setIsEditing(false);
         // Refresh posts data immediately
         await onPostsChange?.();
@@ -1065,7 +313,7 @@ const PostDetailComponent = function PostDetail({
 
     setIsDeleting(true);
     try {
-      await apiService.deletePost(post.id.toString());
+      await deletePost(post.id.toString());
       setShowDeleteConfirm(false);
       // Refresh posts data immediately
       await onPostsChange?.();
@@ -1117,18 +365,20 @@ const PostDetailComponent = function PostDetail({
 
   return (
     <>
-      <PostBackdrop />
-      <Article
+      <div className="post-detail__backdrop" />
+      <article
         ref={articleRef}
+        className="post-detail__article"
         onScroll={showScrollbarTemporarily}
         onTouchMove={showScrollbarTemporarily}
         onWheel={showScrollbarTemporarily}
       >
         {isEditing ? (
-          <EditForm onSubmit={handleSave}>
-            <FormGroup>
-              <Label htmlFor="title">Title</Label>
-              <Input
+          <form className="post-detail__form" onSubmit={handleSave}>
+            <div className="post-detail__form-group">
+              <label className="post-detail__label" htmlFor="title">Title</label>
+              <input
+                className="post-detail__input"
                 id="title"
                 type="text"
                 value={editForm.title}
@@ -1136,11 +386,12 @@ const PostDetailComponent = function PostDetail({
                 placeholder="Enter post title"
                 required
               />
-            </FormGroup>
+            </div>
 
-            <FormGroup>
-              <Label htmlFor="slug">Slug</Label>
-              <Input
+            <div className="post-detail__form-group">
+              <label className="post-detail__label" htmlFor="slug">Slug</label>
+              <input
+                className="post-detail__input"
                 id="slug"
                 type="text"
                 value={editForm.slug}
@@ -1148,81 +399,85 @@ const PostDetailComponent = function PostDetail({
                 placeholder="Enter post slug"
                 required
               />
-            </FormGroup>
+            </div>
 
-            <FormGroup>
-              <Label htmlFor="date">Date</Label>
-              <Input
+            <div className="post-detail__form-group">
+              <label className="post-detail__label" htmlFor="date">Date</label>
+              <input
+                className="post-detail__input"
                 id="date"
                 type="date"
                 value={editForm.date}
                 onChange={(e) => handleFormChange("date", e.target.value)}
               />
-            </FormGroup>
+            </div>
 
-            <FormGroup>
-              <Label htmlFor="previous">Previous Post Slug</Label>
-              <Input
+            <div className="post-detail__form-group">
+              <label className="post-detail__label" htmlFor="previous">Previous Post Slug</label>
+              <input
+                className="post-detail__input"
                 id="previous"
                 type="text"
                 value={editForm.previous}
                 onChange={(e) => handleFormChange("previous", e.target.value)}
                 placeholder="optional-previous-post-slug"
               />
-            </FormGroup>
+            </div>
 
-            <FormGroup>
-              <Label htmlFor="next">Next Post Slug</Label>
-              <Input
+            <div className="post-detail__form-group">
+              <label className="post-detail__label" htmlFor="next">Next Post Slug</label>
+              <input
+                className="post-detail__input"
                 id="next"
                 type="text"
                 value={editForm.next}
                 onChange={(e) => handleFormChange("next", e.target.value)}
                 placeholder="optional-next-post-slug"
               />
-            </FormGroup>
+            </div>
 
-            <FormGroup>
-              <Label htmlFor="body">Body</Label>
-              <TextArea
+            <div className="post-detail__form-group">
+              <label className="post-detail__label" htmlFor="body">Body</label>
+              <textarea
+                className="post-detail__textarea"
                 id="body"
                 value={editForm.body}
                 onChange={(e) => handleFormChange("body", e.target.value)}
                 placeholder="Enter post content (HTML supported)"
                 required
               />
-            </FormGroup>
+            </div>
 
-            <FormActions>
-              <CancelButton type="button" onClick={handleCancelEdit}>
+            <div className="post-detail__form-actions">
+              <button type="button" className="post-detail__cancel-btn" onClick={handleCancelEdit}>
                 Cancel
-              </CancelButton>
-              <SaveButton type="submit" disabled={isSaving}>
+              </button>
+              <button type="submit" className="post-detail__save-btn" disabled={isSaving}>
                 {isSaving ? "Saving..." : "Save"}
-              </SaveButton>
-            </FormActions>
-          </EditForm>
+              </button>
+            </div>
+          </form>
         ) : (
           <>
-            <PostFrame key={post.slug}>
-              <Content>
+            <div className="post-detail__frame" key={post.slug}>
+              <div className="post-detail__content">
                 <MarkdownContent content={markdownContent} />
-              </Content>
-            </PostFrame>
+              </div>
+            </div>
 
             {/* Comments toggle button */}
-            <CommentsToggleButton onClick={toggleComments}>
+            <button className="post-detail__comments-toggle" onClick={toggleComments}>
               {commentsExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
               <span>
                 {commentsExpanded ? "Hide" : "Show"} Comments (
                 {displayCommentCount})
               </span>
-            </CommentsToggleButton>
+            </button>
 
             {/* Mount comments once on post load so styles inject + fetch
                 happen during the initial render. Toggle is then just a
                 visibility change, avoiding the first-open repaint. */}
-            <CommentsCollapse $expanded={commentsExpanded}>
+            <div className="post-detail__comments-collapse" data-expanded={commentsExpanded}>
               <CommentSection
                 postId={post.id || 0}
                 isAuthenticated={!!user}
@@ -1230,84 +485,87 @@ const PostDetailComponent = function PostDetail({
                 onLogin={loginWithGoogle}
                 onCommentsLoad={handleCommentsLoad}
               />
-            </CommentsCollapse>
+            </div>
 
             {(previousSlug || nextSlug) && (
-              <PostSeriesNav aria-label="Post navigation">
+              <nav className="post-detail__series-nav" aria-label="Post navigation">
                 {previousSlug ? (
-                  <SeriesNavButton
+                  <button
                     type="button"
-                    $align="left"
+                    className="post-detail__series-nav-btn"
+                    data-align="left"
                     onClick={() => handleSeriesNavigation(previousSlug)}
                     title={previousLabel ?? previousSlug}
                   >
                     <ArrowBackIcon />
-                    <SeriesNavText>
-                      <SeriesNavLabel>Previous</SeriesNavLabel>
-                      <SeriesNavSlug>{previousLabel}</SeriesNavSlug>
-                    </SeriesNavText>
-                  </SeriesNavButton>
+                    <span className="post-detail__series-nav-text">
+                      <span className="post-detail__series-nav-label">Previous</span>
+                      <span className="post-detail__series-nav-slug">{previousLabel}</span>
+                    </span>
+                  </button>
                 ) : (
-                  <SeriesNavSpacer aria-hidden="true" />
+                  <div className="post-detail__series-nav-spacer" aria-hidden="true" />
                 )}
 
                 {nextSlug ? (
-                  <SeriesNavButton
+                  <button
                     type="button"
-                    $align="right"
+                    className="post-detail__series-nav-btn"
+                    data-align="right"
                     onClick={() => handleSeriesNavigation(nextSlug)}
                     title={nextLabel ?? nextSlug}
                   >
-                    <SeriesNavText>
-                      <SeriesNavLabel>Next</SeriesNavLabel>
-                      <SeriesNavSlug>{nextLabel}</SeriesNavSlug>
-                    </SeriesNavText>
+                    <span className="post-detail__series-nav-text">
+                      <span className="post-detail__series-nav-label">Next</span>
+                      <span className="post-detail__series-nav-slug">{nextLabel}</span>
+                    </span>
                     <ArrowForwardIcon />
-                  </SeriesNavButton>
+                  </button>
                 ) : (
-                  <SeriesNavSpacer aria-hidden="true" />
+                  <div className="post-detail__series-nav-spacer" aria-hidden="true" />
                 )}
-              </PostSeriesNav>
+              </nav>
             )}
           </>
         )}
 
         {isAdmin(user) && !isEditing && (
-          <BackButtonContainer>
-            <EditButton onClick={handleEdit}>
+          <div className="post-detail__admin-actions">
+            <button className="post-detail__edit-btn" onClick={handleEdit}>
               <EditIcon />
               Edit
-            </EditButton>
-            <DeleteButton onClick={handleDelete}>
+            </button>
+            <button className="post-detail__delete-btn" onClick={handleDelete}>
               <DeleteIcon />
               Delete
-            </DeleteButton>
-          </BackButtonContainer>
+            </button>
+          </div>
         )}
 
         {/* Delete Confirmation Dialog */}
         {showDeleteConfirm && (
-          <DeleteConfirmOverlay>
-            <DeleteConfirmDialog>
-              <DeleteConfirmTitle>Delete Post</DeleteConfirmTitle>
-              <DeleteConfirmMessage>
+          <div className="post-detail__confirm-overlay">
+            <div className="post-detail__confirm-dialog">
+              <h3 className="post-detail__confirm-title">Delete Post</h3>
+              <p className="post-detail__confirm-message">
                 Are you sure you want to delete &quot;{post.title}&quot;? This
                 action cannot be undone and will permanently remove the post,
                 all comments, and related data.
-              </DeleteConfirmMessage>
-              <DeleteConfirmActions>
-                <CancelButton onClick={handleDeleteCancel}>Cancel</CancelButton>
-                <ConfirmDeleteButton
+              </p>
+              <div className="post-detail__confirm-actions">
+                <button className="post-detail__cancel-btn" onClick={handleDeleteCancel}>Cancel</button>
+                <button
+                  className="post-detail__confirm-delete-btn"
                   onClick={handleDeleteConfirm}
                   disabled={isDeleting}
                 >
                   {isDeleting ? "Deleting..." : "Delete"}
-                </ConfirmDeleteButton>
-              </DeleteConfirmActions>
-            </DeleteConfirmDialog>
-          </DeleteConfirmOverlay>
+                </button>
+              </div>
+            </div>
+          </div>
         )}
-      </Article>
+      </article>
     </>
   );
 };

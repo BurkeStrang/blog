@@ -1,11 +1,10 @@
-/**
- * Posts Feature
- * Blog post visualization and navigation components
- */
+export type { Post } from "./model";
 
-export { default as PostCube, hoveredPost } from './PostCube';
-export { default as PostNavigation } from './PostNavigation';
-export { default as PostDetail } from './PostDetail';
-export { default as Posts } from './Posts';
-export { default as NewPost } from './NewPost';
+export { fetchPostsUncached, trackPostView } from "./api";
+export { usePosts, usePost, usePostViewTracker } from "./hooks";
 
+export { default as Posts } from "./ui/Posts";
+export { default as PostDetail } from "./ui/PostDetail";
+export { default as NewPost } from "./ui/NewPost";
+export { default as PostNavigation } from "./ui/PostNavigation";
+export { default as PostCube, hoveredPost } from "./ui/PostCube";

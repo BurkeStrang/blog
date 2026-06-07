@@ -2,6 +2,7 @@ import React, { useState, useEffect, useLayoutEffect } from "react";
 import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import javascript from "react-syntax-highlighter/dist/esm/languages/prism/javascript";
 import { Page, Header, Content } from "../../shared/theme/GlobalStyles";
+import { tokens } from "../../shared/theme";
 import { useTheme } from "../../shared/contexts/ThemeContext";
 import styled from "styled-components";
 
@@ -113,7 +114,7 @@ const ContentBox = styled.div<{ $isDark: boolean }>`
       : "0 0 0 1px rgba(0, 120, 120, 0.08)"};
   border: 1px solid
     ${({ $isDark }) =>
-      $isDark ? "var(--color-md-blockquote-border)" : "rgba(0, 0, 0, 0.12)"};
+      $isDark ? tokens.md.blockquote.border : "rgba(0, 0, 0, 0.12)"};
 
   @media (max-width: 768px) {
     position: relative;
@@ -302,11 +303,11 @@ const FocusList = styled.ul<{ $isDark: boolean }>`
 
 const CodeSnippet = styled.div`
   position: relative;
-  background: var(--color-md-code-bg);
+  background: ${tokens.md.code.bg};
   backdrop-filter: blur(24px) saturate(145%);
   -webkit-backdrop-filter: blur(24px) saturate(145%);
   border-radius: 12px;
-  box-shadow: 0 10px 26px var(--color-md-code-shadow);
+  box-shadow: 0 10px 26px ${tokens.md.code.shadow};
   padding: 1.6rem 1.2rem 1.2rem;
   margin: 0.4rem 0 0;
   max-width: 440px;
@@ -316,7 +317,7 @@ const CodeSnippet = styled.div`
   font-family: var(--font-family-mono);
   font-size: 0.95rem;
   line-height: 1.6;
-  color: var(--color-md-code-text);
+  color: ${tokens.md.code.text};
   text-align: left;
   display: flex;
   align-items: flex-start;
@@ -331,39 +332,39 @@ const CodeSnippet = styled.div`
   }
 
   .comment, .prolog, .doctype, .cdata, .token-comment {
-    color: var(--color-md-code-comment);
+    color: ${tokens.md.code.comment};
     font-style: italic;
   }
   .function, .function-name, .token-function {
-    color: var(--color-md-code-function);
+    color: ${tokens.md.code.function};
   }
   .keyword, .atrule, .important, .token-keyword {
-    color: var(--color-md-code-keyword);
+    color: ${tokens.md.code.keyword};
   }
-  .builtin { color: var(--color-md-code-builtin); }
+  .builtin { color: ${tokens.md.code.builtin}; }
   .boolean, .constant, .number, .unit, .token-number {
-    color: var(--color-md-code-number);
+    color: ${tokens.md.code.number};
   }
   .punctuation, .token-punctuation {
-    color: var(--color-md-code-punctuation);
+    color: ${tokens.md.code.punctuation};
   }
   .operator, .token-operator {
-    color: var(--color-md-code-operator);
+    color: ${tokens.md.code.operator};
   }
   .property, .attr-name, .symbol, .token-property {
-    color: var(--color-md-code-property);
+    color: ${tokens.md.code.property};
   }
   .string, .attr-value, .char, .template-string, .token-string {
-    color: var(--color-md-code-string);
+    color: ${tokens.md.code.string};
   }
   .class-name, .maybe-class-name {
-    color: var(--color-md-code-type);
+    color: ${tokens.md.code.type};
   }
   .selector, .tag, .token-tag {
-    color: var(--color-md-code-tag);
+    color: ${tokens.md.code.tag};
   }
   .parameter, .variable {
-    color: var(--color-md-code-variable);
+    color: ${tokens.md.code.variable};
   }
 
   @media (max-width: 768px) {
@@ -410,7 +411,7 @@ const CodeTabFlare = styled.div<{ $side: "left" | "right" }>`
   width: 12px;
   height: 12px;
   margin-bottom: -4px;
-  background: var(--color-md-code-bg);
+  background: ${tokens.md.code.bg};
   ${({ $side }) =>
     $side === "left"
       ? `margin-right: -3px;
@@ -426,7 +427,7 @@ const CodeTab = styled.div`
   padding: 0 1.6rem;
   display: flex;
   align-items: center;
-  background: var(--color-md-code-bg);
+  background: ${tokens.md.code.bg};
   border-radius: 8px 8px 0 0;
   font-family: var(--font-family-mono);
   font-size: 0.72rem;

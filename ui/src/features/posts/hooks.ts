@@ -1,61 +1,51 @@
-import { useState, useEffect, useCallback } from 'react';
-import { handleApiError } from '../../services/api';
-import { apiService } from '../../services/api';
-import type { Post } from '../../app/AppContent';
+import { useState, useEffect, useCallback } from "react";
+import { handleApiError } from "../../shared/services/api";
+import { fetchPost, fetchPosts, trackPostView } from "./api";
+import type { Post } from "./model";
 
-interface UsePostsApiState {
+interface UsePostsState {
   posts: Post[];
   loading: boolean;
   error: string | null;
   refetch: () => void;
 }
 
-export const usePostsApi = (): UsePostsApiState => {
+export const usePosts = (): UsePostsState => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  const fetchPosts = useCallback(async () => {
+
+  const load = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      const fetchedPosts = await apiService.getPosts();
-      
-      setPosts(fetchedPosts);
+      setPosts(await fetchPosts());
     } catch (err) {
-      const errorMessage = handleApiError(err, 'Failed to load posts from API');
-      setError(errorMessage);
-      console.error('Error fetching posts:', err);
+      setError(handleApiError(err, "Failed to load posts from API"));
+      console.error("Error fetching posts:", err);
     } finally {
       setLoading(false);
     }
   }, []);
 
   const refetch = useCallback(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+    load();
+  }, [load]);
 
   useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+    load();
+  }, [load]);
 
-  return {
-    posts,
-    loading,
-    error,
-    refetch,
-  };
+  return { posts, loading, error, refetch };
 };
 
-// Hook for fetching a single post
-interface UsePostApiState {
+interface UsePostState {
   post: Post | null;
   loading: boolean;
   error: string | null;
 }
 
-export const usePostApi = (slug: string): UsePostApiState => {
+export const usePost = (slug: string): UsePostState => {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,42 +56,33 @@ export const usePostApi = (slug: string): UsePostApiState => {
       return;
     }
 
-    const fetchPost = async () => {
+    const load = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        const fetchedPost = await apiService.getPost(slug);
-        setPost(fetchedPost);
+        setPost(await fetchPost(slug));
       } catch (err) {
-        const errorMessage = handleApiError(err, `Failed to load post: ${slug}`);
-        setError(errorMessage);
-        console.error('Error fetching post:', err);
+        setError(handleApiError(err, `Failed to load post: ${slug}`));
+        console.error("Error fetching post:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPost();
+    load();
   }, [slug]);
 
-  return {
-    post,
-    loading,
-    error,
-  };
+  return { post, loading, error };
 };
 
-// Hook for tracking post views
 export const usePostViewTracker = () => {
-  const trackView = useCallback(async (slug: string) => {
+  const track = useCallback(async (slug: string) => {
     try {
-      await apiService.trackPostView(slug);
+      await trackPostView(slug);
     } catch (err) {
-      // Non-critical, just log
-      console.warn('Failed to track post view:', err);
+      console.warn("Failed to track post view:", err);
     }
   }, []);
 
-  return { trackView };
+  return { trackView: track };
 };

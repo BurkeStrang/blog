@@ -8,8 +8,8 @@ import React, {
   useCallback,
   useDeferredValue,
 } from "react";
-import type { Post } from "../../app/AppContent";
-import { apiService } from "../../services/api";
+import type { Post } from "../../features/posts";
+import { trackPostView as trackPostViewApi } from "../../features/posts";
 
 export type SortCriteria = "pageViews" | "date" | "trending";
 export type SortDirection = "asc" | "desc";
@@ -226,7 +226,7 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     if (shouldCallApi) {
       recentApiCalls.current.set(slug, now);
-      apiService.trackPostView(slug);
+      trackPostViewApi(slug);
     }
   }, []);
 

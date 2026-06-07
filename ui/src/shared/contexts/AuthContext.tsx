@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { User } from "../types/user";
-import { apiService } from "../../services/api";
+import { getGoogleAuthUrl } from "../../features/auth";
 
 interface AuthContextValue {
   user: User | null;
@@ -185,7 +185,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     try {
       setLoginLoading(true);
-      const response = await apiService.getGoogleAuthUrl();
+      const response = await getGoogleAuthUrl();
 
       if (useRedirectFlow) {
         localStorage.setItem("returnTo", pathnameRef.current);

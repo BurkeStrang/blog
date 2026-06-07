@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { userPreferencesService } from '../../services/userPreferencesService';
+import { userPreferencesService } from '../services/userPreferencesService';
 import { useAuth } from './AuthContext';
 
 type Theme = 'dark' | 'light';

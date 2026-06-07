@@ -262,11 +262,15 @@ export default defineConfig({
             compilationMode: "all", // Start with annotation mode for safer adoption
             sources: (filename: string | string[]) => {
               // Exclude engine utilities, services, and shared contexts from React Compiler optimization
+              if (typeof filename !== 'string') return true;
               return !filename.includes('/engine/') &&
                      !filename.includes('/shared/contexts/') &&
                      !filename.includes('/shared/observability/') &&
+                     !filename.includes('/shared/theme/') && // tokens/build/GlobalStyles: no React components
                      !filename.includes('/services/') &&
                      !filename.includes('/cache/') &&
+                     !filename.endsWith('/api.ts') &&   // features/<x>/api.ts: pure async wrappers, no React
+                     !filename.endsWith('/model.ts') && // features/<x>/model.ts: types only
                      !filename.includes('MarkdownContent');
             }
           }]

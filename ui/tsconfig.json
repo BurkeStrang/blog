@@ -14,7 +14,12 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": { "@/*": ["src/*"] },
-    "types": ["vite/client", "node"]
+    "types": ["vite/client", "node"],
+    "plugins": [
+      {
+        "name": "@styled/typescript-styled-plugin"
+      }
+    ]
   },
   "include": ["src", "src/types/**/*.d.ts"]
 }

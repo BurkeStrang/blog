@@ -1,1 +1,2 @@
-export { OAuthCallback } from './OAuthCallback';
+export { getGoogleAuthUrl } from "./api";
+export { OAuthCallback } from "./OAuthCallback";

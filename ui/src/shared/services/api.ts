@@ -1,5 +1,5 @@
-import type { Post } from '../app/AppContent';
-import type { User } from '../shared/types/user';
+import type { Post } from '../../features/posts/model';
+import type { User } from '../types/user';
 import { postsCache, analyticsCache, cacheInvalidation } from './cache/CacheManager';
 
 // API configuration
@@ -340,42 +340,6 @@ class ApiService {
         'Authorization': `Bearer ${token}`,
       },
     });
-  }
-
-  // Comment management endpoints
-  async getComments(postId?: number): Promise<unknown[]> {
-    const endpoint = postId ? `/api/comments?postId=${postId}` : '/api/comments';
-    return this.fetch<unknown[]>(endpoint, {
-      cache: 'analytics',
-      ttl: 2 * 60 * 1000 // 2 minutes
-    });
-  }
-
-  async createComment(commentData: unknown): Promise<unknown> {
-    if (!this.checkTokenValidity()) {
-      throw new Error('Authentication required');
-    }
-
-    const token = localStorage.getItem('authToken');
-    try {
-      const result = await this.fetch<unknown>('/api/comments', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(commentData),
-        cache: 'none'
-      });
-
-      // Invalidate comments and posts caches so comment counts are fresh
-      cacheInvalidation.invalidateByType('analytics');
-      cacheInvalidation.invalidatePostCaches();
-
-      return result;
-    } catch (error) {
-      console.error('Failed to create comment:', error);
-      throw error;
-    }
   }
 
   // Cache management methods

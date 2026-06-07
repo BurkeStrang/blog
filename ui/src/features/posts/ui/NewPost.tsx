@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { backgroundColor, lightgrey, accent } from "../../shared/theme/colors";
-import { apiService } from "../../services/api";
-import { isAdmin } from "../../shared/types/user";
-import { useAuth } from "../../shared/contexts/AuthContext";
+import { backgroundColor, lightgrey, accent } from "../../../shared/theme/colors";
+import { tokens } from "../../../shared/theme";
+import { createPost } from "../api";
+import { isAdmin } from "../../../shared/types/user";
+import { useAuth } from "../../../shared/contexts/AuthContext";
 
 const Article = styled.article`
   width: 100vw;
@@ -83,7 +84,7 @@ const Input = styled.input`
   }
 
   &::placeholder {
-    color: var(--color-md-blockquote-text);
+    color: ${tokens.md.blockquote.text};
   }
 `;
 
@@ -107,7 +108,7 @@ const TextArea = styled.textarea`
   }
 
   &::placeholder {
-    color: var(--color-md-blockquote-text);
+    color: ${tokens.md.blockquote.text};
   }
 `;
 
@@ -173,7 +174,7 @@ const ErrorMessage = styled.div`
 `;
 
 const HelpText = styled.div`
-  color: var(--color-md-blockquote-text);
+  color: ${tokens.md.blockquote.text};
   font-size: 0.8rem;
   margin-top: 0.25rem;
 `;
@@ -238,7 +239,7 @@ const NewPost: React.FC<NewPostProps> = ({ onPostsChange }) => {
         date: form.date ? new Date(form.date) : undefined,
       };
 
-      const newPost = await apiService.createPost(postData);
+      const newPost = await createPost(postData);
       // Refresh posts data first to ensure new post is in the list
       await onPostsChange?.();
       // sleep 100ms to ensure the new post is available

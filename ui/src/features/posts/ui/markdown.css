@@ -1,0 +1,719 @@
+/* Markdown content styles, extracted from MarkdownContent.tsx styled
+   components. Only `CodeBlockTabFlare` remains as a styled component
+   because it varies on a runtime prop ($side). Everything below is
+   static descendant CSS keyed off `.markdown` and `.code-block`. */
+
+/* Derived heading colors — these were previously precomputed JS strings
+   (`readableH3Light` etc.) at module load. Splitting them out as CSS
+   variables avoids inlining nested color-mix() calls all over the file. */
+:root {
+  --md-h3: color-mix(in srgb, color-mix(in srgb, var(--color-bluish) 52%, var(--color-secondary) 48%) 28%, black);
+  --md-h4: color-mix(in srgb, color-mix(in srgb, var(--color-secondary) 62%, var(--color-bluish) 38%) 24%, black);
+}
+[data-theme="dark"] {
+  --md-h3: color-mix(in srgb, color-mix(in srgb, var(--color-bluish) 52%, var(--color-secondary) 48%) 34%, var(--color-readable-lightgrey));
+  --md-h4: color-mix(in srgb, color-mix(in srgb, var(--color-secondary) 62%, var(--color-bluish) 38%) 30%, var(--color-readable-lightgrey));
+}
+
+/* ───────── Markdown body ───────── */
+.markdown {
+  font-family: var(--font-family);
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--color-readable-lightgrey);
+  counter-reset: md-section;
+}
+
+/* Keep headers narrow so they stack/wrap predictably, but let
+   everything else (paragraphs, lists, code, tables, images, etc.)
+   span the full Article width on larger screens. */
+.markdown > h1,
+.markdown > h2,
+.markdown > h3,
+.markdown > h4,
+.markdown > h5,
+.markdown > h6 {
+  max-width: 72ch;
+}
+
+/* Headings — modern bold display sans */
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+  font-family: var(--font-family-display);
+  color: var(--color-readable-lightgrey);
+  text-align: left;
+  text-wrap: balance;
+}
+
+/* Inside any heading: *italic* and **bold** become the cyan accent (no italic).
+   Lets you write `# Types Are Just *Vibes* We Made Structural` to get a
+   stacked, two-color title without leaving markdown. */
+.markdown h1 em, .markdown h2 em, .markdown h3 em,
+.markdown h4 em, .markdown h5 em, .markdown h6 em,
+.markdown h1 strong, .markdown h2 strong, .markdown h3 strong,
+.markdown h4 strong, .markdown h5 strong, .markdown h6 strong {
+  font-style: normal;
+  font-weight: inherit;
+  color: var(--color-md-accent);
+  background: none;
+}
+
+/* H1 — massive display, tight tracking, uppercase. Word wrap matches the
+   PostCube title (greedy first-fit), not the balanced wrapping used on
+   other headings. */
+.markdown h1 {
+  font-size: clamp(2.8rem, 8vw, 5.5rem);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 0.8;
+  margin: 0.5rem 0 0.4rem 0;
+  text-transform: uppercase;
+  max-width: 14ch;
+  text-wrap: wrap;
+}
+
+.markdown h1 br { line-height: 0; }
+
+/* H2 — section break with auto-numbered "0X /" prefix in mono cyan.
+   Hanging-indent so wrapped lines align with the heading text rather
+   than with the prefix. padding-left + negative text-indent shifts
+   only the first line back over the prefix. */
+.markdown h2 {
+  font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  margin: 2.2rem 0 0.5em 0;
+  padding-top: 1.6rem;
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+  max-width: 28ch;
+}
+
+.markdown h2::before {
+  counter-increment: md-section;
+  content: counter(md-section, decimal-leading-zero) ' / ';
+  color: var(--color-md-accent);
+  font-family: var(--font-family-mono);
+  font-size: 0.42em;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: lowercase;
+  vertical-align: 0.35em;
+  margin-right: 0.3em;
+}
+
+/* H3 — accent color, smaller */
+.markdown h3 {
+  font-size: 1.22rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  margin: 2rem 0 0.4rem 0;
+  color: var(--md-h3);
+}
+
+.markdown h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  margin: 1.6rem 0 0.5rem 0;
+  color: var(--md-h4);
+  text-transform: uppercase;
+}
+
+/* Paragraphs */
+.markdown p {
+  margin: 1.2rem 0;
+  text-align: left;
+}
+
+/* Strong with cyan highlighter underline */
+.markdown strong {
+  font-weight: 700;
+  color: var(--color-readable-lightgrey);
+  background: linear-gradient(
+    180deg,
+    transparent 60%,
+    var(--color-md-accent-soft-strong) 60%
+  );
+}
+
+/* Links */
+.markdown a {
+  color: var(--color-md-link);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-md-link);
+  transition: all 0.2s ease;
+}
+
+.markdown a:hover {
+  color: var(--color-md-link-hover);
+  border-bottom-color: var(--color-md-link-hover);
+  text-shadow: 0 0 18px var(--color-md-accent-shadow);
+}
+
+/* Lists */
+.markdown ul, .markdown ol {
+  margin: 1.5rem 0;
+  padding-left: 2rem;
+  text-align: left;
+}
+
+.markdown li {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.markdown li::marker {
+  color: var(--color-md-accent);
+}
+
+/* Blockquote callout */
+.markdown blockquote {
+  position: relative;
+  padding: 1.1rem 1.2rem 1rem 1.3rem;
+  margin: 2rem 0;
+  background:
+    radial-gradient(circle at 8px 8px, var(--color-md-accent-soft) 2px, transparent 2px),
+    linear-gradient(180deg, var(--color-md-accent-soft), rgba(0, 0, 0, 0));
+  background-size: 16px 16px;
+  border: 1px solid var(--color-md-blockquote-border);
+  border-radius: 16px;
+  box-shadow: 0 0 0 1px var(--color-md-accent-soft);
+  font-style: normal;
+  color: var(--color-readable-lightgrey);
+}
+
+.markdown blockquote p:first-child { margin-top: 0; }
+.markdown blockquote p:last-child { margin-bottom: 0; }
+
+/* Inline code with cyan tint + border */
+.markdown code {
+  color: var(--color-md-accent);
+  font-family: var(--font-family-mono);
+  font-size: 0.88em;
+  font-weight: 500;
+  padding: 0.16em 0.85em;
+  border-radius: 5px;
+  background: var(--color-md-accent-soft);
+  border: 1px solid var(--color-md-accent-soft-strong);
+}
+
+.markdown h1 code,
+.markdown h2 code,
+.markdown h3 code,
+.markdown h4 code,
+.markdown h5 code,
+.markdown h6 code {
+  color: var(--color-md-accent);
+  font-size: 0.82em;
+  font-weight: inherit;
+  padding: 0 0.12em 0.03em;
+  border: 0;
+  border-radius: 0.22em;
+  background: color-mix(in srgb, var(--color-md-accent-soft) 76%, transparent);
+  box-shadow: inset 0 -0.05em 0 color-mix(in srgb, var(--color-md-accent-soft-strong) 84%, transparent);
+}
+
+/* ───────── Syntax highlight tokens (inside .markdown, for inline) ───────── */
+.markdown .comment,
+.markdown .prolog,
+.markdown .doctype,
+.markdown .cdata,
+.markdown .token-comment {
+  color: var(--color-md-code-comment);
+  font-style: italic;
+}
+
+.markdown .function,
+.markdown .function-name,
+.markdown .token-function {
+  color: var(--color-md-code-function);
+}
+
+.markdown .atrule,
+.markdown .important,
+.markdown .keyword,
+.markdown .token-keyword {
+  color: var(--color-md-code-keyword);
+}
+
+.markdown .builtin {
+  color: var(--color-md-code-builtin);
+}
+
+.markdown .boolean,
+.markdown .constant,
+.markdown .number,
+.markdown .unit,
+.markdown .token-number {
+  color: var(--color-md-code-number);
+}
+
+.markdown .punctuation,
+.markdown .token-punctuation {
+  color: var(--color-md-code-punctuation);
+}
+
+.markdown .operator,
+.markdown .token-operator {
+  color: var(--color-md-code-operator);
+}
+
+.markdown .attr-name,
+.markdown .property,
+.markdown .symbol,
+.markdown .token-property {
+  color: var(--color-md-code-property);
+}
+
+.markdown .attr-value,
+.markdown .char,
+.markdown .string,
+.markdown .template-string,
+.markdown .token-string {
+  color: var(--color-md-code-string);
+}
+
+.markdown .regex {
+  color: var(--color-md-code-regex);
+}
+
+.markdown .class-name,
+.markdown .maybe-class-name {
+  color: var(--color-md-code-type);
+}
+
+.markdown .attr-name {
+  color: var(--color-md-code-attribute);
+}
+
+.markdown .namespace {
+  color: var(--color-md-code-namespace);
+}
+
+.markdown .parameter,
+.markdown .variable {
+  color: var(--color-md-code-variable);
+}
+
+.markdown .deleted {
+  color: var(--color-md-code-deleted);
+}
+
+.markdown .inserted {
+  color: var(--color-md-code-inserted);
+}
+
+.markdown .entity,
+.markdown .url {
+  color: var(--color-md-code-entity);
+}
+
+.markdown .selector,
+.markdown .tag,
+.markdown .token-tag {
+  color: var(--color-md-code-tag);
+}
+
+/* Tables */
+.markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2rem 0;
+  background: var(--color-md-table-bg);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.markdown th, .markdown td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border: 1px solid var(--color-md-table-border);
+}
+
+.markdown th {
+  background: var(--color-md-table-th-bg);
+  color: var(--color-md-code-text);
+  font-weight: 600;
+}
+
+.markdown tr:hover {
+  background: var(--color-md-table-tr-hover);
+}
+
+/* Horizontal Rule */
+.markdown hr {
+  border: none;
+  border-top: 2px solid var(--color-md-hr);
+  margin: 2rem 0;
+}
+
+/* Images */
+.markdown img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 2rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Strong and Emphasis — second pass: font-weight + color override, gradient
+   from the earlier `.markdown strong` rule still applies. */
+.markdown strong {
+  color: var(--color-readable-lightgrey);
+  font-weight: 600;
+}
+
+.markdown em {
+  color: var(--color-readable-lightgrey);
+  font-style: italic;
+}
+
+.markdown h1 *, .markdown h2 *, .markdown h3 *,
+.markdown h4 *, .markdown h5 *, .markdown h6 * {
+  color: inherit;
+  border-bottom-color: currentColor;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .markdown { font-size: 1rem; line-height: 1.7; }
+  .markdown h1 { font-size: 1.75rem; margin-bottom: 1.25rem; }
+  .markdown h2 {
+    font-size: 1.5rem;
+    margin: 1.6rem 0 0.5rem 0;
+    padding-top: 0.6rem;
+  }
+  .markdown h3 { font-size: 1.25rem; }
+  .markdown ul, .markdown ol { padding-left: 1.5rem; }
+  .markdown blockquote { padding: 0.75rem 1rem; margin: 1.5rem 0; }
+  .markdown hr { margin: 1.75rem 0; }
+}
+
+@media (max-width: 480px) {
+  .markdown { font-size: 1rem; line-height: 1.65; }
+  .markdown h1 { font-size: 1.5rem; margin: 1rem 0; }
+  .markdown h2 {
+    font-size: 1.375rem;
+    margin: 1.25rem 0 0.45rem 0;
+    padding-top: 0.45rem;
+  }
+  .markdown h3 { font-size: 1.25rem; margin: 1.5rem 0 0.75rem 0; }
+  .markdown h4 { font-size: 1.125rem; }
+  .markdown ul, .markdown ol { padding-left: 1.25rem; margin: 1.25rem 0; }
+  .markdown li { margin: 0.5rem 0; }
+  .markdown blockquote { padding: 0.75rem 1rem; margin: 1.25rem 0; }
+  .markdown table { font-size: 0.9rem; margin: 1.5rem 0; }
+  .markdown th, .markdown td { padding: 0.5rem 0.75rem; }
+  .markdown hr { margin: 1.25rem 0; }
+}
+
+@media (max-width: 390px) {
+  .markdown { font-size: 0.95rem; line-height: 1.6; }
+  .markdown h1 { font-size: 1.375rem; margin: 0.75rem 0; }
+  .markdown h2 {
+    font-size: 1.25rem;
+    margin: 1rem 0 0.4rem 0;
+    padding-top: 0.35rem;
+  }
+  .markdown h3 { font-size: 1.125rem; margin: 1.25rem 0 0.5rem 0; }
+  .markdown h4 { font-size: 1.0625rem; }
+  .markdown ul, .markdown ol { padding-left: 1rem; margin: 1rem 0; }
+  .markdown li { margin: 0.4rem 0; }
+  .markdown blockquote {
+    padding: 0.5rem 0.75rem;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+  }
+  .markdown table { font-size: 0.85rem; margin: 1.25rem 0; }
+  .markdown th, .markdown td { padding: 0.4rem 0.5rem; }
+  .markdown img { margin: 1.5rem 0; }
+  .markdown hr { margin: 1rem 0; }
+}
+
+/* Scroll-reveal: PostDetail tags direct children with [data-reveal] on
+   mount, then [data-revealed] when each enters the Article viewport. */
+.markdown > [data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  filter: blur(6px);
+  transition:
+    opacity 600ms ease,
+    transform 600ms ease,
+    filter 600ms ease;
+  will-change: opacity, transform, filter;
+}
+
+.markdown > [data-reveal][data-revealed] {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .markdown > [data-reveal] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+}
+
+/* ───────── Code block ───────── */
+.code-block {
+  position: relative;
+  margin: 3.25rem 0 2rem 0;
+  background: var(--color-md-code-bg);
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+  border-radius: 12px;
+  box-shadow: 0 10px 26px var(--color-md-code-shadow);
+  font-family: var(--font-family-mono);
+}
+
+/* Line number gutter from react-syntax-highlighter */
+.code-block .linenumber {
+  display: inline-block;
+  min-width: 2em;
+  padding-right: 1.2em;
+  text-align: right;
+  color: var(--color-md-code-comment);
+  opacity: 0.55;
+  user-select: none;
+}
+
+.code-block code {
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  color: inherit !important;
+}
+
+.code-block pre {
+  background: transparent !important;
+  color: var(--color-md-code-text);
+  padding: 1.6rem 1.2rem 1.2rem !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-size: 0.95rem !important;
+  line-height: 1.6;
+  overflow-x: auto !important;
+  max-width: 100%;
+  white-space: pre;
+
+  /* Match the Article's scrollbar — slim cyan-tinted thumb */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-post-scrollbar-thumb) transparent;
+}
+
+.code-block pre::-webkit-scrollbar { height: 0.6rem; }
+.code-block pre::-webkit-scrollbar-track { background: transparent; }
+.code-block pre::-webkit-scrollbar-thumb {
+  background-color: var(--color-post-scrollbar-thumb);
+  border-radius: 999px;
+  min-width: 3rem;
+}
+.code-block pre::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-post-scrollbar-thumb-hover);
+}
+
+/* Syntax highlight tokens — duplicated from .markdown so code blocks
+   work both inside and outside markdown content. */
+.code-block .comment,
+.code-block .prolog,
+.code-block .doctype,
+.code-block .cdata,
+.code-block .token-comment {
+  color: var(--color-md-code-comment);
+  font-style: italic;
+}
+
+.code-block .function,
+.code-block .function-name,
+.code-block .token-function {
+  color: var(--color-md-code-function);
+}
+
+.code-block .atrule,
+.code-block .important,
+.code-block .keyword,
+.code-block .token-keyword {
+  color: var(--color-md-code-keyword);
+}
+
+.code-block .builtin { color: var(--color-md-code-builtin); }
+
+.code-block .boolean,
+.code-block .constant,
+.code-block .number,
+.code-block .unit,
+.code-block .token-number {
+  color: var(--color-md-code-number);
+}
+
+.code-block .punctuation,
+.code-block .token-punctuation {
+  color: var(--color-md-code-punctuation);
+}
+
+.code-block .operator,
+.code-block .token-operator {
+  color: var(--color-md-code-operator);
+}
+
+.code-block .attr-name,
+.code-block .property,
+.code-block .symbol,
+.code-block .token-property {
+  color: var(--color-md-code-property);
+}
+
+.code-block .attr-value,
+.code-block .char,
+.code-block .string,
+.code-block .template-string,
+.code-block .token-string {
+  color: var(--color-md-code-string);
+}
+
+.code-block .regex { color: var(--color-md-code-regex); }
+
+.code-block .class-name,
+.code-block .maybe-class-name {
+  color: var(--color-md-code-type);
+}
+
+.code-block .attr-name { color: var(--color-md-code-attribute); }
+.code-block .namespace { color: var(--color-md-code-namespace); }
+
+.code-block .parameter,
+.code-block .variable {
+  color: var(--color-md-code-variable);
+}
+
+.code-block .deleted { color: var(--color-md-code-deleted); }
+.code-block .inserted { color: var(--color-md-code-inserted); }
+
+.code-block .entity,
+.code-block .url {
+  color: var(--color-md-code-entity);
+}
+
+.code-block .selector,
+.code-block .tag,
+.code-block .token-tag {
+  color: var(--color-md-code-tag);
+}
+
+@media (max-width: 768px) {
+  .code-block { margin: 2.4rem 0 1.5rem; }
+  .code-block pre {
+    padding: 1.5rem 1.25rem 1.25rem !important;
+    font-size: 0.95rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .code-block { margin: 2.1rem 0 1.25rem; border-radius: 6px; }
+  .code-block pre {
+    padding: 1.3rem 1rem 1rem !important;
+    font-size: 0.925rem !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .code-block { margin: 1.9rem 0 1rem; border-radius: 8px; }
+  .code-block pre {
+    padding: 1.1rem 0.75rem 0.75rem !important;
+    font-size: 0.9rem !important;
+  }
+}
+
+/* ───────── Code block tabs + buttons ───────── */
+
+/* Tab row — absolutely positioned at top-right of code block, items aligned
+   to bottom so the tab and flares share the same baseline. */
+.code-block__tabs {
+  position: absolute;
+  top: calc(-1.7rem + 1px);
+  right: 1.25rem;
+  display: inline-flex;
+  align-items: flex-end;
+  z-index: 2;
+}
+
+/* The tab itself — visible filled rectangle with rounded top corners.
+   No backdrop-filter here — the box owns the filter and the tab sits
+   on top, so adding another filter creates a visible seam at the bottom. */
+.code-block__tab {
+  height: 1.7rem;
+  padding: 0 1.6rem;
+  display: flex;
+  align-items: center;
+  background: var(--color-md-code-bg);
+  border-radius: 8px 8px 0 0;
+  font-family: var(--font-family-mono);
+  font-size: 0.72rem;
+  color: rgba(176, 179, 198, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.code-block__buttons {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.code-block__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--color-md-code-text);
+  cursor: pointer;
+  opacity: 0.18;
+  transition: opacity 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.code-block__icon-btn svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: block;
+}
+
+.code-block__icon-btn:hover {
+  opacity: 1;
+  color: var(--color-md-accent);
+  background: var(--color-md-accent-soft);
+  border-color: var(--color-md-accent-soft-strong);
+}
+
+.code-block__icon-btn:focus-visible {
+  opacity: 1;
+  color: var(--color-md-accent);
+  outline: 2px solid var(--color-md-accent);
+  outline-offset: 2px;
+}
+
+.code-block__icon-btn[data-active='true'] {
+  opacity: 1;
+  color: var(--color-md-accent);
+}

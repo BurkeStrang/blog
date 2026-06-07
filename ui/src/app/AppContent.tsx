@@ -5,14 +5,13 @@ import { SideBar } from "../features/layout";
 import { CanvasBackground, GlobalStyle } from "../shared/theme/GlobalStyles";
 import styled from "styled-components";
 import { LoadingCubes } from "../shared/components";
-import type { Vector3 } from "three";
 import { backgroundColor } from "../shared/theme/colors";
-import { useAssetLoader, usePostsApi } from "../shared/hooks";
+import { useAssetLoader } from "../shared/hooks";
+import { usePosts, fetchPostsUncached } from "../features/posts";
 import { usePostsData } from "../shared/contexts/SearchContext";
 import { ThemeProvider } from "../shared/contexts/ThemeContext";
-import { apiService } from "../services/api";
-import { cacheInvalidation } from "../services/cache/CacheManager";
-import { installMobileHapticsListener } from "../services/haptics";
+import { cacheInvalidation } from "../shared/services/cache/CacheManager";
+import { installMobileHapticsListener } from "../shared/services/haptics";
 
 // LazyOceanCanvas is itself lazy-loaded so its three-vendor / react-three /
 // OceanScene dependency graph stays out of the initial bundle. Routes that
@@ -21,29 +20,20 @@ const LazyOceanCanvas = lazy(() =>
   import("../features/ocean").then((m) => ({ default: m.LazyOceanCanvas })),
 );
 const About = lazy(() => import("../features/pages/About"));
-const Posts = lazy(() => import("../features/posts/Posts"));
-const NewPost = lazy(() => import("../features/posts/NewPost"));
-const PostDetail = lazy(() => import("../features/posts/PostDetail"));
+const Posts = lazy(() =>
+  import("../features/posts").then((m) => ({ default: m.Posts })),
+);
+const NewPost = lazy(() =>
+  import("../features/posts").then((m) => ({ default: m.NewPost })),
+);
+const PostDetail = lazy(() =>
+  import("../features/posts").then((m) => ({ default: m.PostDetail })),
+);
 const NotFound = lazy(() =>
   import("../features/pages/NotFound").then((module) => ({
     default: module.NotFound,
   })),
 );
-
-export interface Post {
-  id?: number;
-  slug: string;
-  previous?: string;
-  next?: string;
-  title: string;
-  body: string;
-  position?: Vector3;
-  date?: Date;
-  pageViews?: number;
-  recentViews?: number; // Views in the last 7 days
-  lastViewed?: Date; // Last time this post was viewed
-  commentCount?: number; // Comment count for trending calculation
-}
 
 const LoaderOverlay = styled.div`
   position: absolute;
@@ -69,7 +59,7 @@ const AppContent: React.FC = memo(() => {
   const location = useLocation();
 
   // Fetch posts from API
-  const { posts, loading: postsLoading, error: postsError, refetch: refetchPosts } = usePostsApi();
+  const { posts, loading: postsLoading, error: postsError, refetch: refetchPosts } = usePosts();
 
   // Use search context
   const { allPosts: searchPosts, filteredPosts, setAllPosts, updatePost, isSorting } = usePostsData();
@@ -81,7 +71,7 @@ const AppContent: React.FC = memo(() => {
       cacheInvalidation.invalidatePostCaches();
       
       // Get fresh posts without any caching
-      const freshPosts = await apiService.getPostsUncached();
+      const freshPosts = await fetchPostsUncached();
       
       // Update search context immediately
       setAllPosts(freshPosts);
@@ -393,7 +383,7 @@ const AppContent: React.FC = memo(() => {
               <div>Loading failed: {error || postsError}</div>
               <div style={{ marginTop: "10px", fontSize: "0.8em" }}>
                 {postsError
-                  ? "Check if the Go API is running and accessible"
+                  ? "API not accessible"
                   : "Refresh to try again"}
               </div>
             </div>

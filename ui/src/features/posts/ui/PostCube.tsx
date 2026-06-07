@@ -5,8 +5,8 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 import type { Font } from "three/examples/jsm/loaders/FontLoader";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { MathUtils } from "three";
-import { triggerMobileHapticFeedback } from "../../services/haptics";
-import { getSceneTheme } from "../../shared/theme/sceneColors";
+import { triggerMobileHapticFeedback } from "../../../shared/services/haptics";
+import { getSceneTheme } from "../../../shared/theme/sceneColors";
 
 // --- 1. Optimized text measurement with caching ---
 const textWidthCache = new Map<string, number>();

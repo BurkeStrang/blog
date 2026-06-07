@@ -10,17 +10,17 @@ import {
   FilterButton,
   FilterDropdown,
   FilterOption,
-} from "../../shared/theme/GlobalStyles";
+} from "../../../shared/theme/GlobalStyles";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import CheckIcon from "@mui/icons-material/Check";
 import AddIcon from "@mui/icons-material/Add";
-import { useSort, useSearchQuery } from "../../shared/contexts/SearchContext";
-import { useAuth } from "../../shared/contexts/AuthContext";
-import { isAdmin } from "../../shared/types/user";
+import { useSort, useSearchQuery } from "../../../shared/contexts/SearchContext";
+import { useAuth } from "../../../shared/contexts/AuthContext";
+import { isAdmin } from "../../../shared/types/user";
 import { useNavigate } from "react-router-dom";
-import { accent, backgroundColor } from "../../shared/theme/colors";
+import { accent, backgroundColor } from "../../../shared/theme/colors";
 
 const ControlsContainer = styled.div`
   position: relative;

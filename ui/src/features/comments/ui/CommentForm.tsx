@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { readableLightgrey, accent, backgroundColor} from '../../shared/theme/colors';
-import type { CreateCommentRequest } from '../../services/commentService';
+import { readableLightgrey, accent, backgroundColor} from '../../../shared/theme/colors';
+import type { CreateCommentRequest } from '../model';
 
 const readableAccent = `color-mix(in srgb, ${accent} 65%, black)`;
 

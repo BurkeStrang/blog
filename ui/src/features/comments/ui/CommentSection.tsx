@@ -1,13 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import { readableLightgrey, accent } from "../../shared/theme/colors";
+import { readableLightgrey, accent } from "../../../shared/theme/colors";
 import { CommentItem } from "./CommentItem";
 import { CommentForm } from "./CommentForm";
-import {
-  commentService,
-  type Comment,
-  type CreateCommentRequest,
-} from "../../services/commentService";
+import { commentService } from "../api";
+import type { Comment, CreateCommentRequest } from "../model";
 
 const readableAccent = `color-mix(in srgb, ${accent} 65%, black)`;
 
@@ -116,7 +113,7 @@ const LoadingSpinner = styled.div`
 interface CommentSectionProps {
   postId: number;
   isAuthenticated: boolean;
-  user?: import('../../shared/types/user').User | null;
+  user?: import('../../../shared/types/user').User | null;
   onLogin?: () => void;
   onCommentsLoad?: (total: number) => void;
 }
