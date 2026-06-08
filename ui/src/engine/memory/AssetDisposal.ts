@@ -315,9 +315,11 @@ export class AssetDisposalManager {
       
       case 'texture':
         if (asset instanceof Texture && asset.image) {
-          if (asset.image.width && asset.image.height) {
+          // @types/three 0.184 types Texture.image as `unknown`.
+          const image = asset.image as { width?: number; height?: number };
+          if (image.width && image.height) {
             // Estimate: width * height * 4 bytes (RGBA)
-            size = asset.image.width * asset.image.height * 4;
+            size = image.width * image.height * 4;
           }
         }
         break;

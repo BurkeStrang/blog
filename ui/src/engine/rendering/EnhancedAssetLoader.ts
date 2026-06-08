@@ -175,9 +175,12 @@ export class EnhancedAssetLoader {
             
             for (const prop of textureProps) {
               const texture = material[prop] as Texture | null;
-              if (texture && texture.image && texture.image.src) {
+              // @types/three 0.184 types Texture.image as `unknown`; only
+              // image-like sources (HTMLImageElement/video) carry a src.
+              const imageSrc = (texture?.image as { src?: string } | undefined)?.src;
+              if (texture && imageSrc) {
                 try {
-                  const optimized = await this.loadTexture(texture.image.src, options);
+                  const optimized = await this.loadTexture(imageSrc, options);
                   material[prop] = optimized;
                   texture.dispose(); // Dispose original texture
                 } catch (error) {

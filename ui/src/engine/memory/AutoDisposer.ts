@@ -222,7 +222,8 @@ export class AutoDisposer {
     switch (type) {
       case 'texture':
         if ('image' in resource && resource.image) {
-          const { width = 1024, height = 1024 } = resource.image;
+          // @types/three 0.184 types Texture.image as `unknown`.
+          const { width = 1024, height = 1024 } = resource.image as { width?: number; height?: number };
           return width * height * 4; // RGBA bytes
         }
         return 1024 * 1024 * 4; // Default 1MB

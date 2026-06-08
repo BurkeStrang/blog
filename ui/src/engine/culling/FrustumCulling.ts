@@ -302,9 +302,12 @@ export class FrustumCullingManager {
   }
 
   private getTextureMemorySize(texture: THREE.Texture): number {
-    if (texture.image && texture.image.width && texture.image.height) {
+    // @types/three 0.184 types Texture.image as `unknown`; read the common
+    // width/height fields through a narrow structural cast.
+    const image = texture.image as { width?: number; height?: number } | undefined;
+    if (image?.width && image.height) {
       // Rough estimate: width * height * 4 bytes (RGBA)
-      return texture.image.width * texture.image.height * 4;
+      return image.width * image.height * 4;
     }
     return 0;
   }

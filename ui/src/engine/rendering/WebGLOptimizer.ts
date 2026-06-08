@@ -197,7 +197,9 @@ export class RendererOptimizer {
           if (standardMat.map) {
             // Disable mipmaps for small textures to save memory
             const texture = standardMat.map;
-            if (texture.image && texture.image.width < 512) {
+            // @types/three 0.184 types Texture.image as `unknown`.
+            const imageWidth = (texture.image as { width?: number } | undefined)?.width;
+            if (imageWidth !== undefined && imageWidth < 512) {
               texture.generateMipmaps = false;
               texture.minFilter = 1006; // LinearFilter
             }
