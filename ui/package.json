@@ -62,7 +62,7 @@
     "@gltf-transform/core": "^4.3.0",
     "@gltf-transform/functions": "^4.3.0",
     "@styled/typescript-styled-plugin": "^1.0.1",
-    "@types/node": "^25.7.0",
+    "@types/node": "^25.9.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "19.2.3",
     "@types/styled-components": "^5.1.36",
