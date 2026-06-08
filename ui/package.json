@@ -57,7 +57,7 @@
     "troika-three-text": "^0.52.4"
   },
   "devDependencies": {
-    "@eslint/js": "^9.27.0",
+    "@eslint/js": "^10.0.1",
     "@gltf-transform/core": "^4.3.0",
     "@gltf-transform/functions": "^4.3.0",
     "@styled/typescript-styled-plugin": "^1.0.1",
