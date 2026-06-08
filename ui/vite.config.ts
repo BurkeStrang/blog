@@ -183,8 +183,16 @@ const preloadCriticalAssetsPlugin = () => ({
       const cubeBin = hashedBinFileName('cube');
       if (sphereBin) preloads.push({ href: '/assets/' + sphereBin, as: 'fetch' });
       if (cubeBin) preloads.push({ href: '/assets/' + cubeBin, as: 'fetch' });
-      preloads.push({ href: '/draco/draco_wasm_wrapper.js', as: 'script' });
-      preloads.push({ href: '/draco/draco_decoder.wasm', as: 'fetch', type: 'application/wasm' });
+      // NOTE: the Draco decoder (draco_wasm_wrapper.js + draco_decoder.wasm)
+      // is intentionally NOT preloaded. It's consumed last — only after the
+      // lazy OceanScene chunk loads, the gltf + .bin download, and the worker
+      // starts decoding — which is well past the browser's "used within a few
+      // seconds of load" budget, so preloading it only produced console
+      // warnings. It also can't share the preload cache here: DRACOLoader
+      // fetches the wrapper as text (not as a <script>) and fetches both files
+      // same-origin without CORS, while these <link>s are crossorigin — a
+      // cache-key mismatch that made the browser download Draco twice. The
+      // decoder now loads on demand when the first Draco mesh is decoded.
       if (preloads.length === 0) return html;
 
       // Inline script runs synchronously during HTML parse, before any other
