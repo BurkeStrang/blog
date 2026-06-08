@@ -20,15 +20,13 @@ const LazyOceanCanvas = lazy(() =>
   import("../features/ocean").then((m) => ({ default: m.LazyOceanCanvas })),
 );
 const About = lazy(() => import("../features/pages/About"));
-const Posts = lazy(() =>
-  import("../features/posts").then((m) => ({ default: m.Posts })),
-);
-const NewPost = lazy(() =>
-  import("../features/posts").then((m) => ({ default: m.NewPost })),
-);
-const PostDetail = lazy(() =>
-  import("../features/posts").then((m) => ({ default: m.PostDetail })),
-);
+// Import the route components directly (not via ../features/posts) so they
+// split into their own chunks. The barrel is statically imported above for
+// usePosts/fetchPostsUncached, and dynamically importing the same module
+// would keep these components in the main chunk (INEFFECTIVE_DYNAMIC_IMPORT).
+const Posts = lazy(() => import("../features/posts/ui/Posts"));
+const NewPost = lazy(() => import("../features/posts/ui/NewPost"));
+const PostDetail = lazy(() => import("../features/posts/ui/PostDetail"));
 const NotFound = lazy(() =>
   import("../features/pages/NotFound").then((module) => ({
     default: module.NotFound,

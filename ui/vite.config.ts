@@ -277,15 +277,21 @@ export default defineConfig({
         ]
       }
     }),
-    eslint({
-      include: ['src/**/*.{ts,tsx,js,jsx}'],
-      exclude: ['node_modules', 'dist'],
-      failOnError: true,
-      failOnWarning: false,
-      emitError: true,
-      emitWarning: true,
-      cache: false, // Disable cache for consistency
-    }),
+    {
+      // Lint only during `vite` dev (serve). The production `build` script
+      // runs `lint:check` as a separate step, so running ESLint inside the
+      // build too is redundant and dominates build time (PLUGIN_TIMINGS).
+      ...eslint({
+        include: ['src/**/*.{ts,tsx,js,jsx}'],
+        exclude: ['node_modules', 'dist'],
+        failOnError: true,
+        failOnWarning: false,
+        emitError: true,
+        emitWarning: true,
+        cache: false, // Disable cache for consistency
+      }),
+      apply: 'serve',
+    },
     excludeModelsPlugin(),
     gltfTexturePlugin(),
     preloadCriticalAssetsPlugin(),
@@ -328,9 +334,18 @@ export default defineConfig({
     assetsInlineLimit: (filePath: string) =>
       /\.(gltf|glb|bin|avif|webp|woff2?|ttf|json)$/.test(filePath) ? false : undefined,
     rollupOptions: {
+      // The slowest plugin is vite:react-babel (the React Compiler running
+      // through Babel) — intentional, not a misconfiguration — so the
+      // plugin-timings report is just noise. Other rolldown checks stay on.
+      checks: { pluginTimings: false },
       onwarn(warning, warn) {
         // Fail build on warnings
         if (warning.code === 'UNUSED_EXTERNAL_IMPORT') {
+          return;
+        }
+        // Misplaced /* #__PURE__ */ annotations in the prebuilt Application
+        // Insights vendor bundles — nothing actionable on our side.
+        if (warning.code === 'INVALID_ANNOTATION' && /node_modules/.test(warning.id ?? warning.message)) {
           return;
         }
         warn(warning);
@@ -353,10 +368,9 @@ export default defineConfig({
       },
       treeshake: {
         moduleSideEffects: false,
-        propertyReadSideEffects: false,
-        tryCatchDeoptimization: false
+        propertyReadSideEffects: false
       }
     },
-    minify: 'esbuild'
+    minify: 'oxc'
   },
 });
