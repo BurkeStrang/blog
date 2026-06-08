@@ -65,7 +65,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "19.2.3",
     "@types/styled-components": "^5.1.36",
-    "@types/three": "^0.176.0",
+    "@types/three": "^0.184.1",
     "@vitejs/plugin-react": "^5.2.0",
     "babel-plugin-react-compiler": "19.1.0-rc.3",
     "draco3dgltf": "^1.5.7",
