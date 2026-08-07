@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using BlogApi.Common.Errors;
 using BlogApi.Common.Validation;
 using BlogApi.Features.Posts.Contracts;
@@ -119,4 +120,5 @@ public sealed record UpdatePostRequestBody(
     string? Body,
     string? Previous,
     string? Next,
-    DateTime? CreatedAt);
+    // See PostDto: the UI sends this as `date`.
+    [property: JsonPropertyName("date")] DateTime? CreatedAt);

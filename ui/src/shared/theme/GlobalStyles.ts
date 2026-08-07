@@ -62,10 +62,22 @@ export const GlobalStyle = createGlobalStyle`
     --color-filter-hover-bg: rgba(0, 220, 200, 0.10);
     --color-filter-divider: rgba(0, 220, 200, 0.18);
 
-    /* Site fonts. --font-family body, --font-family-display headings, --font-family-mono code. */
+    /* Site fonts. --font-family body, --font-family-display headings,
+       --font-family-mono code, --font-family-prose article paragraphs.
+
+       --font-family-prose is a system serif stack in the spirit of Source
+       Serif 4, ordered toward the newer screen-designed serifs rather than the
+       old-style book faces: Source Serif if installed, then Noto Serif
+       (Linux/Android), Cambria/Constantia (Windows), Charter (macOS). The
+       old-style faces sit at the tail as fallbacks and Times is left out
+       entirely. Nothing is downloaded — there is no @font-face anywhere in
+       this app, so naming a font that isn't installed silently falls through
+       to the next entry, which is why setting a bare family name here has no
+       visible effect. */
     --font-family: ui-monospace, SFMono-Regular, 'Cascadia Mono', 'Cascadia Code', Consolas, 'Ubuntu Mono', 'DejaVu Sans Mono', Menlo, Monaco, 'Liberation Mono', 'Courier New', monospace;
     --font-family-display: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
     --font-family-mono: ui-monospace, SFMono-Regular, 'Cascadia Mono', 'Cascadia Code', Consolas, 'Ubuntu Mono', 'DejaVu Sans Mono', Menlo, Monaco, 'Liberation Mono', 'Courier New', monospace;
+    --font-family-prose: 'Source Serif 4', 'Source Serif Pro', 'Noto Serif', Cambria, Constantia, Charter, 'Bitstream Charter', 'Iowan Old Style', Georgia, 'Liberation Serif', serif;
   }
 
   [data-theme="light"] {

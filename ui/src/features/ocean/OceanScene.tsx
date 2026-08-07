@@ -134,6 +134,12 @@ function ThemeSky({ isDark }: { isDark: boolean }) {
 
 // Removed PerformanceMode - using consistent medium-high quality settings
 
+// How often the water tiles are re-tested against the camera frustum, in
+// milliseconds of wall time. Cheap enough at this rate (a handful of tiles)
+// that the water comes back promptly when the camera returns, without running
+// the test every frame.
+const VISIBILITY_CHECK_INTERVAL_MS = 250;
+
 // Geometry pool for water tiles - CRITICAL memory leak fix
 const waterGeometryPool = new Map<string, PlaneGeometry>();
 const MAX_GEOMETRY_POOL_SIZE = 4; // Only need a few geometries for different sizes
@@ -239,24 +245,16 @@ function WaterTile(props: {
       scene.remove(waterTile);
       if (waterRef.current) {
         try {
-          // Properly dispose of water material and associated resources
-          if (waterTile.material) {
-            const material = waterTile.material as ShaderMaterial & {
-              uniforms?: { [key: string]: { value: unknown } };
-            };
-            
-            // Dispose of any textures in uniforms
-            if (material.uniforms) {
-              Object.values(material.uniforms).forEach(uniform => {
-                if (uniform.value?.dispose) {
-                  uniform.value.dispose();
-                }
-              });
-            }
-            
-            material.dispose();
-          }
-          
+          // Dispose only what this tile owns: its material and its mirror
+          // render target. NOT the uniform textures — `normalSampler` holds
+          // `waterNormals`, the single shared normal map loaded once by the
+          // asset loader and handed to every tile. Disposing it here freed the
+          // GPU texture out from under every other live tile and every later
+          // mount, so a tile scrolling out of view (or a route change that
+          // re-ran this effect) could leave the water rendering as nothing.
+          // The geometry is pooled and outlives the tile too.
+          waterTile.material?.dispose();
+
           // Dispose the water object itself if it has a dispose method
           (waterTile as { dispose?: () => void }).dispose?.();
           
@@ -316,6 +314,9 @@ const OceanScene: React.FC<{
   // Create frustum for tile culling
   const frustum = useMemo(() => new Frustum(), []);
   const cameraMatrix = useMemo(() => new Matrix4(), []);
+  // 0 so the first frame runs the check immediately rather than waiting out an
+  // interval with no water on screen.
+  const lastVisibilityCheck = useRef<number>(0);
 
   // Flip the cold-start flag after the first render commits. Subsequent
   // mounts of OceanScene in the same tab will get the underwater surfacing
@@ -361,10 +362,9 @@ const OceanScene: React.FC<{
   const reusableSizeVector = useMemo(() => new Vector3(), []);
 
   // Update visible tiles based on camera frustum (reduced frequency for better performance)
-  useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
-
-    // More frequent cleanup to prevent memory accumulation - every 2 minutes
+  useFrame(() => {
+    // Everything here is throttled on wall time, so the R3F clock (which resets
+    // on frameloop changes) is deliberately not used.
     const now = Date.now();
     if (now - lastGlobalCleanup.current > 120000) {
       lastGlobalCleanup.current = now;
@@ -395,8 +395,17 @@ const OceanScene: React.FC<{
       }
     }
 
-    // Check frustum less frequently for better performance
-    if (Math.floor(t * 3) % 60 === 0) { // Every 60 frames instead of 20
+    // Re-test which tiles are in view. Throttled on Date.now(), NOT on the R3F
+    // clock: `frameloop` flips to "never" on post-detail routes, and R3F resets
+    // `clock.elapsedTime` to 0 on every frameloop change. A deadline held in
+    // clock time is therefore in the future again after each pause/resume, and
+    // the check stops running until elapsed time climbs back past it. The
+    // original `Math.floor(t * 3) % 60 === 0` had a related problem: it only
+    // lines up every 20 seconds, so a camera move that culled the ocean — the
+    // About route flies it hundreds of units away — left the water gone until
+    // the next window came round.
+    if (now - lastVisibilityCheck.current >= VISIBILITY_CHECK_INTERVAL_MS) {
+      lastVisibilityCheck.current = now;
       cameraMatrix.multiplyMatrices(
         camera.projectionMatrix,
         camera.matrixWorldInverse,

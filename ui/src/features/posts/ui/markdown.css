@@ -166,8 +166,12 @@
   text-transform: uppercase;
 }
 
-/* Paragraphs */
+/* Paragraphs — set in the serif prose stack rather than the monospace
+   --font-family the rest of the app uses, so long-form reading in an article
+   doesn't happen in a terminal face. Scoped to <p>: headings, code, tables and
+   the rest of the markdown body keep their existing faces. */
 .markdown p {
+  font-family: var(--font-family-prose);
   margin: 1.2rem 0;
   text-align: left;
 }
