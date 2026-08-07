@@ -96,8 +96,16 @@ function wrapLines(
   return lines;
 }
 
-// Shared mutable object — written by useFrame (synchronous), read by keydown handler
-export const hoveredPost = { slug: null as string | null, isAuto: false };
+// Shared mutable object — written by useFrame (synchronous), read by keydown handler.
+// `distance` is how far the auto claimant's resting slot sits from screen centre,
+// so a nearer cube can take the claim off a farther one: each box only knows its
+// own position, and without a single arbitrated claim two boxes whose slots are
+// both inside the enter threshold would come forward together.
+export const hoveredPost = {
+  slug: null as string | null,
+  isAuto: false,
+  distance: Infinity,
+};
 
 // --- 3. Actual PostBox component ---
 interface PostBoxProps {
@@ -166,6 +174,8 @@ function PostBoxCore(props: PostBoxProps) {
   const manualHoverOffsetReadyRef = useRef(false);
   const manualHoverAmountRef = useRef(0);
   const autoToCameraRef = useRef(new THREE.Vector3());
+  const restingPosRef = useRef(new THREE.Vector3());
+  const autoHoverStartRef = useRef(0);
   const autoHoverOffsetRef = useRef(new THREE.Vector3());
   const autoHoverOffsetReadyRef = useRef(false);
   const autoHoverAmountRef = useRef(0);
@@ -498,6 +508,18 @@ function PostBoxCore(props: PostBoxProps) {
     syncManualHoverState();
   }, [isVisible, slug, sortingPhase]);
 
+  // Drop the auto-hover claim on unmount — a claim left behind by a box that no
+  // longer exists would keep every other box from coming forward.
+  useEffect(() => {
+    return () => {
+      if (hoveredPost.slug === slug && hoveredPost.isAuto) {
+        hoveredPost.slug = null;
+        hoveredPost.isAuto = false;
+        hoveredPost.distance = Infinity;
+      }
+    };
+  }, [slug]);
+
   useEffect(() => {
     return () => { backdropMaterial.dispose(); };
   }, [backdropMaterial]);
@@ -524,43 +546,11 @@ function PostBoxCore(props: PostBoxProps) {
   const manualHoverZoom = 20;
   const manualHoverBoost = 8;
   const autoHoverZoom = 16;
+  const autoZoomDelay = 0.3; // seconds of lift before the forward push starts
 
   useFrame(({ clock, camera }) => {
     const g = groupRef.current;
     const t = clock.getElapsedTime();
-
-    // Auto-hover when cube is in center of screen (only when not manually hovering)
-    if (!manualHoverRef.current && autoHoverEnabledRef.current && isVisible && sortingPhase === "none") {
-      // Get cube's world position
-      const worldPos = new THREE.Vector3();
-      g.getWorldPosition(worldPos);
-
-      // Project to screen space (normalized device coordinates)
-      const screenPos = worldPos.clone().project(camera);
-
-      // Check if close to center (NDC: x=0, y=0 is center)
-      // Use hysteresis to prevent oscillation: smaller threshold to enter, larger to exit
-      const enterThreshold = 0.20; // Distance to start hovering
-      const exitThreshold = 0.30; // Distance to stop hovering (larger to prevent oscillation)
-      const distanceFromCenter = Math.sqrt(screenPos.x * screenPos.x + screenPos.y * screenPos.y) + 0.04;
-
-      if (!hovered && distanceFromCenter < enterThreshold) {
-        setHovered(true);
-        hoveredPost.slug = slug;
-        hoveredPost.isAuto = true;
-      } else if (hovered && distanceFromCenter > exitThreshold) {
-        setHovered(false);
-        if (hoveredPost.slug === slug) {
-          hoveredPost.slug = null;
-          hoveredPost.isAuto = false;
-        }
-      }
-    }
-
-    // Only force out if another cube claimed hover AND this box isn't the centered one
-    if (hovered && hoveredPost.slug !== null && hoveredPost.slug !== slug && !hoveredPost.isAuto) {
-      setHovered(false);
-    }
 
     // Determine which base position to use (target for spacing, original for underwater)
     const basePos = isVisible && targetPosition ? targetPosition : position;
@@ -569,6 +559,67 @@ function PostBoxCore(props: PostBoxProps) {
     const bob = basePos[1] + Math.sin(t * 2) * 0.1;
     const indexOffset = Math.pow(index / 10, 4) * 0.9;
     const hoverLift = 11;
+
+    // Auto-hover when cube is in center of screen (only when not manually hovering)
+    if (!manualHoverRef.current && autoHoverEnabledRef.current && isVisible && sortingPhase === "none") {
+      // Test the cube's RESTING position, not where it currently is. Hovering
+      // lifts the cube and pulls it toward the camera, which moves its
+      // projected point outward — testing the live position let a hover push
+      // itself past the exit threshold, un-hover, fall back, re-enter, and
+      // oscillate forever. That feedback loop is invisible on a wide desktop
+      // viewport and constant on a narrow phone one, where the same world-space
+      // movement covers far more NDC.
+      restingPosRef.current.set(
+        basePos[0] - 8 - indexOffset,
+        bob + 28,
+        basePos[2] + 8 + indexOffset,
+      );
+      g.parent?.localToWorld(restingPosRef.current);
+
+      // Project to screen space (normalized device coordinates)
+      const screenPos = restingPosRef.current.project(camera);
+
+      // Check if close to center (NDC: x=0, y=0 is center)
+      // Use hysteresis to prevent oscillation: smaller threshold to enter, larger to exit
+      const enterThreshold = 0.20; // Distance to start hovering
+      const exitThreshold = 0.30; // Distance to stop hovering (larger to prevent oscillation)
+      const distanceFromCenter = Math.sqrt(screenPos.x * screenPos.x + screenPos.y * screenPos.y) + 0.04;
+
+      const claimIsMine = hoveredPost.slug === slug && hoveredPost.isAuto;
+      const claimIsFree = hoveredPost.slug === null;
+      // Margin so two boxes at near-identical distances don't trade the claim
+      // back and forth frame by frame.
+      const takesClaim = claimIsFree
+        || (hoveredPost.isAuto && distanceFromCenter < hoveredPost.distance - 0.02);
+
+      if (claimIsMine) {
+        hoveredPost.distance = distanceFromCenter;
+        if (distanceFromCenter > exitThreshold) {
+          setHovered(false);
+          hoveredPost.slug = null;
+          hoveredPost.isAuto = false;
+          hoveredPost.distance = Infinity;
+        }
+      } else if (!hovered && distanceFromCenter < enterThreshold && takesClaim) {
+        setHovered(true);
+        hoveredPost.slug = slug;
+        hoveredPost.isAuto = true;
+        hoveredPost.distance = distanceFromCenter;
+      }
+    } else if (hoveredPost.slug === slug && hoveredPost.isAuto) {
+      // No longer eligible to hold the claim (filtered out, sorting, or the
+      // mouse took over) — release it so a centred box can take it, rather than
+      // leaving a stale claim that blocks every other box.
+      hoveredPost.slug = null;
+      hoveredPost.isAuto = false;
+      hoveredPost.distance = Infinity;
+    }
+
+    // Someone else holds the claim — whether they took it by centring or by
+    // mouse — so this box must not stay forward alongside them.
+    if (hovered && hoveredPost.slug !== null && hoveredPost.slug !== slug) {
+      setHovered(false);
+    }
 
     // Calculate base target positions
     let baseTargetX = basePos[0] - 8 - indexOffset;
@@ -593,6 +644,7 @@ function PostBoxCore(props: PostBoxProps) {
         .copy(autoToCameraRef.current)
         .multiplyScalar(autoHoverZoom);
       autoHoverOffsetReadyRef.current = true;
+      autoHoverStartRef.current = t;
     } else if (!hovered) {
       autoHoverOffsetReadyRef.current = false;
     }
@@ -603,12 +655,15 @@ function PostBoxCore(props: PostBoxProps) {
       0.18,
     );
 
-    // Held through a manual hover so the mouse pull stacks on top of it rather
-    // than replacing it.
+    // Two-beat move: the box rises first, and only once the lift is underway
+    // does it start coming at the camera. Running both from the same instant
+    // blends them into one diagonal slide. Held through a manual hover so the
+    // mouse pull stacks on top of it rather than replacing it.
+    const zoomEngaged = hovered && t - autoHoverStartRef.current > autoZoomDelay;
     autoHoverAmountRef.current = MathUtils.lerp(
       autoHoverAmountRef.current,
-      hovered ? 1 : 0,
-      0.18,
+      zoomEngaged ? 1 : 0,
+      0.12,
     );
 
     if (autoHoverAmountRef.current > 0.001) {
