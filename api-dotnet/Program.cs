@@ -2,6 +2,7 @@ using BlogApi.Common.Extensions;
 using BlogApi.Features.AdminCache;
 using BlogApi.Features.Auth;
 using BlogApi.Features.Comments;
+using BlogApi.Features.Notifications;
 using BlogApi.Features.Posts;
 using BlogApi.Features.UserPreferences;
 using BlogApi.Infrastructure.Auth;
@@ -137,6 +138,7 @@ app.MapDefaultEndpoints();
 app.MapPostsEndpoints();
 app.MapCommentsEndpoints();
 app.MapUserPreferencesEndpoints();
+app.MapNotificationsEndpoints();
 app.MapAuthEndpoints();
 app.MapAdminCacheEndpoints();
 

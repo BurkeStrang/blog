@@ -12,6 +12,7 @@ public sealed class BlogDbContext : DbContext
     public DbSet<CommentLike> CommentLikes => Set<CommentLike>();
     public DbSet<User> Users => Set<User>();
     public DbSet<UserPreferences> UserPreferences => Set<UserPreferences>();
+    public DbSet<NotificationState> NotificationStates => Set<NotificationState>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,7 +41,8 @@ public sealed class BlogDbContext : DbContext
             b.HasKey(u => u.Id);
             b.HasDiscriminator(u => u.Type)
                 .HasValue<User>("user")
-                .HasValue<UserPreferences>("user_preferences");
+                .HasValue<UserPreferences>("user_preferences")
+                .HasValue<NotificationState>("notification_state");
         });
 
         // Map C# PascalCase property names to camelCase JSON keys so the existing

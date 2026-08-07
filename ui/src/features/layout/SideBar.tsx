@@ -3,6 +3,7 @@ import { NavLink, useLocation, Navigate } from "react-router";
 import styled, { css } from "styled-components";
 import { primary } from "../../shared/theme/colors";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
+import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
 import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
@@ -11,6 +12,7 @@ import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { useTheme } from "../../shared/contexts/ThemeContext";
 import { useAuth } from "../../shared/contexts/AuthContext";
+import { useNotifications } from "../../shared/hooks/useNotifications";
 
 // Sidebar container
 const Sidebar = styled.nav`
@@ -437,6 +439,66 @@ const ProfileMeta = styled.div`
   min-width: 0;
 `;
 
+/* Notification bell, parked at the right edge of the signed-in profile row. */
+const ProfileBellBtn = styled.button`
+  position: relative;
+  flex: 0 0 auto;
+  margin-left: auto;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--color-sidebar-link) 16%, transparent);
+  border-radius: 10px;
+  color: var(--color-readable-lightgrey);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--color-primary);
+    border-color: color-mix(in srgb, var(--color-sidebar-link) 32%, transparent);
+    background: var(--color-sidebar-hover-bg);
+  }
+
+  @media (max-width: 480px) {
+    width: 27px;
+    height: 27px;
+    border-radius: 8px;
+  }
+`;
+
+const BellBadge = styled.span`
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 1.05rem;
+  height: 1.05rem;
+  padding: 0 0.22rem;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #c0392b;
+  color: #fff;
+  font-family: var(--font-family);
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+
+  @media (max-width: 480px) {
+    min-width: 0.88rem;
+    height: 0.88rem;
+    font-size: 0.54rem;
+  }
+`;
+
 const ProfileLabel = styled.span`
   font-family: var(--font-family);
   font-size: 0.68rem;
@@ -485,6 +547,7 @@ const SidebarNav: React.FC<SidebarNavProps> = React.memo(({ onNavigateStart }) =
   const sidebarRef = useRef<HTMLElement>(null);
   const hamburgerRef = useRef<HTMLDivElement>(null);
   const isDetailPage = /^\/posts\/[^/]+$/.test(location.pathname);
+  const { counts, markRead } = useNotifications(Boolean(user));
 
   // Close sidebar when clicking outside
   useEffect(() => {
@@ -626,6 +689,23 @@ const SidebarNav: React.FC<SidebarNavProps> = React.memo(({ onNavigateStart }) =
                         <ProfileLabel>Signed in</ProfileLabel>
                         <UserName>{user.name}</UserName>
                       </ProfileMeta>
+                      <ProfileBellBtn
+                        type="button"
+                        aria-label={
+                          counts.total > 0
+                            ? `Notifications: ${counts.total} unread`
+                            : "Notifications"
+                        }
+                        title={`${counts.newPosts} new posts · ${counts.replies} replies · ${counts.likes} likes`}
+                        onClick={() => void markRead()}
+                      >
+                        <NotificationsNoneRoundedIcon sx={{ fontSize: "1.15rem" }} />
+                        {counts.total > 0 && (
+                          <BellBadge>
+                            {counts.total > 99 ? "99+" : counts.total}
+                          </BellBadge>
+                        )}
+                      </ProfileBellBtn>
                     </ProfileInfo>
                   </ProfileSection>
                 ) : (

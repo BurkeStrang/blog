@@ -443,7 +443,7 @@ const PostDetailComponent = function PostDetail({
                 id="body"
                 value={editForm.body}
                 onChange={(e) => handleFormChange("body", e.target.value)}
-                placeholder="Enter post content (HTML supported)"
+                placeholder="Enter post content (Markdown)"
                 required
               />
             </div>

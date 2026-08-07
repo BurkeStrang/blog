@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using BlogApi.Common.Errors;
 using BlogApi.Common.Validation;
 using BlogApi.Domain.Entities;
@@ -61,7 +62,17 @@ internal sealed class CreatePostHandler(
         var validation = await validator.ValidateAsync(sanitized, ct);
         if (!validation.IsValid) return validation.ToErrorOrErrors();
 
-        if (await db.Posts.AsNoTracking().AnyAsync(p => p.Slug == sanitized.Slug!, ct))
+        // Deliberately a projected FirstOrDefault rather than AnyAsync: the EF
+        // Core Cosmos provider translates Any() into an EXISTS subquery whose
+        // inner FROM still says `root`, which Cosmos rejects with
+        // "Identifier 'root' could not be resolved" (SC2001) — a 500 on every
+        // create. A filtered projection translates to a plain SELECT.
+        var slugTaken = await db.Posts
+            .AsNoTracking()
+            .Where(p => p.Slug == sanitized.Slug!)
+            .Select(p => p.Id)
+            .FirstOrDefaultAsync(ct);
+        if (slugTaken is not null)
         {
             return Error.Conflict("post.slug_conflict", "slug already exists");
         }
@@ -121,4 +132,5 @@ public sealed record CreatePostRequestBody(
     string? Body,
     string? Previous,
     string? Next,
-    DateTime? CreatedAt);
+    // See PostDto: the UI posts this as `date`.
+    [property: JsonPropertyName("date")] DateTime? CreatedAt);

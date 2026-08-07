@@ -1,5 +1,6 @@
 import type { Post } from '../../features/posts/model';
 import type { User } from '../types/user';
+import type { NotificationCounts } from '../types/notifications';
 import { postsCache, analyticsCache, cacheInvalidation } from './cache/CacheManager';
 
 // API configuration
@@ -48,15 +49,19 @@ class ApiService {
 
 
     try {
-      // Extract ttl and cache from options to prevent them from being passed to fetch
+      // Extract ttl and cache from options to prevent them from being passed to
+      // fetch. `headers` comes out too and is re-merged last: spreading the rest
+      // of the options over an already-merged headers object would replace it
+      // wholesale, dropping the Content-Type from any call that passes headers
+      // of its own (every authenticated write) and earning a 415 from the API.
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { ttl, cache, ...fetchOptions } = options || {};
+      const { ttl, cache, headers, ...fetchOptions } = options || {};
       const response = await fetch(url, {
+        ...fetchOptions,
         headers: {
           'Content-Type': 'application/json',
-          ...options?.headers,
+          ...headers,
         },
-        ...fetchOptions,
       });
 
       // Always validate content type first, regardless of status
@@ -339,6 +344,37 @@ class ApiService {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
+    });
+  }
+
+  // Notifications — unread counts for the sidebar badge. Never cached: the
+  // whole point is that it reflects what has arrived since the last poll.
+  async getNotifications(): Promise<NotificationCounts> {
+    if (!this.checkTokenValidity()) {
+      throw new Error('Authentication required');
+    }
+
+    const token = localStorage.getItem('authToken');
+    return this.fetch<NotificationCounts>('/api/notifications', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      cache: 'none',
+    });
+  }
+
+  async markNotificationsRead(): Promise<NotificationCounts> {
+    if (!this.checkTokenValidity()) {
+      throw new Error('Authentication required');
+    }
+
+    const token = localStorage.getItem('authToken');
+    return this.fetch<NotificationCounts>('/api/notifications/read', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      cache: 'none',
     });
   }
 

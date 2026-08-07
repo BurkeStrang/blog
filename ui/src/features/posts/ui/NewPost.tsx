@@ -327,12 +327,12 @@ const NewPost: React.FC<NewPostProps> = ({ onPostsChange }) => {
             id="body"
             value={form.body}
             onChange={(e) => handleChange("body", e.target.value)}
-            placeholder="Enter post content (HTML supported)"
+            placeholder="Enter post content (Markdown)"
             required
           />
           <HelpText>
-            You can use HTML tags for formatting: &lt;p&gt;, &lt;h2&gt;,
-            &lt;strong&gt;, &lt;em&gt;, &lt;ul&gt;, &lt;ol&gt;, &lt;li&gt;, etc.
+            Written in Markdown: # heading, ## section, **bold**, *italic*,
+            - list, [link](url), and ``` for fenced code blocks.
           </HelpText>
         </FormGroup>
 
