@@ -49,7 +49,7 @@ export const palette = {
       border:         { dark: "rgba(190, 190, 190, 0.08)", light: "rgba(0, 0, 0, 0.12)" },
       glassHighlight: { dark: "rgba(20, 20, 20, 0.2)",     light: "rgba(255, 255, 255, 0.15)" },
       inset:          { dark: "rgba(200, 200, 200, 0.01)", light: "rgba(255, 255, 255, 0.15)" },
-      shadow:         { dark: "rgba(200, 200, 200, 0.09)", light: "rgba(0, 0, 0, 0.08)" },
+      shadow:         { dark: "rgba(200, 200, 200, 0.04)", light: "rgba(0, 0, 0, 0.08)" },
       text:           { dark: "#8E878E", light: "#556473" },
       comment:        { dark: "#5E6466", light: "#74797a" },
       function:       { dark: "#6588A1", light: "#52738a" },

@@ -2,8 +2,8 @@ import { useMemo, useRef, useEffect, useLayoutEffect } from "react";
 import { useFrame, useThree, ThreeEvent } from "@react-three/fiber";
 import { BufferGeometry, Vector3, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, SphereGeometry, CircleGeometry, PlaneGeometry, AdditiveBlending, BackSide, DoubleSide, Object3D } from "three";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
-import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
-import type { Font } from "three/examples/jsm/loaders/FontLoader";
+import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
+import type { Font } from "three/examples/jsm/loaders/FontLoader.js";
 import { triggerMobileHapticFeedback } from "../../../shared/services/haptics";
 import { DARK_SCENE_THEME, LIGHT_SCENE_THEME } from "../../../shared/theme/sceneColors";
 

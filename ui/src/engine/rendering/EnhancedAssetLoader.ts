@@ -1,7 +1,7 @@
 import { TextureLoader, Texture, LoadingManager, MeshStandardMaterial } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
-import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
 import { textureOptimizer, TextureConfig } from './TextureCompressor';
 
 interface LoadOptions {
@@ -23,7 +23,7 @@ export class EnhancedAssetLoader {
   private loadQueue: Array<{ 
     url: string; 
     options: LoadOptions; 
-    resolve: (value: import('three/examples/jsm/loaders/GLTFLoader').GLTF) => void; 
+    resolve: (value: import('three/examples/jsm/loaders/GLTFLoader.js').GLTF) => void; 
     reject: (reason?: unknown) => void; 
   }> = [];
   private isProcessing = false;
@@ -81,7 +81,7 @@ export class EnhancedAssetLoader {
   /**
    * Load GLTF model with optimization options
    */
-  async loadGLTF(url: string, options: LoadOptions = {}): Promise<import('three/examples/jsm/loaders/GLTFLoader').GLTF> {
+  async loadGLTF(url: string, options: LoadOptions = {}): Promise<import('three/examples/jsm/loaders/GLTFLoader.js').GLTF> {
     return new Promise((resolve, reject) => {
       this.loadQueue.push({ url, options, resolve, reject });
       this.processQueue();

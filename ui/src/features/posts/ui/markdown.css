@@ -15,6 +15,27 @@
   --md-h4: color-mix(in srgb, color-mix(in srgb, var(--color-secondary) 62%, var(--color-bluish) 38%) 30%, var(--color-readable-lightgrey));
 }
 
+/* H1 extrusion palette. Unlike --md-h3/--md-h4 above, these follow the
+   app-wide convention (GlobalStyles/tokens): :root carries the dark values,
+   [data-theme="light"] overrides.
+
+   `side`/`side-deep` are the extruded flank, stepping away from the face as
+   it recedes; `edge` is the lit top-left rim. Dark mode recedes toward black,
+   light mode toward the page — in both, the far end of the extrusion sinks
+   into the background. */
+:root, [data-theme="dark"] {
+  --md-h1-side: color-mix(in srgb, var(--color-readable-lightgrey) 46%, black);
+  --md-h1-side-deep: color-mix(in srgb, var(--color-readable-lightgrey) 22%, black);
+  --md-h1-edge: color-mix(in srgb, white 20%, transparent);
+  --md-h1-contact: rgba(0, 0, 0, 0.5);
+}
+[data-theme="light"] {
+  --md-h1-side: color-mix(in srgb, var(--color-readable-lightgrey) 42%, white);
+  --md-h1-side-deep: color-mix(in srgb, var(--color-readable-lightgrey) 20%, white);
+  --md-h1-edge: color-mix(in srgb, white 55%, transparent);
+  --md-h1-contact: rgba(28, 31, 46, 0.18);
+}
+
 /* ───────── Markdown body ───────── */
 .markdown {
   font-family: var(--font-family);
@@ -74,7 +95,25 @@
   text-transform: uppercase;
   max-width: 14ch;
   text-wrap: wrap;
+
+  /* Extruded slabs, echoing the 3D lettering on the post cubes: a lit edge
+     picking out the top-left, then solid copies stepping down-right to form
+     the letter's flank, closed off by a soft contact shadow. Every offset is
+     in em, so the depth scales with the clamped font-size and the responsive
+     overrides below need no extra rules. */
+  text-shadow:
+    -0.004em -0.004em 0 var(--md-h1-edge),
+    0.008em 0.010em 0 var(--md-h1-side),
+    0.016em 0.020em 0 var(--md-h1-side-deep),
+    0.024em 0.030em 0 var(--md-h1-side-deep),
+    0.036em 0.056em 0.09em var(--md-h1-contact);
 }
+
+/* No gradient face here: `background-clip: text` clips the fill to the
+   element box before clipping it to the glyphs, and at line-height 0.8 the
+   first line's capitals overshoot the top of that box — they'd render with
+   their tops shaved off. Depth comes from the shadows above, which aren't
+   clipped. */
 
 .markdown h1 br { line-height: 0; }
 
@@ -131,6 +170,17 @@
 .markdown p {
   margin: 1.2rem 0;
   text-align: left;
+}
+
+/* Run-on prose sits tighter than a paragraph does against a heading, list or
+   code block. Adjacent margins collapse to the larger of the two, so both
+   sides of the gap have to come down for the tighter value to take. */
+.markdown p + p {
+  margin-top: 0.7rem;
+}
+
+.markdown p:has(+ p) {
+  margin-bottom: 0.7rem;
 }
 
 /* Strong with cyan highlighter underline */

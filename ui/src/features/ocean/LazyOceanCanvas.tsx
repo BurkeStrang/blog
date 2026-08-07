@@ -12,11 +12,11 @@ interface ResourceCache {
     waterNormals?: import('three').Texture;
   };
   models: {
-    sphere?: import('three/examples/jsm/loaders/GLTFLoader').GLTF;
-    rubiksCube?: import('three/examples/jsm/loaders/GLTFLoader').GLTF;
+    sphere?: import('three/examples/jsm/loaders/GLTFLoader.js').GLTF;
+    rubiksCube?: import('three/examples/jsm/loaders/GLTFLoader.js').GLTF;
   };
   fonts: {
-    inter?: import('three/examples/jsm/loaders/FontLoader').Font;
+    inter?: import('three/examples/jsm/loaders/FontLoader.js').Font;
   };
 }
 

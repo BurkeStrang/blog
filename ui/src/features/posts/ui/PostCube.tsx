@@ -1,9 +1,9 @@
 import React, { useRef, useMemo, useEffect, useState, memo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
-import type { Font } from "three/examples/jsm/loaders/FontLoader";
-import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
+import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
+import type { Font } from "three/examples/jsm/loaders/FontLoader.js";
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import { MathUtils } from "three";
 import { triggerMobileHapticFeedback } from "../../../shared/services/haptics";
 import { getSceneTheme } from "../../../shared/theme/sceneColors";
@@ -120,8 +120,8 @@ const fontSize = 0.2;
 const wordScale = 16;
 const textMargin = 0.8;
 const textWrapWidthRatio = 0.75;
-const textBoldOffset = 0.1;
-const textBoldOffsetY = 0.05;
+const textBoldOffset = 0.13;
+const textBoldOffsetY = 0.065;
 
 const postTitleTextColor = {
   dark: 0x9ca3aa,
@@ -165,6 +165,10 @@ function PostBoxCore(props: PostBoxProps) {
   const manualHoverOffsetRef = useRef(new THREE.Vector3());
   const manualHoverOffsetReadyRef = useRef(false);
   const manualHoverAmountRef = useRef(0);
+  const autoToCameraRef = useRef(new THREE.Vector3());
+  const autoHoverOffsetRef = useRef(new THREE.Vector3());
+  const autoHoverOffsetReadyRef = useRef(false);
+  const autoHoverAmountRef = useRef(0);
   const pointerHoverRef = useRef(false);
   const keyboardHoverRef = useRef(false);
 
@@ -303,8 +307,8 @@ function PostBoxCore(props: PostBoxProps) {
         font,
         size: fontSize,
         bevelEnabled: true,
-        bevelSize: 0.002,
-        bevelThickness: 0.003,
+        bevelSize: 0.0045,
+        bevelThickness: 0.004,
         bevelSegments: 2,
       });
       geo.computeBoundingBox();
@@ -514,6 +518,12 @@ function PostBoxCore(props: PostBoxProps) {
   const underwaterEase = 0.1; // Fast easing for going underwater
   const repositionEase = 0.1; // Slow easing for repositioning visible posts
   const hoverEase = 0.19;
+  // Toward-camera pull. A mouse hover on an off-center cube does the whole
+  // travel itself; on a cube that's already auto-zoomed at center it stacks on
+  // top, so it only adds the extra step forward.
+  const manualHoverZoom = 20;
+  const manualHoverBoost = 8;
+  const autoHoverZoom = 16;
 
   useFrame(({ clock, camera }) => {
     const g = groupRef.current;
@@ -572,11 +582,42 @@ function PostBoxCore(props: PostBoxProps) {
       baseTargetZ = (basePos[2] + hoverLift + indexOffset);
     }
 
+    // Center-of-screen hover also pulls the cube toward the camera. Use the
+    // camera's view axis rather than the cube-to-camera vector: hover-in fires
+    // while the cube is still off to one side, and that vector's sideways
+    // component would drag the cube laterally instead of straight at the
+    // viewer. Latched once on hover-in so the path doesn't bend mid-ease.
+    if (hovered && !autoHoverOffsetReadyRef.current) {
+      camera.getWorldDirection(autoToCameraRef.current).negate();
+      autoHoverOffsetRef.current
+        .copy(autoToCameraRef.current)
+        .multiplyScalar(autoHoverZoom);
+      autoHoverOffsetReadyRef.current = true;
+    } else if (!hovered) {
+      autoHoverOffsetReadyRef.current = false;
+    }
+
     manualHoverAmountRef.current = MathUtils.lerp(
       manualHoverAmountRef.current,
       manualHoverRef.current ? 1 : 0,
       0.18,
     );
+
+    // Held through a manual hover so the mouse pull stacks on top of it rather
+    // than replacing it.
+    autoHoverAmountRef.current = MathUtils.lerp(
+      autoHoverAmountRef.current,
+      hovered ? 1 : 0,
+      0.18,
+    );
+
+    if (autoHoverAmountRef.current > 0.001) {
+      baseTargetX += autoHoverOffsetRef.current.x * autoHoverAmountRef.current;
+      baseTargetY += autoHoverOffsetRef.current.y * autoHoverAmountRef.current;
+      baseTargetZ += autoHoverOffsetRef.current.z * autoHoverAmountRef.current;
+    } else {
+      autoHoverAmountRef.current = 0;
+    }
 
     if (manualHoverRef.current && !manualHoverOffsetReadyRef.current) {
       // Latch the hover direction once. Recomputing it while the cube eases
@@ -585,7 +626,9 @@ function PostBoxCore(props: PostBoxProps) {
       toCameraRef.current
         .subVectors(camera.position, hoverAnchorRef.current)
         .normalize();
-      const hoverDist = hovered ? 12 : 16;
+      // Already centered means the auto zoom is holding it forward; only add
+      // the remaining step. Otherwise the mouse hover owns the full travel.
+      const hoverDist = hovered ? manualHoverBoost : manualHoverZoom;
       manualHoverOffsetRef.current.copy(toCameraRef.current).multiplyScalar(hoverDist);
       manualHoverOffsetReadyRef.current = true;
     }

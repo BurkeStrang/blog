@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 import type { User } from "../types/user";
 import { getGoogleAuthUrl } from "../../features/auth";
 

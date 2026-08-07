@@ -371,7 +371,7 @@ export default defineConfig({
           // MUI / emotion
           if (/@mui[\\/]|@emotion[\\/]/.test(id)) return 'ui-vendor';
           // React core — keep react, react-dom, scheduler, and react-router together
-          if (/[\\/](react|react-dom|react-router|react-router-dom|scheduler|use-sync-external-store)[\\/]/.test(id)) return 'react-vendor';
+          if (/[\\/](react|react-dom|react-router|scheduler|use-sync-external-store)[\\/]/.test(id)) return 'react-vendor';
         }
       },
       treeshake: {

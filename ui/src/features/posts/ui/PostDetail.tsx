@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useNavigate, useParams, Navigate } from "react-router-dom";
+import { useNavigate, useParams, Navigate } from "react-router";
 import type { Post } from "../model";
 import { usePostsData } from "../../../shared/contexts/SearchContext";
 import { useAuth } from "../../../shared/contexts/AuthContext";
