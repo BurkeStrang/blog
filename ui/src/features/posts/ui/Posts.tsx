@@ -19,7 +19,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { useSort, useSearchQuery } from "../../../shared/contexts/SearchContext";
 import { useAuth } from "../../../shared/contexts/AuthContext";
 import { isAdmin } from "../../../shared/types/user";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { accent, backgroundColor } from "../../../shared/theme/colors";
 
 const ControlsContainer = styled.div`

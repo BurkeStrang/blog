@@ -3,8 +3,8 @@
 // pulling three.js into the initial chunk.
 
 import type { Texture } from "three";
-import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
-import type { Font } from "three/examples/jsm/loaders/FontLoader";
+import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
+import type { Font } from "three/examples/jsm/loaders/FontLoader.js";
 
 export interface ResourceCache {
   textures: {

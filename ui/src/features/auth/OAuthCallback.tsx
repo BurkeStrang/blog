@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router';
 
 export const OAuthCallback: React.FC = () => {
   const [searchParams] = useSearchParams();

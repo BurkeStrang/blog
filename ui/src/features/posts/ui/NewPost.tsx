@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import styled from "styled-components";
 import { backgroundColor, lightgrey, accent } from "../../../shared/theme/colors";
 import { tokens } from "../../../shared/theme";

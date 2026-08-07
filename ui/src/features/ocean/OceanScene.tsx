@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useMemo, useState } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router";
 import styled from "styled-components";
 import { useTheme } from "../../shared/contexts/ThemeContext";
 import { DARK_SCENE_THEME, LIGHT_SCENE_THEME } from "../../shared/theme/sceneColors";
@@ -17,8 +17,8 @@ import {
   MathUtils,
   ACESFilmicToneMapping,
 } from "three";
-import { Sky } from "three/examples/jsm/objects/Sky";
-import { Water } from "three/examples/jsm/objects/Water";
+import { Sky } from "three/examples/jsm/objects/Sky.js";
+import { Water } from "three/examples/jsm/objects/Water.js";
 import OceanCamera from "./OceanCamera";
 import { PostCube, hoveredPost } from "../posts";
 import { PostNavigation } from "../posts";
@@ -471,11 +471,11 @@ interface ResourceCache {
     waterNormals?: Texture;
   };
   models: {
-    sphere?: import("three/examples/jsm/loaders/GLTFLoader").GLTF;
-    rubiksCube?: import("three/examples/jsm/loaders/GLTFLoader").GLTF;
+    sphere?: import("three/examples/jsm/loaders/GLTFLoader.js").GLTF;
+    rubiksCube?: import("three/examples/jsm/loaders/GLTFLoader.js").GLTF;
   };
   fonts: {
-    inter?: import("three/examples/jsm/loaders/FontLoader").Font;
+    inter?: import("three/examples/jsm/loaders/FontLoader.js").Font;
   };
 }
 

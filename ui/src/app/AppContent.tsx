@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, useEffect, useState, useCallback, useMemo, memo, useRef } from "react";
 import { flushSync } from "react-dom";
-import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router";
 import { SideBar } from "../features/layout";
 import { CanvasBackground, GlobalStyle } from "../shared/theme/GlobalStyles";
 import styled from "styled-components";
@@ -191,7 +191,7 @@ const AppContent: React.FC = memo(() => {
       // Clear text geometry cache in PostCube
       if (typeof window !== 'undefined') {
         const windowWithTextCache = window as Window & { 
-          textGeometryCache?: Map<string, import('three/examples/jsm/geometries/TextGeometry').TextGeometry> 
+          textGeometryCache?: Map<string, import('three/examples/jsm/geometries/TextGeometry.js').TextGeometry> 
         };
         if (windowWithTextCache.textGeometryCache) {
           windowWithTextCache.textGeometryCache.clear();

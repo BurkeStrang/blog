@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router";
 import AppContent from "./AppContent";
 import { OAuthCallback } from "../features/auth";
 import { SearchProvider } from "../shared/contexts/SearchContext";

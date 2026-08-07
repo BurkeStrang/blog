@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router";
 import * as THREE from "three";
 
 interface ScrollCameraProps {
@@ -35,6 +35,14 @@ function ScrollCamera({
   const aboutInitializedRef = useRef(false);
   const lookAheadRef = useRef(new THREE.Vector3());
   const flightDir = useRef(new THREE.Vector3(0.374, 0.033, -0.926).normalize());
+
+  // The flight loops instead of running forever: flightDir points slightly
+  // upward, so an unbounded cruise eventually climbs out of the scene and into
+  // open sky. After `flightCruiseSeconds` the target eases back to the start
+  // and the cruise begins again.
+  const aboutPhaseRef = useRef<"cruise" | "return">("cruise");
+  const aboutElapsedRef = useRef(0);
+  const returnFromRef = useRef(new THREE.Vector3());
 
   // Check if we're on the About route
   const isAboutRoute = location.pathname === "/about";
@@ -138,12 +146,44 @@ function ScrollCamera({
     if (isAboutRoute) {
       if (!aboutInitializedRef.current) {
         aboutTargetRef.current.copy(aboutModePosition);
+        aboutPhaseRef.current = "cruise";
+        aboutElapsedRef.current = 0;
         aboutInitializedRef.current = true;
       }
 
       const flightSpeed = 9; // world units / sec
-      aboutTargetRef.current.addScaledVector(flightDir.current, flightSpeed * delta);
-      camera.position.lerp(aboutTargetRef.current, 0.06);
+      const flightCruiseSeconds = 75; // forward flight before heading home
+      const flightReturnSeconds = 3; // swoop back to the starting point
+
+      aboutElapsedRef.current += delta;
+
+      if (aboutPhaseRef.current === "cruise") {
+        aboutTargetRef.current.addScaledVector(flightDir.current, flightSpeed * delta);
+        camera.position.lerp(aboutTargetRef.current, 0.06);
+
+        if (aboutElapsedRef.current >= flightCruiseSeconds) {
+          returnFromRef.current.copy(aboutTargetRef.current);
+          aboutPhaseRef.current = "return";
+          aboutElapsedRef.current = 0;
+        }
+      } else {
+        // Ease the target home on a smoothstep so the reversal starts and ends
+        // gently rather than snapping the view back.
+        const k = Math.min(aboutElapsedRef.current / flightReturnSeconds, 1);
+        const eased = k * k * (3 - 2 * k);
+        aboutTargetRef.current.lerpVectors(
+          returnFromRef.current,
+          aboutModePosition,
+          eased,
+        );
+        camera.position.lerp(aboutTargetRef.current, 0.12);
+
+        if (k >= 1) {
+          aboutTargetRef.current.copy(aboutModePosition);
+          aboutPhaseRef.current = "cruise";
+          aboutElapsedRef.current = 0;
+        }
+      }
 
       // Look down the flight vector (toward the sunset on the horizon)
       lookAheadRef.current
