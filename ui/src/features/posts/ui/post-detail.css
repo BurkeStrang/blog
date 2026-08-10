@@ -71,11 +71,17 @@
   box-sizing: border-box;
 }
 
+/* Phone widths: the right padding below is deliberately larger than the left
+   because the scroll thumb sits in it (see ::-webkit-scrollbar, 1.1rem wide),
+   so the *visible* right gutter is the padding minus the thumb. The left
+   values are pulled in to match that visible gutter rather than the raw
+   padding — matching the numbers instead leaves the column looking shifted
+   right on a phone. */
 @media (max-width: 768px) {
   .post-detail__article {
     width: calc(100vw - 0.65rem);
     margin-right: 0.65rem;
-    padding: 1.5rem 1.5rem 5rem 1.5rem;
+    padding: 1.5rem 1.5rem 5rem 1.1rem;
     padding-right: 2.25rem;
   }
   .post-detail__article > * {
@@ -87,7 +93,7 @@
   .post-detail__article {
     width: calc(100vw - 0.55rem);
     margin-right: 0.55rem;
-    padding: 1.25rem 1.25rem 4.5rem 1.25rem;
+    padding: 1.25rem 1.25rem 4.5rem 0.9rem;
     padding-right: 2rem;
   }
 }
@@ -95,7 +101,7 @@
 /* iPhone 12 and similar devices */
 @media (max-width: 390px) {
   .post-detail__article {
-    padding: 1rem 1rem 4rem 1rem;
+    padding: 1rem 1rem 4rem 0.7rem;
     padding-right: 1.75rem;
     width: calc(100vw - 0.45rem);
     margin-right: 0.45rem;
